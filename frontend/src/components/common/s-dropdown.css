@@ -1,0 +1,47 @@
+/* src/components/common/s-dropdown.css */
+
+.s-dropdown-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.s-dropdown-label {
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.s-dropdown-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.s-dropdown-select {
+  width: 100%;
+  padding: 0.5rem;
+  padding-right: 2.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 1rem;
+  appearance: none;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.s-dropdown-select:focus {
+  border-color: var(--accent);
+}
+
+.s-dropdown-icon {
+  position: absolute;
+  right: 0.75rem;
+  pointer-events: none;
+  color: var(--text);
+}

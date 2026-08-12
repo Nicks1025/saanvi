@@ -1,0 +1,62 @@
+.s-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: s-modal-fade 0.2s ease-out;
+}
+
+.s-modal-content {
+  background: var(--bg);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  width: 90%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: s-modal-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.s-modal-title {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text-h);
+}
+
+.s-modal-body {
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.s-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+@keyframes s-modal-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes s-modal-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

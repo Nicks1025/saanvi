@@ -1,0 +1,42 @@
+{
+  "navigation": {
+    "dashboard": "डैशबोर्ड",
+    "settings": "सेटिंग्स",
+    "word_search": "शब्द खोज",
+    "logout": "लॉग आउट",
+    "brand": "सांवी"
+  },
+  "dashboard": {
+    "welcome": "स्वागत है, {{name}}",
+    "description": "यह आपका डैशबोर्ड है। यहाँ आप अपने खाते का अवलोकन देख सकते हैं।",
+    "accountStatus": "खाते की स्थिति",
+    "systemsOperational": "सभी प्रणालियां काम कर रही हैं",
+    "active": "सक्रिय"
+  },
+  "settings": {
+    "title": "खाता सेटिंग्स",
+    "profileInfo": "प्रोफ़ाइल जानकारी",
+    "email": "ईमेल पता",
+    "firstName": "पहला नाम",
+    "lastName": "अंतिम नाम",
+    "displayName": "प्रदर्शन नाम",
+    "themePrefs": "थीम प्राथमिकताएं",
+    "appTheme": "ऐप थीम",
+    "textStyle": "टेक्स्ट शैली",
+    "language": "भाषा",
+    "securityStatus": "सुरक्षा स्थिति",
+    "accountStatus": "खाता स्थिति",
+    "emailVerified": "ईमेल सत्यापित",
+    "mfa": "दो-कारक प्रमाणीकरण",
+    "profilePhoto": "प्रोफ़ाइल फ़ोटो",
+    "notProvided": "प्रदान नहीं किया गया",
+    "yes": "हाँ",
+    "no": "नहीं",
+    "enabled": "सक्षम",
+    "disabled": "अक्षम",
+    "saveChanges": "परिवर्तन सहेजें",
+    "saving": "सहेजा जा रहा है...",
+    "saveSuccess": "सेटिंग्स सफलतापूर्वक सहेजी गईं!",
+    "saveError": "सेटिंग्स सहेजने में विफल"
+  }
+}

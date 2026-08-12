@@ -1,0 +1,9 @@
+{
+  "name": "root-workspace",
+  "version": "1.0.0",
+  "description": "Root package.json to easily start frontend and backend",
+  "scripts": {
+    "frontend": "npm --prefix frontend run dev",
+    "backend": "npm --prefix backend start"
+  }
+}

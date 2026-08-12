@@ -1,0 +1,283 @@
+.ws-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  font-family: var(--sans);
+}
+
+.ws-menu, .ws-loading, .ws-error, .ws-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  background: var(--bg);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  text-align: center;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.ws-menu-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.ws-game {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Header */
+.ws-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg);
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.ws-header-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ws-header-title h2 {
+  margin: 0;
+}
+
+.ws-difficulty {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.badge-easy { background: var(--accent-bg); color: var(--accent); }
+.badge-medium { background: rgba(234, 179, 8, 0.15); color: #eab308; }
+.badge-hard { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+.ws-header-stats {
+  display: flex;
+  gap: 2rem;
+}
+
+.ws-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.ws-stat-label {
+  font-size: 0.8rem;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ws-stat-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-h);
+  font-family: var(--mono);
+}
+
+/* Main Layout */
+.ws-main {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.ws-grid-container {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  background: var(--bg);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+/* Grid */
+.ws-grid {
+  display: grid;
+  gap: 4px;
+  user-select: none;
+  touch-action: none; /* Prevent scroll on touch devices when dragging */
+}
+
+.ws-grid-8 { grid-template-columns: repeat(8, 1fr); }
+.ws-grid-10 { grid-template-columns: repeat(10, 1fr); }
+.ws-grid-12 { grid-template-columns: repeat(12, 1fr); }
+
+.ws-cell {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--code-bg);
+  border-radius: 4px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-h);
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+@media (max-width: 768px) {
+  .ws-cell {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ws-cell {
+    width: 26px;
+    height: 26px;
+    font-size: 0.9rem;
+    gap: 2px;
+  }
+}
+
+.ws-cell.selected {
+  background: var(--accent-bg);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.ws-cell.found {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.ws-cell.correct {
+  background: rgba(34, 197, 94, 0.3);
+  color: #16a34a;
+}
+
+.ws-cell.incorrect {
+  background: rgba(239, 68, 68, 0.3);
+  color: #dc2626;
+  box-shadow: inset 0 0 0 2px #ef4444;
+}
+
+/* Word List */
+.ws-word-list-container {
+  width: 250px;
+  background: var(--bg);
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.ws-word-list-container h3 {
+  margin: 0 0 1rem 0;
+  font-size: 0.9rem;
+  color: var(--text);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ws-word-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ws-word-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: var(--text-h);
+  padding: 0.25rem 0;
+  transition: all 0.3s;
+}
+
+.ws-word-item.found {
+  color: var(--text);
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.ws-word-check {
+  width: 20px;
+  color: #22c55e;
+}
+
+/* Controls */
+.ws-controls {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Result */
+.ws-result-stats {
+  display: flex;
+  gap: 2rem;
+  margin: 1.5rem 0;
+}
+
+.ws-result-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.ws-result-label {
+  font-size: 0.8rem;
+  color: var(--text);
+  text-transform: uppercase;
+}
+
+.ws-result-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.ws-result-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.ws-cell.hint {
+  animation: pulse-hint 1s infinite;
+  box-shadow: inset 0 0 0 2px var(--accent);
+  color: var(--accent);
+}
+
+@keyframes pulse-hint {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); background: var(--accent-bg); }
+  100% { transform: scale(1); }
+}
+
+.ws-blurred {
+  filter: blur(6px);
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.7;
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
