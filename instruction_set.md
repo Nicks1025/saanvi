@@ -33,3 +33,8 @@ Every new feature must reside in `backend/features/<featureName>/` and contain e
 - **NEVER** make direct API calls (e.g., using `fetch` or `axios`) inside a React component.
 - All API interactions MUST be abstracted into a dedicated `service/` folder within the respective feature directory.
 - React components should only import and invoke these service functions to maintain separation of concerns.
+
+## 7. Localization (i18n)
+- **NEVER** use static hardcoded text strings in the frontend UI.
+- All user-facing text MUST be made dynamic using `react-i18next` (`useTranslation` hook or `t` function).
+- Ensure all text keys are added to both `en.json` and `hi.json` language files in the backend.
