@@ -17,6 +17,11 @@ const AppLayout = ({ children }) => {
     localStorage.setItem('sidebarOpen', nextState);
   };
 
+  const handleSetSidebarOpen = (state) => {
+    setSidebarOpen(state);
+    localStorage.setItem('sidebarOpen', state);
+  };
+
   return (
     <div className="app-layout">
       
@@ -26,18 +31,17 @@ const AppLayout = ({ children }) => {
       {/* Middle section: Sidebar + Main Content */}
       <div className="layout-middle">
         
-        {/* Sidebar - Full height between Header and Footer */}
-        <AppSidebar isOpen={isSidebarOpen} />
+        {/* Sidebar - Full height between Header and bottom of screen */}
+        <AppSidebar isOpen={isSidebarOpen} setSidebarOpen={handleSetSidebarOpen} />
         
         <main className="layout-main">
           <div className="content-container">
             {children}
           </div>
+          {/* Footer - Sits at the bottom of the main content */}
+          <AppFooter />
         </main>
       </div>
-      
-      {/* Footer - Full 100% Width */}
-      <AppFooter />
 
     </div>
   );

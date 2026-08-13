@@ -10,6 +10,10 @@ import SettingsPage from './pages/settings';
 import WordSearchPage from './pages/games/words/word-search';
 import WordSearchPlayPage from './pages/games/words/word-search/play';
 import NotFoundPage from './pages/not-found';
+import UsersPage from './pages/admin/users';
+import UserDetailsPage from './pages/admin/users/details';
+import RolesPage from './pages/admin/roles';
+import RoleDetailsPage from './pages/admin/roles/details';
 
 const router = createBrowserRouter([
   {
@@ -23,6 +27,10 @@ const router = createBrowserRouter([
       { path: "login", element: <LoginPage /> },
       { path: "dashboard", element: <DashboardPage /> },
       { path: "settings", element: <SettingsPage /> },
+      { path: "admin/users", element: <UsersPage /> },
+      { path: "admin/users/:uuid", element: <UserDetailsPage /> },
+      { path: "admin/roles", element: <RolesPage /> },
+      { path: "admin/roles/:uuid", element: <RoleDetailsPage /> },
       { path: "games/word-search", element: <WordSearchPage /> },
       { path: "games/word-search/play", element: <WordSearchPlayPage /> },
       { path: "*", element: <NotFoundPage /> }

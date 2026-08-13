@@ -5,7 +5,7 @@
   flex-direction: column;
   flex: 1;
   min-height: 100vh;
-  background-color: var(--code-bg); /* Use code-bg or a secondary bg color */
+  background-color: var(--code-bg);
   width: 100%;
 }
 
@@ -17,7 +17,7 @@
   align-items: center;
   color: var(--text-h);
   padding: 0.5rem;
-  margin-left: -0.5rem;
+  margin-left: 0;
   border-radius: 4px;
   transition: opacity 0.2s, background-color 0.2s;
   box-shadow: none !important;
@@ -53,29 +53,33 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .content-container {
   background: var(--bg);
   border-radius: 8px;
-  padding: 2rem;
+  padding: 1rem;
+    margin: 0.7rem;
   box-shadow: var(--shadow);
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-/* AppHeader */
 .app-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 2rem;
+  padding: 0 2rem 0 1rem;
   height: 64px;
   background-color: var(--bg);
   border-bottom: 1px solid var(--border);
   width: 100%;
   box-sizing: border-box;
+  position: sticky;
+    top: 0;
+    z-index: 50;
 }
 
 .header-logo {
@@ -147,11 +151,14 @@
   border-right: 1px solid var(--border);
   flex-direction: column;
   padding: 1rem 0;
+  display: flex;
   box-sizing: border-box;
   overflow-y: auto;
   overflow-x: hidden;
-  display: flex;
   transition: width 0.3s ease, flex 0.3s ease;
+  position: sticky;
+    top: 64px;
+    height: calc(100vh - 64px);
 }
 
 .app-sidebar.open {
@@ -171,7 +178,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 1.5rem;
   text-decoration: none;
   color: var(--text);
   background-color: transparent;
@@ -182,8 +189,8 @@
 }
 
 .app-sidebar.closed .sidebar-link {
-  padding-left: 26px;
-  padding-right: 26px;
+  padding-left: 1.5rem;
+    padding-right: 1.5rem;
   gap: 0;
 }
 
@@ -205,17 +212,16 @@
   width: 0;
 }
 
-/* AppFooter */
 .app-footer {
-  padding: 1rem;
-  text-align: center;
+  padding: 0.25rem 1rem;
+    text-align: left;
   font-size: 0.85rem;
   color: var(--text);
-  border-top: 1px solid var(--border);
-  background-color: var(--bg);
   margin-top: auto;
   width: 100%;
   box-sizing: border-box;
+  background-color: transparent;
+    border-top: none;
 }
 
 @media (max-width: 767px) {
@@ -245,6 +251,9 @@
   color: var(--accent);
 }
 
+.app-sidebar.closed .sidebar-group-btn.active-parent {
+  background-color: var(--accent-bg);
+}
 .sidebar-group-toggle {
   display: flex;
   align-items: center;
@@ -258,8 +267,11 @@
   background-color: rgba(0, 0, 0, 0.02);
 }
 
+.app-sidebar.closed .sidebar-sub-menu {
+  display: none;
+}
 .sidebar-link.sub-link {
-  padding-left: 3rem;
+  padding-left: 4rem;
   font-size: 0.9em;
 }
 

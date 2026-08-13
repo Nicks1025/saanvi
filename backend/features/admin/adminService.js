@@ -1,0 +1,142 @@
+const BaseService = require('../../base/baseService');
+
+class AdminService extends BaseService {
+  constructor(adminRepository) {
+    super(adminRepository);
+  }
+
+  async getAllUsers(searchQuery) {
+    return await this.repository.getAllUsers(searchQuery);
+  }
+
+  async getAllPermissions() {
+    return await this.repository.getAllPermissions();
+  }
+
+  async getUser(uuid) {
+    return await this.repository.getUserByUuid(uuid);
+  }
+
+  async updateUser(uuid, data) {
+    const user = await this.repository.getUserByUuid(uuid);
+    if (!user) throw new Error('User not found.');
+
+    const userPayload = {};
+    if (data.status !== undefined) userPayload.status = data.status;
+    
+    if (Object.keys(userPayload).length > 0) {
+      await this.repository.updateUser(uuid, userPayload);
+    }
+
+    const detailsPayload = {};
+    if (data.first_name !== undefined) detailsPayload.first_name = data.first_name;
+    if (data.last_name !== undefined) detailsPayload.last_name = data.last_name;
+
+    if (Object.keys(detailsPayload).length > 0) {
+      await this.repository.updateUserDetails(uuid, detailsPayload);
+    }
+
+    return await this.repository.getUserByUuid(uuid);
+  }
+
+  async getAllRoles(searchQuery) {
+    return await this.repository.getAllRoles(searchQuery);
+  }
+
+  async getRoleByUuid(uuid) {
+    return await this.repository.getRoleByUuid(uuid);
+  }
+
+  async createRole(data) {
+    if (!data.name) throw new Error('Role name is required.');
+    const existing = await this.repository.getRoleByName(data.name);
+    if (existing) throw new Error('Role with this name already exists.');
+
+    const payload = {
+      uuid: this.generateUuid(),
+      name: data.name,
+      description: data.description || null,
+      is_active: data.is_active !== undefined ? data.is_active : true
+    };
+    await this.repository.createRole(payload);
+    return payload;
+  }
+
+  async updateRole(uuid, data) {
+    if (!data.name) throw new Error('Role name is required.');
+    
+    const role = await this.repository.getRoleByUuid(uuid);
+    if (!role) throw new Error('Role not found.');
+
+    const existing = await this.repository.getRoleByName(data.name);
+    if (existing && existing.uuid !== uuid) throw new Error('Role with this name already exists.');
+
+    const payload = {
+      name: data.name,
+      description: data.description || null,
+      is_active: data.is_active !== undefined ? data.is_active : role.is_active
+    };
+    await this.repository.updateRole(uuid, payload);
+    return { ...role, ...payload };
+  }
+
+  async getRolePermissions(roleUuid) {
+    const records = await this.repository.getRolePermissions(roleUuid);
+    return records.map(r => r.permission_uuid);
+  }
+
+  async updateRolePermissions(roleUuid, permissionUuids) {
+    if (!Array.isArray(permissionUuids)) {
+      throw new Error('Invalid input: permissionUuids must be an array.');
+    }
+
+    const role = await this.repository.getRoleByUuid(roleUuid);
+    if (!role) throw new Error('Role not found.');
+
+    const activePermissions = await this.repository.getAllPermissions();
+    const activeUuids = activePermissions.map(p => p.uuid);
+
+    const validUuidsToAssign = permissionUuids.filter(uuid => activeUuids.includes(uuid));
+    const uniqueUuids = [...new Set(validUuidsToAssign)];
+
+    const payload = uniqueUuids.map(permUuid => ({
+      uuid: this.generateUuid(),
+      role_uuid: roleUuid,
+      permission_uuid: permUuid
+    }));
+
+    await this.repository.updateRolePermissions(roleUuid, payload);
+    return { assigned_permissions: uniqueUuids };
+  }
+
+  async getUserRoles(userUuid) {
+    const records = await this.repository.getUserRoles(userUuid);
+    return records.map(r => r.role_uuid);
+  }
+
+  async updateUserRoles(userUuid, roleUuids) {
+    if (!Array.isArray(roleUuids)) {
+      throw new Error('Invalid input: roleUuids must be an array.');
+    }
+
+    const user = await this.repository.getUserByUuid(userUuid);
+    if (!user) throw new Error('User not found.');
+
+    const activeRoles = await this.repository.getAllRoles();
+    const activeUuids = activeRoles.map(r => r.uuid);
+
+    const validUuidsToAssign = roleUuids.filter(uuid => activeUuids.includes(uuid));
+    const uniqueUuids = [...new Set(validUuidsToAssign)];
+
+    const payload = uniqueUuids.map(rUuid => ({
+      uuid: this.generateUuid(),
+      user_uuid: userUuid,
+      role_uuid: rUuid
+    }));
+
+    await this.repository.updateUserRoles(userUuid, payload);
+    return { assigned_roles: uniqueUuids };
+  }
+}
+
+module.exports = AdminService;

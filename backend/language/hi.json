@@ -4,7 +4,36 @@
     "settings": "सेटिंग्स",
     "word_search": "शब्द खोज",
     "logout": "लॉग आउट",
-    "brand": "सांवी"
+    "brand": "सांवी",
+    "games": "खेल",
+    "admin": "व्यवस्थापक",
+    "users": "उपयोगकर्ता"
+  },
+  "games": {
+    "word_search": {
+      "title": "शब्द खोज",
+      "select_difficulty": "कठिनाई चुनें",
+      "easy": "आसान (8x8)",
+      "medium": "मध्यम (10x10)",
+      "hard": "कठिन (12x12)",
+      "ready": "क्या आप तैयार हैं?",
+      "difficulty": "कठिनाई",
+      "start": "शुरू करें",
+      "pause": "विराम",
+      "resume": "फिर से शुरू करें",
+      "exit": "बाहर निकलें",
+      "preparing": "आपकी पहेली तैयार की जा रही है...",
+      "return_to_menu": "मेनू पर लौटें",
+      "exit_modal_title": "खेल छोड़ें?",
+      "exit_modal_confirm": "हाँ, छोड़ें",
+      "exit_modal_cancel": "रद्द करें",
+      "exit_modal_body": "क्या आप वाकई बाहर निकलना चाहते हैं? आपकी प्रगति खो जाएगी।",
+      "play_again": "फिर से खेलें",
+      "final_score": "अंतिम स्कोर",
+      "time_taken": "लिया गया समय",
+      "words_found": "मिले शब्द",
+      "find_these_words": "इन शब्दों को खोजें"
+    }
   },
   "dashboard": {
     "welcome": "स्वागत है, {{name}}",
@@ -38,5 +67,22 @@
     "saving": "सहेजा जा रहा है...",
     "saveSuccess": "सेटिंग्स सफलतापूर्वक सहेजी गईं!",
     "saveError": "सेटिंग्स सहेजने में विफल"
+  },
+  "admin": {
+    "users": "उपयोगकर्ता",
+    "firstName": "पहला नाम",
+    "lastName": "अंतिम नाम",
+    "email": "ईमेल",
+    "status": "स्थिति",
+    "actions": "क्रियाएँ",
+    "searchUsers": "ईमेल या नाम से उपयोगकर्ताओं को खोजें...",
+    "managePermissions": "अनुमतियाँ प्रबंधित करें {{email}}",
+    "backToUsers": "उपयोगकर्ताओं पर वापस जाएं",
+    "saveChanges": "परिवर्तन सहेजें",
+    "loadingPermissions": "अनुमतियाँ लोड हो रही हैं...",
+    "searchPermissions": "अनुमतियाँ खोजें...",
+    "expandAll": "सभी का विस्तार करें",
+    "collapseAll": "सभी को सिकोड़ें",
+    "noPermissionsFound": "कोई अनुमतियां नहीं मिलीं।"
   }
 }

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
-const STextField = ({ type = 'text', text = '', label, placeholder, width = '100%', onChange }) => {
+const STextField = ({ type = 'text', text = '', label, placeholder, width = '100%', marginBottom = '1rem', onChange }) => {
   const [showPassword, setShowPassword] = useState(false);
   const isPasswordType = type === 'password';
   const currentType = isPasswordType && showPassword ? 'text' : type;
 
   return (
-    <div className="s-text-field" style={{ width, display: 'flex', flexDirection: 'column', marginBottom: '1rem' }}>
+    <div className="s-text-field" style={{ width, display: 'flex', flexDirection: 'column', marginBottom }}>
       {label && <label style={{ marginBottom: '0.25rem', fontWeight: 600 }}>{label}</label>}
       <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
         <input 

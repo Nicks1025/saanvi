@@ -4,7 +4,36 @@
     "settings": "Settings",
     "word_search": "Word Search",
     "logout": "Logout",
-    "brand": "Saanvi"
+    "brand": "Saanvi",
+    "games": "Games",
+    "admin": "Admin",
+    "users": "Users"
+  },
+  "games": {
+    "word_search": {
+      "title": "Word Search",
+      "select_difficulty": "Select Difficulty",
+      "easy": "Easy (8x8)",
+      "medium": "Medium (10x10)",
+      "hard": "Hard (12x12)",
+      "ready": "Ready to play?",
+      "difficulty": "Difficulty",
+      "start": "Start",
+      "pause": "Pause",
+      "resume": "Resume",
+      "exit": "Exit",
+      "preparing": "Preparing your puzzle...",
+      "return_to_menu": "Return to Menu",
+      "exit_modal_title": "Exit Game?",
+      "exit_modal_confirm": "Yes, Exit",
+      "exit_modal_cancel": "Cancel",
+      "exit_modal_body": "Are you sure you want to exit? Your progress will be lost.",
+      "play_again": "Play Again",
+      "final_score": "Final Score",
+      "time_taken": "Time Taken",
+      "words_found": "Words Found",
+      "find_these_words": "Find These Words"
+    }
   },
   "dashboard": {
     "welcome": "Welcome, {{name}}",
@@ -38,5 +67,22 @@
     "saving": "Saving...",
     "saveSuccess": "Settings saved successfully!",
     "saveError": "Failed to save settings"
+  },
+  "admin": {
+    "users": "Users",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "status": "Status",
+    "actions": "Actions",
+    "searchUsers": "Search users by email or name...",
+    "managePermissions": "Manage Permissions {{email}}",
+    "backToUsers": "Back to Users",
+    "saveChanges": "Save Changes",
+    "loadingPermissions": "Loading permissions...",
+    "searchPermissions": "Search permissions...",
+    "expandAll": "Expand All",
+    "collapseAll": "Collapse All",
+    "noPermissionsFound": "No permissions found."
   }
 }

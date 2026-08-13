@@ -1,9 +1,7 @@
 const QueryHelper = require('../../database/queryHelper');
+const BaseRepository = require('../../base/baseRepository');
 
-class WordSearchRepository {
-  constructor() {
-    this.queryHelper = new QueryHelper();
-  }
+class WordSearchRepository extends BaseRepository {
 
   async getRandomWords(difficulty, count) {
     const words = await this.queryHelper
@@ -41,11 +39,37 @@ class WordSearchRepository {
 
   async getPuzzleWords(puzzleUuid) {
     const words = await this.queryHelper
-      .from('word_search_puzzle_words')
-      .select('*, words (word, length)')
-      .where('puzzle_uuid', 'eq', puzzleUuid)
+      .from('word_search_puzzle_words', 'pw')
+      .join('words', 'w', 'pw.word_uuid = w.uuid')
+      .select('pw.*')
+      .field('w.word')
+      .field('w.length')
+      .where('pw.puzzle_uuid', 'eq', puzzleUuid)
       .execute();
-    return words;
+      
+    // Format to match old nested format if necessary, or service can just use flat rows.
+    // The previous service expected `words` as an object: p.words.word, p.words.length
+    return words.map(row => ({
+      ...row,
+      words: {
+        word: row.word,
+        length: row.length
+      }
+    }));
+  }
+
+  async deletePuzzle(puzzleUuid) {
+    await this.queryHelper
+      .from('word_search_puzzle_words')
+      .where('puzzle_uuid', 'eq', puzzleUuid)
+      .delete()
+      .execute();
+      
+    await this.queryHelper
+      .from('word_search_puzzles')
+      .where('uuid', 'eq', puzzleUuid)
+      .delete()
+      .execute();
   }
 }
 

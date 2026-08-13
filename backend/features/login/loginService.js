@@ -43,7 +43,8 @@ class LoginService extends BaseService {
     const tokenPayload = {
       uuid: user.uuid,
       email: user.email,
-      is_mfa_enabled: user.is_mfa_enabled
+      is_mfa_enabled: user.is_mfa_enabled,
+      permissions: user.permissions || []
     };
 
     const secret = process.env.JWT_SECRET || 'fallback_secret';
@@ -55,7 +56,8 @@ class LoginService extends BaseService {
       user: {
         uuid: user.uuid,
         email: user.email,
-        is_mfa_enabled: user.is_mfa_enabled
+        is_mfa_enabled: user.is_mfa_enabled,
+        permissions: user.permissions || []
       }
     };
   }
@@ -105,7 +107,8 @@ class LoginService extends BaseService {
     const tokenPayload = {
       uuid: user.uuid,
       email: user.email,
-      is_mfa_enabled: user.is_mfa_enabled
+      is_mfa_enabled: user.is_mfa_enabled,
+      permissions: user.permissions || []
     };
 
     const secret = process.env.JWT_SECRET || 'fallback_secret';
@@ -117,7 +120,8 @@ class LoginService extends BaseService {
       user: {
         uuid: user.uuid,
         email: user.email,
-        is_mfa_enabled: user.is_mfa_enabled
+        is_mfa_enabled: user.is_mfa_enabled,
+        permissions: user.permissions || []
       }
     };
   }

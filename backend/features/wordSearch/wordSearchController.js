@@ -13,7 +13,7 @@ class WordSearchController extends BaseController {
       const puzzle = await wordSearchService.startPuzzle(difficulty);
       return this.sendSuccess(res, puzzle);
     } catch (error) {
-      this.handleError(res, error);
+      this.sendError(res, error);
     }
   }
 
@@ -27,7 +27,7 @@ class WordSearchController extends BaseController {
       const result = await wordSearchService.validateWord(puzzleUuid, start, end);
       return this.sendSuccess(res, result);
     } catch (error) {
-      this.handleError(res, error);
+      this.sendError(res, error);
     }
   }
 
@@ -41,7 +41,7 @@ class WordSearchController extends BaseController {
       const result = await wordSearchService.completeGame(puzzleUuid, foundWords, elapsedSeconds);
       return this.sendSuccess(res, result);
     } catch (error) {
-      this.handleError(res, error);
+      this.sendError(res, error);
     }
   }
 
@@ -55,7 +55,21 @@ class WordSearchController extends BaseController {
       const hint = await wordSearchService.getHint(puzzleUuid, wordUuid);
       return this.sendSuccess(res, hint);
     } catch (error) {
-      this.handleError(res, error);
+      this.sendError(res, error);
+    }
+  }
+
+  async abortGame(req, res) {
+    try {
+      const { puzzleUuid } = req.body;
+      if (!puzzleUuid) {
+        return this.sendError(res, 400, 'Missing required fields');
+      }
+
+      const result = await wordSearchService.abortGame(puzzleUuid);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      this.sendError(res, error);
     }
   }
 }

@@ -5,11 +5,13 @@ import WordSearchWordList from './WordSearchWordList';
 import WordSearchResult from './WordSearchResult';
 import SModal from '../../../../components/common/SModal';
 import { useSearchParams, useNavigate, useBlocker } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import './wordSearch.css';
 
 const WordSearchFeature = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const difficultyFromUrl = searchParams.get('difficulty') || 'easy';
 
   const [status, setStatus] = useState('loading'); // 'loading', 'ready', 'playing', 'paused', 'completed', 'error'
@@ -33,8 +35,18 @@ const WordSearchFeature = () => {
     }
   }, [blocker]);
 
-  const handleConfirmExit = () => {
+  const handleConfirmExit = async () => {
     setShowExitModal(false);
+    setStatus('loading'); // Change status so the blocker doesn't trigger again
+
+    if (puzzle && puzzle.uuid) {
+      try {
+        await wordSearchService.abortGame(puzzle.uuid);
+      } catch (err) {
+        console.error('Failed to abort game on backend', err);
+      }
+    }
+
     if (blocker.state === 'blocked') {
       blocker.proceed();
     } else {
@@ -77,8 +89,13 @@ const WordSearchFeature = () => {
     };
   }, [status]);
 
+  const fetchedRef = useRef(false);
+  
   useEffect(() => {
-    handleFetchPuzzle(difficultyFromUrl);
+    if (!fetchedRef.current) {
+      fetchedRef.current = true;
+      handleFetchPuzzle(difficultyFromUrl);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -159,36 +176,36 @@ const WordSearchFeature = () => {
   return (
     <div className="ws-container">
       {status === 'loading' && (
-        <div className="ws-loading">Preparing your puzzle...</div>
+        <div className="ws-loading">{t('games.word_search.preparing')}</div>
       )}
 
       {status === 'error' && (
         <div className="ws-error">
           <p>{errorMsg}</p>
-          <button className="s-button" onClick={() => navigate('/games/word-search')}>Return to Menu</button>
+          <button className="s-button" onClick={() => navigate('/games/word-search')}>{t('games.word_search.return_to_menu')}</button>
         </div>
       )}
 
       {(status === 'ready' || status === 'playing' || status === 'paused') && puzzle && (
         <div className="ws-game">
           <div className="ws-game-header-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ margin: 0 }}>Word Search</h2>
+            <h2 style={{ margin: 0 }}>{t('games.word_search.title')}</h2>
             <div className="ws-action-buttons" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
               {status !== 'ready' && (
                 <div className="ws-timer" style={{ fontSize: '1.25rem', fontWeight: 600, fontFamily: 'var(--mono)' }}>
                   {Math.floor(timeElapsed / 60).toString().padStart(2, '0')}:{(timeElapsed % 60).toString().padStart(2, '0')}
                 </div>
               )}
-              {status === 'ready' && <button className="s-button btn-primary" onClick={() => setStatus('playing')}>Start</button>}
-              {status === 'playing' && <button className="s-button btn-primary" onClick={() => setStatus('paused')}>Pause</button>}
-              {status === 'paused' && <button className="s-button btn-primary" onClick={() => setStatus('playing')}>Resume</button>}
+              {status === 'ready' && <button className="s-button btn-primary" onClick={() => setStatus('playing')}>{t('games.word_search.start')}</button>}
+              {status === 'playing' && <button className="s-button btn-primary" onClick={() => setStatus('paused')}>{t('games.word_search.pause')}</button>}
+              {status === 'paused' && <button className="s-button btn-primary" onClick={() => setStatus('playing')}>{t('games.word_search.resume')}</button>}
               <button className="s-button btn-secondary" onClick={() => {
                 if (status === 'ready') {
                   navigate('/games/word-search');
                 } else {
                   setShowExitModal(true);
                 }
-              }}>Exit</button>
+              }}>{t('games.word_search.exit')}</button>
             </div>
           </div>
           <div className={`ws-main ${status !== 'playing' ? 'ws-blurred' : ''}`}>
@@ -217,13 +234,13 @@ const WordSearchFeature = () => {
 
       <SModal 
         isOpen={showExitModal} 
-        title="Exit Game?"
-        confirmText="Yes, Exit"
-        cancelText="Cancel"
+        title={t('games.word_search.exit_modal_title')}
+        confirmText={t('games.word_search.exit_modal_confirm')}
+        cancelText={t('games.word_search.exit_modal_cancel')}
         onConfirm={handleConfirmExit}
         onCancel={handleCancelExit}
       >
-        <p>Are you sure you want to exit? Your progress will be lost.</p>
+        <p>{t('games.word_search.exit_modal_body')}</p>
       </SModal>
     </div>
   );
