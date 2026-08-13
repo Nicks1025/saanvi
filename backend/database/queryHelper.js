@@ -164,6 +164,15 @@ class QueryHelper {
       throw new Error('A database error occurred during execution.');
     }
   }
+  async queryRaw(sql, bindings = []) {
+    try {
+      const result = await this._db.raw(sql, bindings);
+      return result;
+    } catch (error) {
+      console.error(`[Database Error] Code: ${error.code} | Message: ${error.message}`);
+      throw new Error('A database error occurred during raw execution.');
+    }
+  }
 }
 
 module.exports = QueryHelper;

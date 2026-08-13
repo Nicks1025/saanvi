@@ -132,25 +132,6 @@ CREATE TABLE permissions (
 );
 
 
-CREATE TABLE user_permissions (
-    uuid UUID PRIMARY KEY,
-    user_uuid UUID NOT NULL,
-    permission_uuid UUID NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    archived_at TIMESTAMPTZ,
-
-    CONSTRAINT fk_user_permissions_user
-        FOREIGN KEY (user_uuid)
-        REFERENCES users(uuid),
-
-    CONSTRAINT fk_user_permissions_permission
-        FOREIGN KEY (permission_uuid)
-        REFERENCES permissions(uuid),
-
-    CONSTRAINT uq_user_permission
-        UNIQUE (user_uuid, permission_uuid)
-);
 
 
 CREATE TABLE roles (

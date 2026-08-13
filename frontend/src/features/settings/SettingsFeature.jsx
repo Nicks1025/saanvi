@@ -8,6 +8,7 @@ import { settingsService } from './services/settingsService';
 import { themeOptions, fontOptions } from '../../constants/themeConstants';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import MfaSetupFeature from './MfaSetupFeature';
 import './settings.css';
 
 const SettingsFeature = () => {
@@ -127,16 +128,7 @@ const SettingsFeature = () => {
               </div>
             </div>
             
-            <div className="settings-info-row">
-              <div className="settings-info-label">{t('settings.mfa')}</div>
-              <div className="settings-info-value">
-                {user?.isMfaEnabled ? (
-                  <><CheckCircle size={18} color="#22c55e" /> {t('settings.enabled')}</>
-                ) : (
-                  <><XCircle size={18} color="#94a3b8" /> {t('settings.disabled')}</>
-                )}
-              </div>
-            </div>
+            <MfaSetupFeature />
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '1rem', marginTop: '3rem' }}>

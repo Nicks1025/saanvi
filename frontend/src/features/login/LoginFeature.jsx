@@ -3,6 +3,7 @@ import STextField from '../../components/common/STextField';
 import SButton from '../../components/common/SButton';
 import { loginUser, loginWithGoogle } from './service/loginService';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
+import MfaVerificationFeature from './MfaVerificationFeature';
 import './login.css';
 
 import { useNavigate } from 'react-router-dom';
@@ -13,6 +14,7 @@ const LoginFeatureContent = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [mfaData, setMfaData] = useState(null);
   
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -37,8 +39,10 @@ const LoginFeatureContent = () => {
 
     try {
       const data = await loginUser(email, password);
-      if (data.token) {
-        login(data.token, data.user);
+      if (data.mfaRequired) {
+        setMfaData({ email: data.email, supabaseToken: data.supabaseToken });
+      } else if (data.token) {
+        login(data.token, data.user, data.supabaseToken);
         navigate('/dashboard');
       }
     } catch (err) {
@@ -54,8 +58,10 @@ const LoginFeatureContent = () => {
       setLoading(true);
       try {
         const data = await loginWithGoogle(codeResponse.code);
-        if (data.token) {
-          login(data.token, data.user);
+        if (data.mfaRequired) {
+          setMfaData({ email: data.email, supabaseToken: data.supabaseToken });
+        } else if (data.token) {
+          login(data.token, data.user, data.supabaseToken);
           navigate('/dashboard');
         }
       } catch (err) {
@@ -69,6 +75,25 @@ const LoginFeatureContent = () => {
     },
     flow: 'auth-code',
   });
+
+  if (mfaData) {
+    return (
+      <div className="login-card">
+        <MfaVerificationFeature 
+          email={mfaData.email}
+          supabaseToken={mfaData.supabaseToken}
+          onVerifySuccess={(data) => {
+            login(data.token, data.user, data.supabaseToken);
+            navigate('/dashboard');
+          }}
+          onCancel={() => {
+            setMfaData(null);
+            setError('');
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="login-card">

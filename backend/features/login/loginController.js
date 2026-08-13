@@ -39,6 +39,20 @@ class LoginController extends BaseController {
       return this.sendError(res, message, 401);
     }
   }
+
+  async mfaVerify(req, res) {
+    try {
+      this.validateRequiredParams(req.body, ['email', 'code', 'supabaseToken']);
+      const { email, code, supabaseToken } = req.body;
+      const result = await this.loginService.processMfaVerify(email, code, supabaseToken);
+      return this.sendSuccess(res, result, 'MFA Verification successful');
+    } catch (error) {
+      const message = error.message === 'Invalid MFA code.'
+        ? error.message 
+        : 'MFA verification failed.';
+      return this.sendError(res, message, 401);
+    }
+  }
 }
 
 module.exports = LoginController;
