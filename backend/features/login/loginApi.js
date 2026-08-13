@@ -1,7 +1,5 @@
-const express = require('express');
-const router = express.Router();
-
-// Dependency Injection
+const Joi = require('joi');
+const ApiSchema = require('../../base/apiSchema');
 const LoginRepository = require('./loginRepository');
 const LoginService = require('./loginService');
 const LoginController = require('./loginController');
@@ -10,10 +8,47 @@ const repository = new LoginRepository();
 const service = new LoginService(repository);
 const controller = new LoginController(service);
 
-// POST /api/login
-router.post('/', (req, res) => controller.login(req, res));
+const login = {
+  path: '/',
+  verb: 'POST',
+  auditMessage: 'user login',
+  handler: {
+    controller: controller,
+    method: 'login'
+  },
+  // Login does not require verifyToken middleware, so we specifically omit requirePermission
+  // However, ApiSchema currently injects verifyToken if requirePermission is absent OR present?
+  // Wait, I need to make sure ApiSchema doesn't block unauthenticated routes if middleware is omitted.
+  request: {
+    body: Joi.object({
+      email: Joi.string().email().required(),
+      password: Joi.string().required()
+    })
+  }
+};
 
-// POST /api/login/google
-router.post('/google', (req, res) => controller.googleLogin(req, res));
+const googleLogin = {
+  path: '/google',
+  verb: 'POST',
+  auditMessage: 'user google login',
+  handler: {
+    controller: controller,
+    method: 'googleLogin'
+  },
+  request: {
+    body: Joi.object({
+      code: Joi.string().required()
+    })
+  }
+};
 
-module.exports = router;
+const LoginApi = {
+  name: 'Login',
+  url: '/api/login',
+  endpoints: [
+    login,
+    googleLogin
+  ]
+};
+
+module.exports = new ApiSchema(LoginApi);

@@ -5,7 +5,9 @@
     "word_search": "Word Search",
     "logout": "Logout",
     "brand": "Saanvi",
-    "games": "Games"
+    "games": "Games",
+    "admin": "Admin",
+    "users": "Users"
   },
   "games": {
     "word_search": {
@@ -65,5 +67,22 @@
     "saving": "Saving...",
     "saveSuccess": "Settings saved successfully!",
     "saveError": "Failed to save settings"
+  },
+  "admin": {
+    "users": "Users",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "status": "Status",
+    "actions": "Actions",
+    "searchUsers": "Search users by email or name...",
+    "managePermissions": "Manage Permissions {{email}}",
+    "backToUsers": "Back to Users",
+    "saveChanges": "Save Changes",
+    "loadingPermissions": "Loading permissions...",
+    "searchPermissions": "Search permissions...",
+    "expandAll": "Expand All",
+    "collapseAll": "Collapse All",
+    "noPermissionsFound": "No permissions found."
   }
 }

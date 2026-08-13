@@ -8,9 +8,8 @@ const QueryHelper = require('../database/queryHelper');
  * NO repository is allowed to directly import @supabase/supabase-js.
  */
 class BaseRepository {
-  constructor() {
-    // Initialize the central QueryHelper for database interactions
-    this.queryHelper = new QueryHelper();
+  get queryHelper() {
+    return new QueryHelper();
   }
 
   // Common repository utilities can go here.

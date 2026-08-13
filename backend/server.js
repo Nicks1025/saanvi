@@ -18,15 +18,8 @@ const cors = require('cors');
 app.use(cors());
 app.use(express.json());
 
-// Routes
-const loginApi = require('./features/login/loginApi');
-app.use('/api/login', loginApi);
-
-const userApi = require('./features/user/userApi');
-app.use('/api/users', userApi);
-
-const wordSearchApi = require('./features/wordSearch/wordSearchApi');
-app.use('/api/games/word-search', wordSearchApi);
+// Load Routes
+require('./routes')(app);
 
 // Serve translations
 app.use('/api/locales', express.static(path.join(__dirname, 'language')));

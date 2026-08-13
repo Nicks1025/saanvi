@@ -74,7 +74,7 @@ class WordSearchService extends BaseService {
       uuid: this.generateUuid(),
       difficulty,
       grid_size: config.size,
-      grid_data: puzzle.grid,
+      grid_data: JSON.stringify(puzzle.grid),
       is_daily: false,
       game_date: null
     };
@@ -163,11 +163,20 @@ class WordSearchService extends BaseService {
 
     const finalScore = Math.max(10, baseScore); // Minimum 10 points
 
+    // Clean up puzzle to save DB space
+    await wordSearchRepository.deletePuzzle(puzzleUuid);
+
     return {
       completed: true,
       score: finalScore,
       elapsedSeconds
     };
+  }
+
+  async abortGame(puzzleUuid) {
+    if (!puzzleUuid) throw new Error('Puzzle UUID is required');
+    await wordSearchRepository.deletePuzzle(puzzleUuid);
+    return { success: true };
   }
 
   async getHint(puzzleUuid, wordUuid) {
