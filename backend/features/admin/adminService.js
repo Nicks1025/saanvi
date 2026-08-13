@@ -1,8 +1,10 @@
 const BaseService = require('../../base/baseService');
+const RbacService = require('../rbac/rbacService');
 
 class AdminService extends BaseService {
   constructor(adminRepository) {
     super(adminRepository);
+    this.rbacService = new RbacService(adminRepository);
   }
 
   async getAllUsers(searchQuery) {
@@ -77,6 +79,7 @@ class AdminService extends BaseService {
       is_active: data.is_active !== undefined ? data.is_active : role.is_active
     };
     await this.repository.updateRole(uuid, payload);
+    await this.rbacService.invalidateRoleCache(uuid);
     return { ...role, ...payload };
   }
 
@@ -106,6 +109,7 @@ class AdminService extends BaseService {
     }));
 
     await this.repository.updateRolePermissions(roleUuid, payload);
+    await this.rbacService.invalidateRoleCache(roleUuid);
     return { assigned_permissions: uniqueUuids };
   }
 
@@ -135,6 +139,7 @@ class AdminService extends BaseService {
     }));
 
     await this.repository.updateUserRoles(userUuid, payload);
+    await this.rbacService.invalidateUserCache(userUuid);
     return { assigned_roles: uniqueUuids };
   }
 }

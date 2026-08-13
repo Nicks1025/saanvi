@@ -20,6 +20,24 @@ class UserController extends BaseController {
     }
   }
 
+  async updateProfile(req, res) {
+    try {
+      const uuid = req.user.uuid;
+      if (!uuid) {
+        return this.sendError(res, 'User ID missing in token', 400);
+      }
+
+      // Multer file is in req.file, other form fields in req.body
+      const file = req.file;
+      const profileData = req.body;
+
+      const result = await this.userService.updateUserProfile(uuid, profileData, file);
+      return this.sendSuccess(res, result.user, 'Profile updated successfully');
+    } catch (error) {
+      return this.sendError(res, error.message, 400);
+    }
+  }
+
   async updateSettings(req, res) {
     try {
       const uuid = req.user.uuid;

@@ -1,0 +1,55 @@
+.s-text-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.s-text-field label {
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--text-h, #333);
+}
+
+.s-text-field-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.s-input {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  background-color: var(--bg, #ffffff);
+  border: 1px solid var(--border, #e4e4e7);
+  border-radius: 8px;
+  color: var(--text, #18181b);
+  font-size: 0.95rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.s-input:focus {
+  border-color: var(--accent, #3b82f6);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.s-input::placeholder {
+  color: #a1a1aa;
+}
+
+.s-text-field-toggle {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: var(--text-muted, #71717a);
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.s-text-field-toggle:hover {
+  color: var(--text, #18181b);
+}

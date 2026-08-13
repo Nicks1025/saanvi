@@ -19,6 +19,9 @@ class UserRepository extends BaseRepository {
       .field('ud.first_name')
       .field('ud.last_name')
       .field('ud.display_name')
+      .field('ud.phone_number')
+      .field('ud.date_of_birth')
+      .field('ud.gender')
       .field('ud.profile_image_url')
       .join('user_roles', 'ur', 'u.uuid = ur.user_uuid')
       .join('roles', 'r', 'ur.role_uuid = r.uuid')
@@ -53,6 +56,9 @@ class UserRepository extends BaseRepository {
         firstName: user.first_name || null,
         lastName: user.last_name || null,
         displayName: user.display_name || null,
+        phoneNumber: user.phone_number || null,
+        dateOfBirth: user.date_of_birth ? new Date(user.date_of_birth).toISOString().split('T')[0] : null,
+        gender: user.gender || null,
         profileImageUrl: user.profile_image_url || null,
         language: user.language || 'en',
         theme: user.theme || 'system',
@@ -61,6 +67,59 @@ class UserRepository extends BaseRepository {
       };
     }
     return null;
+  }
+
+  /**
+   * UPSERT user profile details.
+   */
+  async upsertUserProfile(profileData) {
+    const { 
+      uuid, user_uuid, first_name, last_name, display_name, 
+      phone_number, date_of_birth, gender, profile_image_url 
+    } = profileData;
+
+    // Check if record exists
+    const existing = await this.queryHelper
+      .from('user_details')
+      .where('user_uuid', 'eq', user_uuid)
+      .execute();
+
+    if (existing && existing.length > 0) {
+      // Update
+      const payload = {};
+      if (first_name !== undefined) payload.first_name = first_name;
+      if (last_name !== undefined) payload.last_name = last_name;
+      if (display_name !== undefined) payload.display_name = display_name;
+      if (phone_number !== undefined) payload.phone_number = phone_number;
+      if (date_of_birth !== undefined) payload.date_of_birth = date_of_birth;
+      if (gender !== undefined) payload.gender = gender;
+      if (profile_image_url !== undefined) payload.profile_image_url = profile_image_url;
+      
+      payload.updated_at = new Date().toISOString();
+
+      await this.queryHelper
+        .from('user_details')
+        .update(payload)
+        .where('user_uuid', 'eq', user_uuid)
+        .execute();
+    } else {
+      // Insert
+      await this.queryHelper
+        .from('user_details')
+        .insert([{
+          uuid,
+          user_uuid,
+          first_name: first_name || null,
+          last_name: last_name || null,
+          display_name: display_name || null,
+          phone_number: phone_number || null,
+          date_of_birth: date_of_birth || null,
+          gender: gender || null,
+          profile_image_url: profile_image_url || null
+        }])
+        .execute();
+    }
+    return true;
   }
 
   /**
