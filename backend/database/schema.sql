@@ -46,7 +46,6 @@ create table public.user_details (
   date_of_birth date null,
   gender character varying(50) null,
   profile_image_url text null,
-  country character varying(10) null,
   timezone character varying(100) null,
   language character varying(20) null,
   created_at timestamp with time zone not null default now(),

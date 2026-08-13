@@ -14,6 +14,7 @@ import UsersPage from './pages/admin/users';
 import UserDetailsPage from './pages/admin/users/details';
 import RolesPage from './pages/admin/roles';
 import RoleDetailsPage from './pages/admin/roles/details';
+import SystemHealthPage from './pages/admin/health';
 
 const router = createBrowserRouter([
   {
@@ -31,6 +32,7 @@ const router = createBrowserRouter([
       { path: "admin/users/:uuid", element: <UserDetailsPage /> },
       { path: "admin/roles", element: <RolesPage /> },
       { path: "admin/roles/:uuid", element: <RoleDetailsPage /> },
+      { path: "admin/health", element: <SystemHealthPage /> },
       { path: "games/word-search", element: <WordSearchPage /> },
       { path: "games/word-search/play", element: <WordSearchPlayPage /> },
       { path: "*", element: <NotFoundPage /> }

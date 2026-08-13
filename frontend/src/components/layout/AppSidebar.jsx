@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Settings, Gamepad2, ChevronDown, ChevronRight, Type, Shield } from 'lucide-react';
+import { LayoutDashboard, Settings, Gamepad2, ChevronDown, ChevronRight, Shield, LogOut } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../store/AuthContext';
+import SButton from '../common/SButton';
 import './layout.css';
 
 const AppSidebar = ({ isOpen, setSidebarOpen }) => {
   const { t } = useTranslation();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const userPermissions = user?.permissions || [];
   
   const [isGamesOpen, setIsGamesOpen] = useState(location.pathname.startsWith('/games'));
@@ -48,7 +49,7 @@ const AppSidebar = ({ isOpen, setSidebarOpen }) => {
           <span className="sidebar-link-text">{t('navigation.dashboard')}</span>
         </NavLink>
 
-        {(userPermissions.includes('admin.users') || userPermissions.includes('admin.roles')) && (
+        {(userPermissions.includes('admin.users') || userPermissions.includes('admin.roles') || userPermissions.includes('admin.system.health')) && (
           <div className="sidebar-group">
             <button 
               className={`sidebar-link sidebar-group-btn ${location.pathname.startsWith('/admin') ? 'active-parent' : ''}`} 
@@ -74,6 +75,11 @@ const AppSidebar = ({ isOpen, setSidebarOpen }) => {
                 {userPermissions.includes('admin.roles') && (
                   <NavLink to="/admin/roles" className={getSubNavLinkClass} title={t('navigation.roles', 'Roles')}>
                     <span className="sidebar-link-text">{t('navigation.roles', 'Roles')}</span>
+                  </NavLink>
+                )}
+                {userPermissions.includes('admin.system.health') && (
+                  <NavLink to="/admin/health" className={getSubNavLinkClass} title={t('navigation.system_health', 'System Health')}>
+                    <span className="sidebar-link-text">{t('navigation.system_health', 'System Health')}</span>
                   </NavLink>
                 )}
               </div>
@@ -112,6 +118,28 @@ const AppSidebar = ({ isOpen, setSidebarOpen }) => {
           <span className="sidebar-link-text">{t('navigation.settings')}</span>
         </NavLink>
       </nav>
+
+      <SButton 
+        onClick={logout}
+        className="sidebar-link"
+        title={t('navigation.logout')}
+        style={{ 
+          marginTop: 'auto', 
+          border: 'none', 
+          borderTop: '1px solid var(--border)',
+          background: 'transparent', 
+          cursor: 'pointer', 
+          textAlign: 'left', 
+          width: '100%', 
+          padding: '1rem 1.5rem',
+          color: 'var(--text-h)',
+          borderRadius: 0,
+          justifyContent: 'flex-start'
+        }}
+      >
+        <LogOut size={20} style={{ flexShrink: 0 }} />
+        <span className="sidebar-link-text">{t('navigation.logout')}</span>
+      </SButton>
     </aside>
   );
 };

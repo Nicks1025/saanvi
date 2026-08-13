@@ -24,12 +24,37 @@ require('./routes')(app);
 // Serve translations
 app.use('/api/locales', express.static(path.join(__dirname, 'language')));
 
+// Initialize Redis
+const { initRedis, shutdown } = require('./redis/redisClient');
+initRedis();
+
 // Health Check Route
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Backend Server is running with valid configuration.' });
 });
 
 const PORT = process.env.BACKEND_PORT || 3002;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
+
+// Graceful Shutdown
+const gracefulShutdown = async (signal) => {
+  console.log(`\nReceived ${signal}. Starting graceful shutdown...`);
+  
+  await shutdown(); // Close Redis connection
+  
+  server.close(() => {
+    console.log('HTTP server closed.');
+    process.exit(0);
+  });
+  
+  // Force shutdown after 10s if graceful shutdown fails
+  setTimeout(() => {
+    console.error('Could not close connections in time, forcefully shutting down');
+    process.exit(1);
+  }, 10000);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
