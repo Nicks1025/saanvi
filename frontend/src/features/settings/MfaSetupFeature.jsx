@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../store/AuthContext';
 import axios from '../../services/axios.client';
 import toast from 'react-hot-toast';
@@ -12,7 +12,7 @@ const MfaSetupFeature = () => {
   const { user, supabaseToken, setUser } = useAuth();
   
   const [loading, setLoading] = useState(false);
-  const [mfaStatus, setMfaStatus] = useState(null);
+  const mfaStatus = user?.is_mfa_enabled || false;
   
   // Setup flow state
   const [isSettingUp, setIsSettingUp] = useState(false);
@@ -21,24 +21,6 @@ const MfaSetupFeature = () => {
   const [challengeId, setChallengeId] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [showDisableModal, setShowDisableModal] = useState(false);
-
-  const isFetched = useRef(false);
-
-  useEffect(() => {
-    if (!isFetched.current) {
-      isFetched.current = true;
-      fetchStatus();
-    }
-  }, []);
-
-  const fetchStatus = async () => {
-    try {
-      const res = await axios.get('/api/mfa/status');
-      setMfaStatus(res.data.is_mfa_enabled);
-    } catch (err) {
-      console.error('Failed to fetch MFA status', err);
-    }
-  };
 
   const handleStartSetup = async () => {
     setLoading(true);
@@ -75,9 +57,8 @@ const MfaSetupFeature = () => {
       });
       
       toast.success('Two-Factor Authentication enabled successfully!');
-      setMfaStatus(true);
       setIsSettingUp(false);
-      setUser(prev => ({ ...prev, isMfaEnabled: true }));
+      setUser(prev => ({ ...prev, is_mfa_enabled: true }));
     } catch (err) {
       toast.error(err.response?.data?.error || 'Invalid verification code');
     } finally {
@@ -91,9 +72,8 @@ const MfaSetupFeature = () => {
       await axios.post('/api/mfa/unenroll', { supabaseToken, factorId: 'totp' }); 
       
       toast.success('Two-Factor Authentication disabled');
-      setMfaStatus(false);
       setShowDisableModal(false);
-      setUser(prev => ({ ...prev, isMfaEnabled: false }));
+      setUser(prev => ({ ...prev, is_mfa_enabled: false }));
     } catch (err) {
       toast.error('Failed to disable MFA');
     } finally {
@@ -101,9 +81,6 @@ const MfaSetupFeature = () => {
     }
   };
 
-  if (mfaStatus === null) {
-    return <div>Loading security status...</div>;
-  }
 
   return (
     <>

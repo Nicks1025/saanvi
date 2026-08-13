@@ -28,13 +28,29 @@ class MfaService extends BaseService {
 
   async enroll(supabaseToken, email) {
     const userClient = this._getUserClient(supabaseToken);
+    
+    // First, find and delete any existing unverified TOTP factors for this user
+    // because Supabase will return a 400 if you try to enroll when an unverified factor already exists.
+    const { data: { user } } = await userClient.auth.getUser();
+    if (user) {
+      const { data: factorsData } = await supabaseAdmin.auth.admin.mfa.listFactors({ userId: user.id });
+      if (factorsData && factorsData.factors) {
+        for (const factor of factorsData.factors) {
+          if (factor.factor_type === 'totp' && factor.status === 'unverified') {
+            await supabaseAdmin.auth.admin.mfa.deleteFactor({ id: factor.id, userId: user.id });
+          }
+        }
+      }
+    }
+
     const { data, error } = await userClient.auth.mfa.enroll({ 
       factorType: 'totp',
       issuer: 'Saanvi',
       friendlyName: email
     });
     if (error) {
-      throw new Error(`Enrollment failed: ${error.message}`);
+      console.error('[Supabase MFA Enroll Error]:', error);
+      throw new Error(`Enrollment failed: ${error.message} - ${JSON.stringify(error)}`);
     }
     return data;
   }
