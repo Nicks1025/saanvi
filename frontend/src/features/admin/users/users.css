@@ -1,0 +1,41 @@
+.admin-users-container {
+  display: flex;
+  flex-direction: column;
+  /* gap: 2rem; */
+    max-width: 100%;
+    min-width: 100%;
+    margin: 0;
+}
+
+.admin-users-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-users-header h1 {
+  font-size: 2rem;
+  color: var(--text);
+}
+
+.manage-btn {
+  background-color: transparent;
+    color: var(--accent);
+    border: none;
+    padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.manage-btn:hover {
+  background-color: var(--surface-hover);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}

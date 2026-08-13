@@ -1,6 +1,5 @@
-const express = require('express');
-const router = express.Router();
-const { verifyToken } = require('../../base/authMiddleware');
+const Joi = require('joi');
+const ApiSchema = require('../../base/apiSchema');
 
 const QueryHelper = require('../../database/queryHelper');
 const UserRepository = require('./userRepository');
@@ -12,10 +11,46 @@ const userRepository = new UserRepository(queryHelper);
 const userService = new UserService(userRepository);
 const userController = new UserController(userService);
 
-// Protected routes
-router.use(verifyToken);
+const getMe = {
+  path: '/me',
+  verb: 'GET',
+  auditMessage: 'getting current user profile',
+  handler: {
+    controller: userController,
+    method: 'getMe'
+  },
+  middleware: {
+    requireAuth: true
+  }
+};
 
-router.get('/me', (req, res) => userController.getMe(req, res));
-router.put('/me/settings', (req, res) => userController.updateSettings(req, res));
+const updateSettings = {
+  path: '/me/settings',
+  verb: 'PUT',
+  auditMessage: 'updating current user settings',
+  handler: {
+    controller: userController,
+    method: 'updateSettings'
+  },
+  middleware: {
+    requireAuth: true
+  },
+  request: {
+    body: Joi.object({
+      language: Joi.string().optional(),
+      theme: Joi.string().optional(),
+      font: Joi.string().optional()
+    })
+  }
+};
 
-module.exports = router;
+const UserApi = {
+  name: 'User',
+  url: '/api/users',
+  endpoints: [
+    getMe,
+    updateSettings
+  ]
+};
+
+module.exports = new ApiSchema(UserApi);

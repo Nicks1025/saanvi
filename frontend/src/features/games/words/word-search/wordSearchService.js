@@ -19,5 +19,10 @@ export const wordSearchService = {
   getHint: async (puzzleUuid, wordUuid) => {
     const response = await axios.post('/api/games/word-search/hint', { puzzleUuid, wordUuid });
     return response.data;
+  },
+
+  abortGame: async (puzzleUuid) => {
+    const response = await axios.post('/api/games/word-search/abort', { puzzleUuid });
+    return response.data;
   }
 };

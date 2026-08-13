@@ -6,29 +6,43 @@ class UserRepository extends BaseRepository {
    */
   async getUserByUuid(uuid) {
     const usersData = await this.queryHelper
-      .from('users')
-      .select('uuid, email, is_mfa_enabled, is_email_verified, status, language, theme, font')
-      .where('uuid', 'eq', uuid)
-      .where('archived_at', 'is', null)
+      .from('users', 'u')
+      .field('u.uuid')
+      .field('u.email')
+      .field('u.is_mfa_enabled')
+      .field('u.is_email_verified')
+      .field('u.status')
+      .field('u.language')
+      .field('u.theme')
+      .field('u.font')
+      .leftJoin('user_details', 'ud', 'u.uuid = ud.user_uuid')
+      .field('ud.first_name')
+      .field('ud.last_name')
+      .field('ud.display_name')
+      .field('ud.profile_image_url')
+      .join('user_roles', 'ur', 'u.uuid = ur.user_uuid')
+      .join('roles', 'r', 'ur.role_uuid = r.uuid')
+      .join('role_permissions', 'rp', 'r.uuid = rp.role_uuid')
+      .join('permissions', 'p', 'rp.permission_uuid = p.uuid')
+      .field('p.permission')
+      .field('p.is_active')
+      .field('p.archived_at')
+      .field('r.is_active as role_is_active')
+      .field('r.archived_at as role_archived_at')
+      .where('u.uuid', 'eq', uuid)
+      .where('u.archived_at', 'is', null)
+      .where('p.is_active', 'eq', true)
+      .where('p.archived_at', 'is', null)
+      .where('r.is_active', 'eq', true)
+      .where('r.archived_at', 'is', null)
       .execute();
 
     if (usersData && usersData.length > 0) {
+      // With raw SQL joins, we get flat rows. We need to grab the user details from the first row,
+      // and extract all unique permissions from all rows.
       const user = usersData[0];
       
-      let details = {};
-      try {
-        const detailsData = await this.queryHelper
-          .from('user_details')
-          .select('first_name, last_name, display_name, profile_image_url')
-          .where('user_uuid', 'eq', uuid)
-          .where('archived_at', 'is', null)
-          .execute();
-        if (detailsData && detailsData.length > 0) {
-          details = detailsData[0];
-        }
-      } catch (err) {
-        console.error('[UserRepository] Failed to fetch user_details:', err.message);
-      }
+      const permissions = [...new Set(usersData.map(row => row.permission).filter(Boolean))];
 
       return {
         uuid: user.uuid,
@@ -36,13 +50,14 @@ class UserRepository extends BaseRepository {
         isMfaEnabled: user.is_mfa_enabled,
         isEmailVerified: user.is_email_verified,
         status: user.status,
-        firstName: details.first_name || null,
-        lastName: details.last_name || null,
-        displayName: details.display_name || null,
-        profileImageUrl: details.profile_image_url || null,
+        firstName: user.first_name || null,
+        lastName: user.last_name || null,
+        displayName: user.display_name || null,
+        profileImageUrl: user.profile_image_url || null,
         language: user.language || 'en',
         theme: user.theme || 'system',
-        font: user.font || 'sans'
+        font: user.font || 'sans',
+        permissions
       };
     }
     return null;

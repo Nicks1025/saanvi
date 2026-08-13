@@ -17,4 +17,18 @@ const verifyToken = (req, res, next) => {
   return next();
 };
 
-module.exports = { verifyToken };
+const requirePermission = (permission) => {
+  return (req, res, next) => {
+    if (!req.user || !req.user.permissions) {
+      return res.status(403).json({ success: false, error: 'Forbidden: No permissions loaded' });
+    }
+    
+    if (!req.user.permissions.includes(permission)) {
+      return res.status(403).json({ success: false, error: `Forbidden: Missing required permission '${permission}'` });
+    }
+    
+    return next();
+  };
+};
+
+module.exports = { verifyToken, requirePermission };

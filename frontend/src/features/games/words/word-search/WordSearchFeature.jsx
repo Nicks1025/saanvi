@@ -35,8 +35,18 @@ const WordSearchFeature = () => {
     }
   }, [blocker]);
 
-  const handleConfirmExit = () => {
+  const handleConfirmExit = async () => {
     setShowExitModal(false);
+    setStatus('loading'); // Change status so the blocker doesn't trigger again
+
+    if (puzzle && puzzle.uuid) {
+      try {
+        await wordSearchService.abortGame(puzzle.uuid);
+      } catch (err) {
+        console.error('Failed to abort game on backend', err);
+      }
+    }
+
     if (blocker.state === 'blocked') {
       blocker.proceed();
     } else {
@@ -79,8 +89,13 @@ const WordSearchFeature = () => {
     };
   }, [status]);
 
+  const fetchedRef = useRef(false);
+  
   useEffect(() => {
-    handleFetchPuzzle(difficultyFromUrl);
+    if (!fetchedRef.current) {
+      fetchedRef.current = true;
+      handleFetchPuzzle(difficultyFromUrl);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

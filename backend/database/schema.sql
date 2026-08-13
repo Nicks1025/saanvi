@@ -118,3 +118,88 @@ insert into public.words (word, length, difficulty) values
 ('FROG', 4, 'easy'),
 ('HORSE', 5, 'medium')
 on conflict (word) do nothing;
+
+
+CREATE TABLE permissions (
+    uuid UUID PRIMARY KEY,
+    permission VARCHAR(255) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    archived_at TIMESTAMPTZ
+);
+
+
+CREATE TABLE user_permissions (
+    uuid UUID PRIMARY KEY,
+    user_uuid UUID NOT NULL,
+    permission_uuid UUID NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    archived_at TIMESTAMPTZ,
+
+    CONSTRAINT fk_user_permissions_user
+        FOREIGN KEY (user_uuid)
+        REFERENCES users(uuid),
+
+    CONSTRAINT fk_user_permissions_permission
+        FOREIGN KEY (permission_uuid)
+        REFERENCES permissions(uuid),
+
+    CONSTRAINT uq_user_permission
+        UNIQUE (user_uuid, permission_uuid)
+);
+
+
+CREATE TABLE roles (
+    uuid UUID PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    archived_at TIMESTAMPTZ
+);
+
+CREATE TABLE user_roles (
+    uuid UUID PRIMARY KEY,
+    user_uuid UUID NOT NULL,
+    role_uuid UUID NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    archived_at TIMESTAMPTZ,
+
+    CONSTRAINT fk_user_roles_user
+        FOREIGN KEY (user_uuid)
+        REFERENCES users(uuid),
+
+    CONSTRAINT fk_user_roles_role
+        FOREIGN KEY (role_uuid)
+        REFERENCES roles(uuid),
+
+    CONSTRAINT uq_user_role
+        UNIQUE (user_uuid, role_uuid)
+);
+
+
+CREATE TABLE role_permissions (
+    uuid UUID PRIMARY KEY,
+    role_uuid UUID NOT NULL,
+    permission_uuid UUID NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    archived_at TIMESTAMPTZ,
+
+    CONSTRAINT fk_role_permissions_role
+        FOREIGN KEY (role_uuid)
+        REFERENCES roles(uuid),
+
+    CONSTRAINT fk_role_permissions_permission
+        FOREIGN KEY (permission_uuid)
+        REFERENCES permissions(uuid),
+
+    CONSTRAINT uq_role_permission
+        UNIQUE (role_uuid, permission_uuid)
+);

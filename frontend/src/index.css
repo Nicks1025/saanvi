@@ -232,7 +232,7 @@ body {
 
 #root {
   width: 100%;
-  min-height: 100svh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -283,7 +283,7 @@ code {
 }
 
 .s-button {
-  padding: 0.75rem 1.5rem;
+  padding: 12px 15px;
   border-radius: 4px;
   font-weight: 600;
   cursor: pointer;
@@ -313,4 +313,47 @@ code {
 
 .s-button.btn-primary:hover {
   opacity: 0.9;
+}
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  background-color: transparent;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease-in-out;
+  margin: 0;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+input[type="checkbox"]:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+input[type="checkbox"]:checked {
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Custom tick icon drawn with borders */
+input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 4px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+input[type="checkbox"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: var(--code-bg);
 }

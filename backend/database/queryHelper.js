@@ -1,145 +1,166 @@
-const { createClient } = require('@supabase/supabase-js');
+const knex = require('knex');
+
+let _sharedKnex = null;
 
 /**
  * queryHelper.js
- * Central database abstraction layer.
- * 
- * ALL database access MUST go through this class via the execute() method.
- * Feature repositories MUST NOT import or use @supabase/supabase-js directly.
+ * Central database abstraction layer powered by Knex.js.
  */
 class QueryHelper {
   constructor() {
-    // Rely on environment variables being validated at startup
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!_sharedKnex) {
+      const dbUrl = process.env.DATABASE_URL;
 
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Database Initialization Error: Missing Supabase credentials in environment.');
+      if (!dbUrl) {
+        throw new Error('Database Initialization Error: Missing DATABASE_URL in environment.');
+      }
+
+      _sharedKnex = knex({
+        client: 'pg',
+        connection: dbUrl,
+      });
     }
-
-    // Initialize the client privately inside the helper
-    this._client = createClient(supabaseUrl, supabaseKey);
     
-    // Query builder state
+    this._db = _sharedKnex;
     this._resetState();
   }
 
-  /**
-   * Resets the builder state for the next query.
-   */
   _resetState() {
-    this._table = null;
-    this._action = null; // 'select', 'insert', 'update', 'delete'
-    this._payload = null;
-    this._filters = [];
-    this._orderBy = null;
-    this._limit = null;
+    this._query = null;
+    this._isInsert = false;
   }
 
-  // --- Query Builder Methods ---
-
-  from(table) {
-    this._table = table;
+  from(table, alias = null) {
+    const target = alias ? `${table} as ${alias}` : table;
+    this._query = this._db(target);
     return this;
   }
 
   select(columns = '*') {
-    this._action = 'select';
-    this._payload = columns;
+    if (!this._query) throw new Error('Must call from() before select()');
+    if (typeof columns === 'string' && columns !== '*') {
+      const cols = columns.split(',').map(c => c.trim()).filter(Boolean);
+      this._query = this._query.select(...cols);
+    } else {
+      this._query = this._query.select(columns);
+    }
+    return this;
+  }
+
+  field(columnName) {
+    if (!this._query) throw new Error('Must call from() before field()');
+    this._query = this._query.select(columnName);
+    return this;
+  }
+
+  join(table, alias, onCondition) {
+    if (!this._query) throw new Error('Must call from() before join()');
+    const target = alias ? `${table} as ${alias}` : table;
+    const parts = onCondition.replace(/\s+/g, '').split('=');
+    this._query = this._query.innerJoin(target, parts[0], parts[1]);
+    return this;
+  }
+
+  leftJoin(table, alias, onCondition) {
+    if (!this._query) throw new Error('Must call from() before leftJoin()');
+    const target = alias ? `${table} as ${alias}` : table;
+    const parts = onCondition.replace(/\s+/g, '').split('=');
+    this._query = this._query.leftJoin(target, parts[0], parts[1]);
+    return this;
+  }
+
+  rightJoin(table, alias, onCondition) {
+    if (!this._query) throw new Error('Must call from() before rightJoin()');
+    const target = alias ? `${table} as ${alias}` : table;
+    const parts = onCondition.replace(/\s+/g, '').split('=');
+    this._query = this._query.rightJoin(target, parts[0], parts[1]);
     return this;
   }
 
   insert(data) {
-    this._action = 'insert';
-    this._payload = data;
+    if (!this._query) throw new Error('Must call from() before insert()');
+    this._isInsert = true;
+    this._query = this._query.insert(data).returning('*'); // Postgres returning
     return this;
   }
 
   update(data) {
-    this._action = 'update';
-    this._payload = data;
+    if (!this._query) throw new Error('Must call from() before update()');
+    this._query = this._query.update(data).returning('*');
     return this;
   }
 
   delete() {
-    this._action = 'delete';
+    if (!this._query) throw new Error('Must call from() before delete()');
+    this._query = this._query.del().returning('*');
     return this;
   }
 
   where(column, operator, value) {
-    this._filters.push({ method: operator, column, value });
+    if (!this._query) throw new Error('Must call from() before where()');
+    
+    if (operator === 'eq') {
+      this._query = this._query.where(column, value);
+    } else if (operator === 'neq') {
+      this._query = this._query.whereNot(column, value);
+    } else if (operator === 'gt') {
+      this._query = this._query.where(column, '>', value);
+    } else if (operator === 'lt') {
+      this._query = this._query.where(column, '<', value);
+    } else if (operator === 'in') {
+      this._query = this._query.whereIn(column, value);
+    } else if (operator === 'is') {
+      if (value === null) {
+        this._query = this._query.whereNull(column);
+      } else {
+        this._query = this._query.where(column, value); // Fallback
+      }
+    } else if (operator === 'not_is') {
+       if (value === null) {
+        this._query = this._query.whereNotNull(column);
+      } else {
+        this._query = this._query.whereNot(column, value);
+      }
+    } else {
+      this._query = this._query.where(column, value);
+    }
+    return this;
+  }
+
+  whereRaw(sql, bindings = []) {
+    if (!this._query) throw new Error('Must call from() before whereRaw()');
+    this._query = this._query.whereRaw(sql, bindings);
     return this;
   }
 
   orderBy(column, ascending = true) {
-    this._orderBy = { column, ascending };
+    if (!this._query) throw new Error('Must call from() before orderBy()');
+    this._query = this._query.orderBy(column, ascending ? 'asc' : 'desc');
     return this;
   }
 
   limit(count) {
-    this._limit = count;
+    if (!this._query) throw new Error('Must call from() before limit()');
+    this._query = this._query.limit(count);
     return this;
   }
 
-  // --- Query Execution ---
-
   /**
-   * Executes the constructed query against the Supabase database.
-   * Handles errors without leaking credentials.
+   * Executes the constructed query against the Postgres database.
    */
   async execute() {
-    if (!this._table || !this._action) {
-      this._resetState();
+    if (!this._query) {
       throw new Error('Query execution failed: Incomplete query structure.');
     }
 
     try {
-      let query = this._client.from(this._table);
-
-      // Apply primary action
-      if (this._action === 'select') {
-        query = query.select(this._payload);
-      } else if (this._action === 'insert') {
-        query = query.insert(this._payload);
-      } else if (this._action === 'update') {
-        query = query.update(this._payload);
-      } else if (this._action === 'delete') {
-        query = query.delete();
-      }
-
-      // Apply filters (e.g., eq, neq, gt, in)
-      for (const filter of this._filters) {
-        if (typeof query[filter.method] === 'function') {
-          query = query[filter.method](filter.column, filter.value);
-        } else {
-          // Default to eq if an unknown or simplified operator was passed
-          query = query.eq(filter.column, filter.value);
-        }
-      }
-
-      // Apply modifiers
-      if (this._orderBy) {
-        query = query.order(this._orderBy.column, { ascending: this._orderBy.ascending });
-      }
-
-      if (this._limit) {
-        query = query.limit(this._limit);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        throw error; // Caught by the try-catch block below
-      }
-
+      const result = await this._query;
       this._resetState();
-      return data;
+      return result;
     } catch (error) {
       this._resetState();
-      // Log the error securely on the backend without leaking DB URL or Keys
-      console.error(`[Database Error] action: ${this._action}, table: ${this._table} | Code: ${error.code} | Message: ${error.message}`);
-      
-      // Throw a generic exception to the calling repository/service
+      // Keep error message logging consistent
+      console.error(`[Database Error] Code: ${error.code} | Message: ${error.message}`);
       throw new Error('A database error occurred during execution.');
     }
   }

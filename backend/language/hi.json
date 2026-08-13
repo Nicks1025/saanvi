@@ -5,7 +5,9 @@
     "word_search": "शब्द खोज",
     "logout": "लॉग आउट",
     "brand": "सांवी",
-    "games": "खेल"
+    "games": "खेल",
+    "admin": "व्यवस्थापक",
+    "users": "उपयोगकर्ता"
   },
   "games": {
     "word_search": {
@@ -65,5 +67,22 @@
     "saving": "सहेजा जा रहा है...",
     "saveSuccess": "सेटिंग्स सफलतापूर्वक सहेजी गईं!",
     "saveError": "सेटिंग्स सहेजने में विफल"
+  },
+  "admin": {
+    "users": "उपयोगकर्ता",
+    "firstName": "पहला नाम",
+    "lastName": "अंतिम नाम",
+    "email": "ईमेल",
+    "status": "स्थिति",
+    "actions": "क्रियाएँ",
+    "searchUsers": "ईमेल या नाम से उपयोगकर्ताओं को खोजें...",
+    "managePermissions": "अनुमतियाँ प्रबंधित करें {{email}}",
+    "backToUsers": "उपयोगकर्ताओं पर वापस जाएं",
+    "saveChanges": "परिवर्तन सहेजें",
+    "loadingPermissions": "अनुमतियाँ लोड हो रही हैं...",
+    "searchPermissions": "अनुमतियाँ खोजें...",
+    "expandAll": "सभी का विस्तार करें",
+    "collapseAll": "सभी को सिकोड़ें",
+    "noPermissionsFound": "कोई अनुमतियां नहीं मिलीं।"
   }
 }
