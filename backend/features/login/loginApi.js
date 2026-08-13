@@ -37,7 +37,7 @@ const googleLogin = {
   },
   request: {
     body: Joi.object({
-      code: Joi.string().required()
+      accessToken: Joi.string().required()
     })
   }
 };

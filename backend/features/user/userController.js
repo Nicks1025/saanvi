@@ -53,6 +53,23 @@ class UserController extends BaseController {
       return this.sendError(res, error.message, 500);
     }
   }
+  async changePassword(req, res) {
+    try {
+      const uuid = req.user.uuid;
+      if (!uuid) {
+        return this.sendError(res, 'User ID missing in token', 400);
+      }
+      
+      const { currentPassword, newPassword } = req.body;
+      await this.userService.changePassword(uuid, currentPassword, newPassword);
+      
+      return this.sendSuccess(res, null, 'Password updated successfully');
+    } catch (error) {
+      // If error message is 'Invalid current password.', return 400
+      const statusCode = error.message === 'Invalid current password.' ? 400 : 500;
+      return this.sendError(res, error.message, statusCode);
+    }
+  }
 }
 
 module.exports = UserController;

@@ -10,7 +10,7 @@ export const loginUser = async (email, password) => {
   return data.data; // Contains token and user details from backend { success: true, data: {...} }
 };
 
-export const loginWithGoogle = async (code) => {
-  const data = await axios.post('/api/login/google', { code });
+export const loginWithGoogle = async (accessToken) => {
+  const data = await axios.post('/api/login/google', { accessToken });
   return data.data;
 };

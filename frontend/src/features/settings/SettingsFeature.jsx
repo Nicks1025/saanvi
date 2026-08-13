@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '../../store/AuthContext';
 import { useTheme } from '../../store/ThemeContext';
 import { CheckCircle, XCircle, Save, Loader2 } from 'lucide-react';
+import { validatePassword, validateConfirmPassword, validateRequired, validatePhone, validateDate, validateCurrentPassword } from '../../common/validations';
 import SDropdown from '../../components/common/SDropdown';
 import SButton from '../../components/common/SButton';
 import STextField from '../../components/common/STextField';
@@ -19,7 +20,6 @@ const SettingsFeature = () => {
   const changeImageRef = React.useRef(null);
 
   const [isSaving, setIsSaving] = React.useState(false);
-  const [isSavingProfile, setIsSavingProfile] = React.useState(false);
 
   // Profile form state
   const [profileForm, setProfileForm] = React.useState({
@@ -33,31 +33,50 @@ const SettingsFeature = () => {
   
   const [profileImage, setProfileImage] = React.useState(user?.profileImageUrl || null);
   const [removeImage, setRemoveImage] = React.useState(false);
-  const [errors, setErrors] = React.useState({});
+
+  const [passwordForm, setPasswordForm] = React.useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [isSavingPassword, setIsSavingPassword] = React.useState(false);
+  const [isChangingPassword, setIsChangingPassword] = React.useState(false);
 
   const handleProfileChange = (field, value) => {
-    let newError = null;
-
     if (field === 'phoneNumber') {
       value = value.replace(/\D/g, '').slice(0, 10);
-      if (value.length === 0) {
-        newError = t('settings.fieldRequired', 'Field is Required');
-      } else if (value.length < 10) {
-        newError = t('settings.invalidPhone', 'Invalid number');
-      }
-    } else {
-      // Validate all other string inputs as required
-      if (typeof value === 'string' && value.trim().length === 0) {
-        newError = t('settings.fieldRequired', 'Field is Required');
-      }
     }
-
     setProfileForm(prev => ({ ...prev, [field]: value }));
-    
-    if (newError) {
-      setErrors(prev => ({ ...prev, [field]: newError }));
-    } else if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: null }));
+  };
+
+  const handleSavePassword = async () => {
+    const currentErr  = validateCurrentPassword(passwordForm.currentPassword);
+    const newPassErr  = validatePassword(passwordForm.newPassword, {
+      firstName:   user?.firstName   || profileForm.firstName,
+      lastName:    user?.lastName    || profileForm.lastName,
+      displayName: user?.displayName || profileForm.displayName,
+    });
+    const confirmErr  = validateConfirmPassword(passwordForm.newPassword, passwordForm.confirmPassword);
+
+    if (currentErr || newPassErr || confirmErr) return;
+
+    setIsSavingPassword(true);
+    try {
+      const res = await settingsService.changePassword({
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword
+      });
+      if (res.success) {
+        toast.success(t('settings.passwordSuccess', 'Password updated successfully'));
+        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        setIsChangingPassword(false);
+      } else {
+        toast.error(res.error || 'Failed to update password');
+      }
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'Failed to update password');
+    } finally {
+      setIsSavingPassword(false);
     }
   };
 
@@ -76,27 +95,6 @@ const SettingsFeature = () => {
   }, [user]);
 
   const handleSaveSettings = async () => {
-    // Validate Profile
-    const newErrors = {};
-    if (!profileForm.firstName?.trim()) newErrors.firstName = t('settings.fieldRequired', 'Field is Required');
-    if (!profileForm.lastName?.trim()) newErrors.lastName = t('settings.fieldRequired', 'Field is Required');
-    if (!profileForm.displayName?.trim()) newErrors.displayName = t('settings.fieldRequired', 'Field is Required');
-    
-    if (!profileForm.phoneNumber?.trim()) {
-      newErrors.phoneNumber = t('settings.fieldRequired', 'Field is Required');
-    } else if (profileForm.phoneNumber.trim().length < 10) {
-      newErrors.phoneNumber = t('settings.invalidPhone', 'Invalid number');
-    }
-
-    if (!profileForm.dateOfBirth) newErrors.dateOfBirth = t('settings.fieldRequired', 'Field is Required');
-    if (!profileForm.gender) newErrors.gender = t('settings.fieldRequired', 'Field is Required');
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      toast.error(t('settings.fixErrors', 'Please fill all required fields'));
-      return;
-    }
-
     setIsSaving(true);
     try {
       // 1. Save UI Settings
@@ -230,6 +228,22 @@ const SettingsFeature = () => {
               </div>
             )}
           </div>
+          <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', width: '100%' }}>
+            <div style={{ fontSize: '1rem', color: 'var(--text)', wordBreak: 'break-word' }}>
+              <span style={{ fontWeight: '600', marginRight: '0.5rem', color: 'var(--text-muted)' }}>Name:</span>
+              {user?.firstName || ''} {user?.lastName || ''}
+            </div>
+            <div style={{ fontSize: '1rem', color: 'var(--text)', wordBreak: 'break-word' }}>
+              <span style={{ fontWeight: '600', marginRight: '0.5rem', color: 'var(--text-muted)' }}>Email:</span>
+              {user?.email || ''}
+            </div>
+            {user?.roles && user.roles.length > 0 && (
+              <div style={{ fontSize: '1rem', color: 'var(--text)', wordBreak: 'break-word' }}>
+                <span style={{ fontWeight: '600', marginRight: '0.5rem', color: 'var(--text-muted)' }}>Role:</span>
+                <span style={{ textTransform: 'capitalize' }}>{user.roles}</span>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="settings-main-col">
@@ -244,14 +258,14 @@ const SettingsFeature = () => {
                   text={profileForm.firstName} 
                   onChange={(e) => handleProfileChange('firstName', e.target.value)} 
                   required
-                  error={errors.firstName}
+                  validate={(v) => validateRequired(v, 'First name')}
                 />
                 <STextField 
                   label={t('settings.lastName', 'Last Name')} 
                   text={profileForm.lastName} 
                   onChange={(e) => handleProfileChange('lastName', e.target.value)} 
                   required
-                  error={errors.lastName}
+                  validate={(v) => validateRequired(v, 'Last name')}
                 />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -260,14 +274,14 @@ const SettingsFeature = () => {
                   text={profileForm.displayName} 
                   onChange={(e) => handleProfileChange('displayName', e.target.value)} 
                   required
-                  error={errors.displayName}
+                  validate={(v) => validateRequired(v, 'Display name')}
                 />
                 <STextField 
                   label={t('settings.phoneNumber', 'Phone Number')} 
                   text={profileForm.phoneNumber} 
                   onChange={(e) => handleProfileChange('phoneNumber', e.target.value)} 
                   required
-                  error={errors.phoneNumber}
+                  validate={validatePhone}
                 />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -277,7 +291,7 @@ const SettingsFeature = () => {
                   text={profileForm.dateOfBirth} 
                   onChange={(e) => handleProfileChange('dateOfBirth', e.target.value)} 
                   required
-                  error={errors.dateOfBirth}
+                  validate={(v) => validateDate(v, 'Date of birth')}
                 />
                 <div>
                   <SDropdown 
@@ -291,11 +305,6 @@ const SettingsFeature = () => {
                     onChange={(v) => handleProfileChange('gender', v)}
                     options={genderOptions}
                   />
-                  {errors.gender && (
-                    <div style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.25rem', fontWeight: 500 }}>
-                      {errors.gender}
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -359,19 +368,91 @@ const SettingsFeature = () => {
             <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px dashed var(--border)' }}>
               <MfaSetupFeature />
             </div>
+
+            <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px dashed var(--border)' }}>
+              {!isChangingPassword ? (
+                <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                  <SButton onClick={() => setIsChangingPassword(true)} color="secondary" type="button">
+                    Change Password
+                  </SButton>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem', maxWidth: '400px' }}>
+                  <STextField
+                    type="password"
+                    label="Current Password"
+                    text={passwordForm.currentPassword}
+                    onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                    required
+                    validate={validateCurrentPassword}
+                  />
+                  <STextField
+                    type="password"
+                    label="New Password"
+                    text={passwordForm.newPassword}
+                    onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                    required
+                    validate={(v) => validatePassword(v, {
+                      firstName:   user?.firstName   || profileForm.firstName,
+                      lastName:    user?.lastName    || profileForm.lastName,
+                      displayName: user?.displayName || profileForm.displayName,
+                    })}
+                  />
+                  <STextField
+                    type="password"
+                    label="Re-type New Password"
+                    text={passwordForm.confirmPassword}
+                    onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                    required
+                    validate={(v) => validateConfirmPassword(passwordForm.newPassword, v)}
+                  />
+                  <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '1rem' }}>
+                    <SButton
+                      onClick={handleSavePassword}
+                      disabled={
+                        isSavingPassword ||
+                        !!validateCurrentPassword(passwordForm.currentPassword) ||
+                        !!validatePassword(passwordForm.newPassword, {
+                          firstName:   user?.firstName   || profileForm.firstName,
+                          lastName:    user?.lastName    || profileForm.lastName,
+                          displayName: user?.displayName || profileForm.displayName,
+                        }) ||
+                        !!validateConfirmPassword(passwordForm.newPassword, passwordForm.confirmPassword)
+                      }
+                      color="primary"
+                      icon={isSavingPassword ? <Loader2 className="spinner" size={18} /> : <Save size={18} />}
+                    >
+                      {isSavingPassword ? 'Updating...' : 'Update Password'}
+                    </SButton>
+                    <SButton
+                      onClick={() => {
+                        setIsChangingPassword(false);
+                        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                      }}
+                      color="secondary"
+                      disabled={isSavingPassword}
+                      type="button"
+                    >
+                      Cancel
+                    </SButton>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
             <SButton 
               onClick={handleSaveSettings} 
-              disabled={isSaving || !(
-                profileForm.firstName?.trim() &&
-                profileForm.lastName?.trim() &&
-                profileForm.displayName?.trim() &&
-                profileForm.phoneNumber?.trim()?.length === 10 &&
-                profileForm.dateOfBirth &&
-                profileForm.gender
-              )}
+              disabled={
+                isSaving ||
+                !!validateRequired(profileForm.firstName, 'First name') ||
+                !!validateRequired(profileForm.lastName, 'Last name') ||
+                !!validateRequired(profileForm.displayName, 'Display name') ||
+                !!validatePhone(profileForm.phoneNumber) ||
+                !!validateDate(profileForm.dateOfBirth, 'Date of birth') ||
+                !profileForm.gender
+              }
               color="primary"
               icon={isSaving ? <Loader2 className="spinner" size={18} /> : <Save size={18} />}
             >

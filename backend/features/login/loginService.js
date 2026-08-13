@@ -84,21 +84,16 @@ class LoginService extends BaseService {
   /**
    * Processes Google login logic: exchanges code for token, verifies, checks email against users.
    */
-  async processGoogleLogin(code) {
-    const client = new OAuth2Client(
-      process.env.GOOGLE_CLIENT_ID,
-      process.env.GOOGLE_CLIENT_SECRET,
-      process.env.GOOGLE_CALLBACK_URL || 'postmessage'
-    );
-
+  async processGoogleLogin(accessToken) {
     let payload;
     try {
-      const { tokens } = await client.getToken(code);
-      const ticket = await client.verifyIdToken({
-        idToken: tokens.id_token,
-        audience: process.env.GOOGLE_CLIENT_ID,
+      const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${accessToken}` }
       });
-      payload = ticket.getPayload();
+      if (!response.ok) {
+        throw new Error('Failed to fetch user info from Google.');
+      }
+      payload = await response.json();
     } catch (error) {
       throw new Error('Google authentication failed.');
     }

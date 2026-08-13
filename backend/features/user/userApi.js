@@ -61,13 +61,33 @@ const updateSettings = {
   }
 };
 
+const changePassword = {
+  path: '/me/password',
+  verb: 'PUT',
+  auditMessage: 'updating user password',
+  handler: {
+    controller: userController,
+    method: 'changePassword'
+  },
+  middleware: {
+    requireAuth: true
+  },
+  request: {
+    body: Joi.object({
+      currentPassword: Joi.string().required(),
+      newPassword: Joi.string().required()
+    })
+  }
+};
+
 const UserApi = {
   name: 'User',
   url: '/api/users',
   endpoints: [
     getMe,
     updateProfile,
-    updateSettings
+    updateSettings,
+    changePassword
   ]
 };
 

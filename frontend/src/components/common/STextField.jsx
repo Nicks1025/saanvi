@@ -2,10 +2,38 @@ import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import './s-text-field.css';
 
-const STextField = ({ type = 'text', text = '', label, placeholder, width = '100%', marginBottom = '1rem', onChange, required = false, error = '' }) => {
+const STextField = ({
+  type = 'text',
+  text = '',
+  label,
+  placeholder,
+  width = '100%',
+  marginBottom = '1rem',
+  onChange,
+  required = false,
+  error = '',
+  validate,
+  autoComplete,
+}) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [internalError, setInternalError] = useState('');
+
   const isPasswordType = type === 'password';
   const currentType = isPasswordType && showPassword ? 'text' : type;
+  const displayError = error || internalError;
+
+  const handleChange = (e) => {
+    if (validate) {
+      const validators = Array.isArray(validate) ? validate : [validate];
+      let err = '';
+      for (const fn of validators) {
+        const result = fn(e.target.value);
+        if (result) { err = result; break; }
+      }
+      setInternalError(err);
+    }
+    onChange && onChange(e);
+  };
 
   return (
     <div className="s-text-field" style={{ width, marginBottom }}>
@@ -15,21 +43,22 @@ const STextField = ({ type = 'text', text = '', label, placeholder, width = '100
           {required && <span style={{ color: '#ef4444', marginLeft: '4px' }}>*</span>}
         </label>
       )}
-      <div className={`s-text-field-input-wrapper ${error ? 'has-error' : ''}`}>
-        <input 
-          type={currentType} 
-          value={text} 
-          placeholder={placeholder} 
-          onChange={onChange} 
+      <div className={`s-text-field-input-wrapper ${displayError ? 'has-error' : ''}`}>
+        <input
+          type={currentType}
+          value={text}
+          placeholder={placeholder}
+          onChange={handleChange}
           className="s-input"
-          style={{ 
+          autoComplete={autoComplete}
+          style={{
             paddingRight: isPasswordType ? '2.5rem' : '0.8rem',
-            borderColor: error ? '#ef4444' : undefined
+            borderColor: displayError ? '#ef4444' : undefined,
           }}
         />
         {isPasswordType && (
-          <button 
-            type="button" 
+          <button
+            type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="s-text-field-toggle"
             aria-label={showPassword ? 'Hide password' : 'Show password'}
@@ -38,9 +67,9 @@ const STextField = ({ type = 'text', text = '', label, placeholder, width = '100
           </button>
         )}
       </div>
-      {error && (
+      {displayError && (
         <div style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.25rem', fontWeight: 500 }}>
-          {error}
+          {displayError}
         </div>
       )}
     </div>

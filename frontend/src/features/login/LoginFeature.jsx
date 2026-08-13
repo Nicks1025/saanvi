@@ -53,11 +53,11 @@ const LoginFeatureContent = () => {
   };
 
   const handleGoogleSignIn = useGoogleLogin({
-    onSuccess: async (codeResponse) => {
+    onSuccess: async (tokenResponse) => {
       setError('');
       setLoading(true);
       try {
-        const data = await loginWithGoogle(codeResponse.code);
+        const data = await loginWithGoogle(tokenResponse.access_token);
         if (data.mfaRequired) {
           setMfaData({ email: data.email, supabaseToken: data.supabaseToken });
         } else if (data.token) {
@@ -72,8 +72,7 @@ const LoginFeatureContent = () => {
     },
     onError: () => {
       setError('Google authentication failed.');
-    },
-    flow: 'auth-code',
+    }
   });
 
   if (mfaData) {

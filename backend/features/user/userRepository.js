@@ -30,6 +30,7 @@ class UserRepository extends BaseRepository {
       .field('p.permission')
       .field('p.is_active')
       .field('p.archived_at')
+      .field('r.name as role_name')
       .field('r.is_active as role_is_active')
       .field('r.archived_at as role_archived_at')
       .where('u.uuid', 'eq', uuid)
@@ -63,7 +64,8 @@ class UserRepository extends BaseRepository {
         language: user.language || 'en',
         theme: user.theme || 'system',
         font: user.font || 'sans',
-        permissions
+        permissions,
+        roles: user.role_name
       };
     }
     return null;
@@ -144,6 +146,37 @@ class UserRepository extends BaseRepository {
       .where('uuid', 'eq', uuid)
       .execute();
 
+    return true;
+  }
+  /**
+   * Retrieves the user's password hash.
+   */
+  async getPasswordHash(uuid) {
+    const result = await this.queryHelper
+      .from('users')
+      .field('password_hash')
+      .where('uuid', 'eq', uuid)
+      .execute();
+      
+    if (result && result.length > 0) {
+      return result[0].password_hash;
+    }
+    return null;
+  }
+
+  /**
+   * Updates the user's password hash.
+   */
+  async updatePassword(uuid, passwordHash) {
+    await this.queryHelper
+      .from('users')
+      .update({
+        password_hash: passwordHash,
+        password_changed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .where('uuid', 'eq', uuid)
+      .execute();
     return true;
   }
 }

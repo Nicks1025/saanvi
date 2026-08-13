@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom';
 import LoginPage from './pages/login';
+import SignupPage from './pages/signup';
 
 import { AuthProvider } from './store/AuthContext';
 import { ThemeProvider } from './store/ThemeContext';
@@ -26,6 +27,7 @@ const router = createBrowserRouter([
     ),
     children: [
       { path: "login", element: <LoginPage /> },
+      { path: "signup", element: <SignupPage /> },
       { path: "dashboard", element: <DashboardPage /> },
       { path: "settings", element: <SettingsPage /> },
       { path: "admin/users", element: <UsersPage /> },

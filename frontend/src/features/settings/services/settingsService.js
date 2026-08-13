@@ -10,5 +10,8 @@ export const settingsService = {
         'Content-Type': 'multipart/form-data'
       }
     });
+  },
+  changePassword: async (passwordData) => {
+    return await axios.put('/api/users/me/password', passwordData);
   }
 };

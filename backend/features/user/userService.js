@@ -1,5 +1,6 @@
 const BaseService = require('../../base/baseService');
 const storageService = require('../../services/storageService');
+const argon2 = require('argon2');
 
 class UserService extends BaseService {
   constructor(userRepository) {
@@ -82,6 +83,33 @@ class UserService extends BaseService {
    */
   async updateUserSettings(uuid, settings) {
     await this.repository.updateUserSettings(uuid, settings);
+    return { success: true };
+  }
+
+  /**
+   * Changes the user's password.
+   */
+  async changePassword(userUuid, currentPassword, newPassword) {
+    // Get current hash
+    const currentHash = await this.repository.getPasswordHash(userUuid);
+    if (!currentHash) {
+      throw new Error('User not found.');
+    }
+
+    try {
+      const isPasswordValid = await argon2.verify(currentHash, currentPassword);
+      if (!isPasswordValid) {
+        throw new Error('Invalid current password.');
+      }
+    } catch (err) {
+      throw new Error('Invalid current password.');
+    }
+
+    // Hash new password
+    const newPasswordHash = await argon2.hash(newPassword);
+
+    // Update DB
+    await this.repository.updatePassword(userUuid, newPasswordHash);
     return { success: true };
   }
 }

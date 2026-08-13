@@ -51,6 +51,8 @@ export const AuthProvider = ({ children }) => {
           setSupabaseToken(storedSbToken);
           setIsAuthenticated(true);
           setLoading(false);
+          // Stale-while-revalidate: Fetch fresh data in the background
+          fetchUser();
         } catch (e) {
           fetchUser();
         }

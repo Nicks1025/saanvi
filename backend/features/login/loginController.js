@@ -28,9 +28,9 @@ class LoginController extends BaseController {
   }
   async googleLogin(req, res) {
     try {
-      this.validateRequiredParams(req.body, ['code']);
-      const { code } = req.body;
-      const result = await this.loginService.processGoogleLogin(code);
+      this.validateRequiredParams(req.body, ['accessToken']);
+      const { accessToken } = req.body;
+      const result = await this.loginService.processGoogleLogin(accessToken);
       return this.sendSuccess(res, result, 'Google Login successful');
     } catch (error) {
       const message = error.message === 'Invalid email or password.'
