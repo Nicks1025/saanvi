@@ -182,3 +182,327 @@ CREATE TABLE role_permissions (
     CONSTRAINT uq_role_permission
         UNIQUE (role_uuid, permission_uuid)
 );
+
+
+-- ============================================================
+-- 1. CHAT REQUESTS
+-- ============================================================
+
+CREATE TABLE chat_requests (
+    uuid UUID NOT NULL,
+    sender_uuid UUID NOT NULL,
+    receiver_uuid UUID NOT NULL,
+
+    status VARCHAR(20) NOT NULL DEFAULT 'pending',
+
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    responded_at TIMESTAMP WITH TIME ZONE NULL,
+
+    CONSTRAINT chat_requests_pkey PRIMARY KEY (uuid),
+
+    CONSTRAINT fk_chat_requests_sender
+        FOREIGN KEY (sender_uuid)
+        REFERENCES public.users (uuid)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT fk_chat_requests_receiver
+        FOREIGN KEY (receiver_uuid)
+        REFERENCES public.users (uuid)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT chk_chat_requests_status
+        CHECK (status IN ('pending', 'accepted', 'rejected', 'cancelled')),
+
+    CONSTRAINT chk_chat_requests_different_users
+        CHECK (sender_uuid <> receiver_uuid)
+);
+
+CREATE INDEX idx_chat_requests_sender
+    ON public.chat_requests (sender_uuid);
+
+CREATE INDEX idx_chat_requests_receiver
+    ON public.chat_requests (receiver_uuid);
+
+CREATE INDEX idx_chat_requests_receiver_status
+    ON public.chat_requests (receiver_uuid, status);
+
+CREATE INDEX idx_chat_requests_sender_status
+    ON public.chat_requests (sender_uuid, status);
+
+
+-- ============================================================
+-- 2. CONVERSATIONS
+-- ============================================================
+
+CREATE TABLE conversations (
+    uuid UUID NOT NULL,
+
+    is_group BOOLEAN NOT NULL DEFAULT false,
+    name VARCHAR(255) NULL,
+    description TEXT NULL,
+    profile_image_url TEXT NULL,
+    created_by_uuid UUID NULL,
+
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    archived_at TIMESTAMP WITH TIME ZONE NULL,
+
+    CONSTRAINT conversations_pkey PRIMARY KEY (uuid),
+    CONSTRAINT fk_conversations_created_by
+        FOREIGN KEY (created_by_uuid)
+        REFERENCES public.users (uuid)
+        ON DELETE RESTRICT
+);
+
+CREATE INDEX idx_conversations_archived_at
+    ON public.conversations (archived_at);
+
+
+-- ============================================================
+-- 3. CONVERSATION MEMBERS
+-- ============================================================
+
+CREATE TABLE conversation_members (
+    uuid UUID NOT NULL,
+    conversation_uuid UUID NOT NULL,
+    user_uuid UUID NOT NULL,
+    
+    wallpaper_url TEXT NULL,
+
+    joined_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    archived_at TIMESTAMP WITH TIME ZONE NULL,
+
+    CONSTRAINT conversation_members_pkey PRIMARY KEY (uuid),
+
+    CONSTRAINT fk_conversation_members_conversation
+        FOREIGN KEY (conversation_uuid)
+        REFERENCES public.conversations (uuid)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_conversation_members_user
+        FOREIGN KEY (user_uuid)
+        REFERENCES public.users (uuid)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT uq_conversation_member
+        UNIQUE (conversation_uuid, user_uuid)
+);
+
+CREATE INDEX idx_conversation_members_conversation
+    ON public.conversation_members (conversation_uuid);
+
+CREATE INDEX idx_conversation_members_user
+    ON public.conversation_members (user_uuid);
+
+CREATE INDEX idx_conversation_members_user_archived
+    ON public.conversation_members (user_uuid, archived_at);
+
+
+-- ============================================================
+-- 4. MESSAGES
+-- ============================================================
+
+CREATE TABLE messages (
+    uuid UUID NOT NULL,
+    conversation_uuid UUID NOT NULL,
+    sender_uuid UUID NOT NULL,
+
+    message TEXT NULL,
+
+    sent_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    delivered_at TIMESTAMP WITH TIME ZONE NULL,
+    seen_at TIMESTAMP WITH TIME ZONE NULL,
+
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    archived_at TIMESTAMP WITH TIME ZONE NULL,
+
+    CONSTRAINT messages_pkey PRIMARY KEY (uuid),
+
+    CONSTRAINT fk_messages_conversation
+        FOREIGN KEY (conversation_uuid)
+        REFERENCES public.conversations (uuid)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_messages_sender
+        FOREIGN KEY (sender_uuid)
+        REFERENCES public.users (uuid)
+        ON DELETE RESTRICT
+);
+
+CREATE INDEX idx_messages_conversation
+    ON public.messages (conversation_uuid);
+
+CREATE INDEX idx_messages_conversation_sent_at
+    ON public.messages (conversation_uuid, sent_at);
+
+CREATE INDEX idx_messages_sender
+    ON public.messages (sender_uuid);
+
+CREATE INDEX idx_messages_archived_at
+    ON public.messages (archived_at);
+
+
+-- ============================================================
+-- 5. USER BLOCKS
+-- ============================================================
+
+CREATE TABLE user_blocks (
+    uuid UUID NOT NULL,
+    blocker_uuid UUID NOT NULL,
+    blocked_uuid UUID NOT NULL,
+
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    archived_at TIMESTAMP WITH TIME ZONE NULL,
+
+    CONSTRAINT user_blocks_pkey PRIMARY KEY (uuid),
+
+    CONSTRAINT fk_user_blocks_blocker
+        FOREIGN KEY (blocker_uuid)
+        REFERENCES public.users (uuid)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT fk_user_blocks_blocked
+        FOREIGN KEY (blocked_uuid)
+        REFERENCES public.users (uuid)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT uq_user_block
+        UNIQUE (blocker_uuid, blocked_uuid),
+
+    CONSTRAINT chk_user_blocks_different_users
+        CHECK (blocker_uuid <> blocked_uuid)
+);
+
+CREATE INDEX idx_user_blocks_blocker
+    ON public.user_blocks (blocker_uuid);
+
+CREATE INDEX idx_user_blocks_blocked
+    ON public.user_blocks (blocked_uuid);
+
+CREATE INDEX idx_user_blocks_blocker_archived
+    ON public.user_blocks (blocker_uuid, archived_at);
+
+CREATE INDEX idx_user_blocks_blocked_archived
+    ON public.user_blocks (blocked_uuid, archived_at);
+
+-- ============================================================
+-- 6. MESSAGE RECEIPTS
+-- ============================================================
+
+CREATE TABLE message_receipts (
+    uuid UUID NOT NULL,
+    message_uuid UUID NOT NULL,
+    user_uuid UUID NOT NULL,
+
+    delivered_at TIMESTAMP WITH TIME ZONE NULL,
+    seen_at TIMESTAMP WITH TIME ZONE NULL,
+
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    archived_at TIMESTAMP WITH TIME ZONE NULL,
+
+    CONSTRAINT message_receipts_pkey PRIMARY KEY (uuid),
+
+    CONSTRAINT fk_message_receipts_message
+        FOREIGN KEY (message_uuid)
+        REFERENCES public.messages (uuid)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_message_receipts_user
+        FOREIGN KEY (user_uuid)
+        REFERENCES public.users (uuid)
+        ON DELETE CASCADE,
+
+    CONSTRAINT uq_message_receipt
+        UNIQUE (message_uuid, user_uuid)
+);
+
+CREATE INDEX idx_message_receipts_message ON public.message_receipts(message_uuid);
+CREATE INDEX idx_message_receipts_user ON public.message_receipts(user_uuid);
+
+-- ============================================================
+-- RLS POLICIES & REALTIME
+-- ============================================================
+
+ALTER TABLE public.chat_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.conversation_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.message_receipts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_blocks ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY chat_requests_select ON public.chat_requests FOR SELECT USING (auth.uid() = sender_uuid OR auth.uid() = receiver_uuid);
+CREATE POLICY chat_requests_insert ON public.chat_requests FOR INSERT WITH CHECK (auth.uid() = sender_uuid);
+CREATE POLICY chat_requests_update ON public.chat_requests FOR UPDATE USING (auth.uid() = sender_uuid OR auth.uid() = receiver_uuid);
+
+CREATE POLICY conversations_select ON public.conversations FOR SELECT USING (
+    EXISTS (SELECT 1 FROM public.conversation_members cm WHERE cm.conversation_uuid = conversations.uuid AND cm.user_uuid = auth.uid() AND cm.archived_at IS NULL)
+);
+
+CREATE POLICY conversation_members_select ON public.conversation_members FOR SELECT USING (
+    EXISTS (SELECT 1 FROM public.conversation_members cm WHERE cm.conversation_uuid = conversation_members.conversation_uuid AND cm.user_uuid = auth.uid() AND cm.archived_at IS NULL)
+);
+
+CREATE POLICY messages_select ON public.messages FOR SELECT USING (
+    EXISTS (SELECT 1 FROM public.conversation_members cm WHERE cm.conversation_uuid = messages.conversation_uuid AND cm.user_uuid = auth.uid() AND cm.archived_at IS NULL)
+);
+
+CREATE POLICY message_receipts_select ON public.message_receipts FOR SELECT USING (
+    EXISTS (
+        SELECT 1 FROM public.messages m
+        JOIN public.conversation_members cm ON m.conversation_uuid = cm.conversation_uuid
+        WHERE m.uuid = message_receipts.message_uuid AND cm.user_uuid = auth.uid() AND cm.archived_at IS NULL
+    )
+);
+
+CREATE POLICY user_blocks_select ON public.user_blocks FOR SELECT USING (auth.uid() = blocker_uuid OR auth.uid() = blocked_uuid);
+
+-- ============================================================
+-- 7. MESSAGE ATTACHMENTS
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.message_attachments (
+    uuid UUID NOT NULL,
+    message_uuid UUID NOT NULL,
+    
+    storage_key TEXT NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    original_file_name VARCHAR(255) NOT NULL,
+    mime_type VARCHAR(100) NOT NULL,
+    file_size BIGINT NOT NULL,
+    attachment_type VARCHAR(50) NOT NULL DEFAULT 'file',
+    
+    width INTEGER NULL,
+    height INTEGER NULL,
+    duration INTEGER NULL,
+
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    archived_at TIMESTAMP WITH TIME ZONE NULL,
+
+    CONSTRAINT message_attachments_pkey PRIMARY KEY (uuid),
+
+    CONSTRAINT fk_message_attachments_message
+        FOREIGN KEY (message_uuid)
+        REFERENCES public.messages (uuid)
+        ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_message_attachments_message 
+    ON public.message_attachments (message_uuid);
+
+CREATE INDEX IF NOT EXISTS idx_message_attachments_archived 
+    ON public.message_attachments (archived_at);
+
+ALTER TABLE public.message_attachments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY message_attachments_select ON public.message_attachments FOR SELECT USING (
+    EXISTS (
+        SELECT 1 FROM public.messages m
+        JOIN public.conversation_members cm ON m.conversation_uuid = cm.conversation_uuid
+        WHERE m.uuid = message_attachments.message_uuid AND cm.user_uuid = auth.uid() AND cm.archived_at IS NULL
+    )
+);

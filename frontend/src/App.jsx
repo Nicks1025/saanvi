@@ -16,6 +16,7 @@ import UserDetailsPage from './pages/admin/users/details';
 import RolesPage from './pages/admin/roles';
 import RoleDetailsPage from './pages/admin/roles/details';
 import SystemHealthPage from './pages/admin/health';
+import ChatPage from './pages/chat';
 
 const router = createBrowserRouter([
   {
@@ -37,6 +38,7 @@ const router = createBrowserRouter([
       { path: "admin/health", element: <SystemHealthPage /> },
       { path: "games/word-search", element: <WordSearchPage /> },
       { path: "games/word-search/play", element: <WordSearchPlayPage /> },
+      { path: "chat", element: <ChatPage /> },
       { path: "*", element: <NotFoundPage /> }
     ]
   }

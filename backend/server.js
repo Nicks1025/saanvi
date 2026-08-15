@@ -1,10 +1,20 @@
 require('dotenv').config();
 const express = require('express');
+const http = require('http');
 const path = require('path');
 const app = express();
+const server = http.createServer(app);
 
 // --- Environment Validation (Fail Fast) ---
-const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
+const requiredEnvVars = [
+  'SUPABASE_URL', 
+  'SUPABASE_SERVICE_ROLE_KEY',
+  'R2_ACCOUNT_ID',
+  'R2_ACCESS_KEY_ID',
+  'R2_SECRET_ACCESS_KEY',
+  'R2_BUCKET_NAME',
+  'CLOUDFLARE_ANALYTICS_TOKEN'
+];
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
     console.error(`FATAL ERROR: Missing required environment variable: ${envVar}`);
@@ -33,8 +43,11 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Backend Server is running with valid configuration.' });
 });
 
+const { initSocket } = require('./socket');
+initSocket(server);
+
 const PORT = process.env.BACKEND_PORT || 3002;
-const server = app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
 
