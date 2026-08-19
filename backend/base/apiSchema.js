@@ -47,6 +47,12 @@ class ApiSchema {
       } else if (endpoint.middleware.requireAuth) {
         routeArguments.push(verifyToken);
       }
+      
+      if (endpoint.middleware.custom && Array.isArray(endpoint.middleware.custom)) {
+        for (const customMiddleware of endpoint.middleware.custom) {
+          routeArguments.push(customMiddleware);
+        }
+      }
     }
 
     // 2. Joi Validation Middleware

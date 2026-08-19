@@ -28,14 +28,28 @@ class LoginController extends BaseController {
   }
   async googleLogin(req, res) {
     try {
-      this.validateRequiredParams(req.body, ['code']);
-      const { code } = req.body;
-      const result = await this.loginService.processGoogleLogin(code);
+      this.validateRequiredParams(req.body, ['accessToken']);
+      const { accessToken } = req.body;
+      const result = await this.loginService.processGoogleLogin(accessToken);
       return this.sendSuccess(res, result, 'Google Login successful');
     } catch (error) {
       const message = error.message === 'Invalid email or password.'
         ? error.message 
         : 'Google authentication failed.';
+      return this.sendError(res, message, 401);
+    }
+  }
+
+  async mfaVerify(req, res) {
+    try {
+      this.validateRequiredParams(req.body, ['email', 'code', 'supabaseToken']);
+      const { email, code, supabaseToken } = req.body;
+      const result = await this.loginService.processMfaVerify(email, code, supabaseToken);
+      return this.sendSuccess(res, result, 'MFA Verification successful');
+    } catch (error) {
+      const message = error.message === 'Invalid MFA code.'
+        ? error.message 
+        : 'MFA verification failed.';
       return this.sendError(res, message, 401);
     }
   }

@@ -1,4 +1,9 @@
 const jwt = require('jsonwebtoken');
+const BaseRepository = require('./baseRepository');
+const RbacService = require('../features/rbac/rbacService');
+
+// Instantiate RbacService
+const rbacService = new RbacService(new BaseRepository());
 
 const verifyToken = (req, res, next) => {
   const token = req.headers['authorization'];
@@ -18,16 +23,31 @@ const verifyToken = (req, res, next) => {
 };
 
 const requirePermission = (permission) => {
-  return (req, res, next) => {
-    if (!req.user || !req.user.permissions) {
-      return res.status(403).json({ success: false, error: 'Forbidden: No permissions loaded' });
+  return async (req, res, next) => {
+    if (!req.user || !req.user.uuid) {
+      return res.status(403).json({ success: false, error: 'Forbidden: No valid user loaded' });
     }
-    
-    if (!req.user.permissions.includes(permission)) {
-      return res.status(403).json({ success: false, error: `Forbidden: Missing required permission '${permission}'` });
+
+    try {
+      // Get effective permissions dynamically (checks Redis first, falls back to DB)
+      const permissions = await rbacService.getEffectivePermissions(req.user.uuid);
+
+      if (!permissions || permissions.length === 0) {
+        return res.status(403).json({ success: false, error: 'Forbidden: No permissions loaded' });
+      }
+      
+      if (!permissions.includes(permission)) {
+        return res.status(403).json({ success: false, error: `Forbidden: Missing required permission '${permission}'` });
+      }
+      
+      // Update req.user.permissions for downstream use just in case
+      req.user.permissions = permissions;
+      
+      return next();
+    } catch (err) {
+      console.error('[authMiddleware] Permission check failed:', err.message);
+      return res.status(500).json({ success: false, error: 'Internal Server Error during authorization' });
     }
-    
-    return next();
   };
 };
 

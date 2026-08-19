@@ -38,7 +38,7 @@ class LoginRepository extends BaseRepository {
         permissions = permsData.map(row => row.permission).filter(Boolean);
       }
     } catch (err) {
-      console.error('[LoginRepository] Failed to fetch user_permissions:', err.message);
+      console.error('[LoginRepository] Failed to fetch role permissions for user:', err.message);
     }
     
     user.permissions = permissions;

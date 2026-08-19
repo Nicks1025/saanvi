@@ -16,8 +16,7 @@ const ProtectedRoute = ({ children, requiredPermission }) => {
   if (requiredPermission && user) {
     const hasPermission = user.permissions && user.permissions.includes(requiredPermission);
     if (!hasPermission) {
-      // Could redirect to a dedicated 403 page, but for now we redirect to /dashboard or /not-found
-      return <Navigate to="/dashboard" replace />;
+      return <Navigate to="/not-found" replace />;
     }
   }
 

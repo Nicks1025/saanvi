@@ -1,6 +1,7 @@
 import React from 'react';
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom';
 import LoginPage from './pages/login';
+import SignupPage from './pages/signup';
 
 import { AuthProvider } from './store/AuthContext';
 import { ThemeProvider } from './store/ThemeContext';
@@ -14,6 +15,7 @@ import UsersPage from './pages/admin/users';
 import UserDetailsPage from './pages/admin/users/details';
 import RolesPage from './pages/admin/roles';
 import RoleDetailsPage from './pages/admin/roles/details';
+import SystemHealthPage from './pages/admin/health';
 
 const router = createBrowserRouter([
   {
@@ -25,12 +27,14 @@ const router = createBrowserRouter([
     ),
     children: [
       { path: "login", element: <LoginPage /> },
+      { path: "signup", element: <SignupPage /> },
       { path: "dashboard", element: <DashboardPage /> },
       { path: "settings", element: <SettingsPage /> },
       { path: "admin/users", element: <UsersPage /> },
       { path: "admin/users/:uuid", element: <UserDetailsPage /> },
       { path: "admin/roles", element: <RolesPage /> },
       { path: "admin/roles/:uuid", element: <RoleDetailsPage /> },
+      { path: "admin/health", element: <SystemHealthPage /> },
       { path: "games/word-search", element: <WordSearchPage /> },
       { path: "games/word-search/play", element: <WordSearchPlayPage /> },
       { path: "*", element: <NotFoundPage /> }

@@ -5,6 +5,7 @@ const QueryHelper = require('../../database/queryHelper');
 const UserRepository = require('./userRepository');
 const UserService = require('./userService');
 const UserController = require('./userController');
+const uploadMiddleware = require('../../base/uploadMiddleware');
 
 const queryHelper = new QueryHelper();
 const userRepository = new UserRepository(queryHelper);
@@ -22,6 +23,22 @@ const getMe = {
   middleware: {
     requireAuth: true
   }
+};
+
+const updateProfile = {
+  path: '/profile',
+  verb: 'PUT',
+  auditMessage: 'updating user profile',
+  handler: {
+    controller: userController,
+    method: 'updateProfile'
+  },
+  middleware: {
+    requireAuth: true,
+    custom: [uploadMiddleware.single('profile_image')]
+  }
+  // No Joi body validation here because we are accepting multipart/form-data.
+  // Validation is handled manually in the service layer.
 };
 
 const updateSettings = {
@@ -44,12 +61,33 @@ const updateSettings = {
   }
 };
 
+const changePassword = {
+  path: '/me/password',
+  verb: 'PUT',
+  auditMessage: 'updating user password',
+  handler: {
+    controller: userController,
+    method: 'changePassword'
+  },
+  middleware: {
+    requireAuth: true
+  },
+  request: {
+    body: Joi.object({
+      currentPassword: Joi.string().required(),
+      newPassword: Joi.string().required()
+    })
+  }
+};
+
 const UserApi = {
   name: 'User',
   url: '/api/users',
   endpoints: [
     getMe,
-    updateSettings
+    updateProfile,
+    updateSettings,
+    changePassword
   ]
 };
 

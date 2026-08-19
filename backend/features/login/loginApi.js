@@ -37,7 +37,24 @@ const googleLogin = {
   },
   request: {
     body: Joi.object({
-      code: Joi.string().required()
+      accessToken: Joi.string().required()
+    })
+  }
+};
+
+const mfaVerifyApi = {
+  path: '/mfa-verify',
+  verb: 'POST',
+  auditMessage: 'user mfa verification',
+  handler: {
+    controller: controller,
+    method: 'mfaVerify'
+  },
+  request: {
+    body: Joi.object({
+      email: Joi.string().email().required(),
+      code: Joi.string().length(6).required(),
+      supabaseToken: Joi.string().required()
     })
   }
 };
@@ -47,7 +64,8 @@ const LoginApi = {
   url: '/api/login',
   endpoints: [
     login,
-    googleLogin
+    googleLogin,
+    mfaVerifyApi
   ]
 };
 

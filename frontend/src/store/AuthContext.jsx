@@ -6,6 +6,7 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [supabaseToken, setSupabaseToken] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -43,11 +44,15 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('auth_token');
     if (token) {
       const storedUser = sessionStorage.getItem('auth_user');
+      const storedSbToken = sessionStorage.getItem('supabase_token');
       if (storedUser) {
         try {
           setUser(JSON.parse(storedUser));
+          setSupabaseToken(storedSbToken);
           setIsAuthenticated(true);
           setLoading(false);
+          // Stale-while-revalidate: Fetch fresh data in the background
+          fetchUser();
         } catch (e) {
           fetchUser();
         }
@@ -59,8 +64,12 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const login = async (token, userData) => {
+  const login = async (token, userData, sbToken) => {
     localStorage.setItem('auth_token', token);
+    if (sbToken) {
+      sessionStorage.setItem('supabase_token', sbToken);
+      setSupabaseToken(sbToken);
+    }
     // Set minimal user data first
     setUser(userData);
     setIsAuthenticated(true);
@@ -71,14 +80,16 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('auth_token');
     sessionStorage.removeItem('auth_user');
+    sessionStorage.removeItem('supabase_token');
     setUser(null);
+    setSupabaseToken(null);
     setIsAuthenticated(false);
     // Let the protected route handle redirect if needed, or window.location.href = '/login'
     window.location.href = '/login';
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, isAuthenticated, loading, login, logout, fetchUser }}>
+    <AuthContext.Provider value={{ user, setUser, supabaseToken, isAuthenticated, loading, login, logout, fetchUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -10,6 +10,7 @@ create table public.users (
   locked_until timestamp with time zone null,
   last_login_at timestamp with time zone null,
   password_changed_at timestamp with time zone null,
+  language character varying(20) not null default 'en'::character varying,
   created_at timestamp with time zone not null default now(),
   updated_at timestamp with time zone not null default now(),
   archived_at timestamp with time zone null,
@@ -46,9 +47,6 @@ create table public.user_details (
   date_of_birth date null,
   gender character varying(50) null,
   profile_image_url text null,
-  country character varying(10) null,
-  timezone character varying(100) null,
-  language character varying(20) null,
   created_at timestamp with time zone not null default now(),
   updated_at timestamp with time zone not null default now(),
   archived_at timestamp with time zone null,
@@ -132,25 +130,6 @@ CREATE TABLE permissions (
 );
 
 
-CREATE TABLE user_permissions (
-    uuid UUID PRIMARY KEY,
-    user_uuid UUID NOT NULL,
-    permission_uuid UUID NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    archived_at TIMESTAMPTZ,
-
-    CONSTRAINT fk_user_permissions_user
-        FOREIGN KEY (user_uuid)
-        REFERENCES users(uuid),
-
-    CONSTRAINT fk_user_permissions_permission
-        FOREIGN KEY (permission_uuid)
-        REFERENCES permissions(uuid),
-
-    CONSTRAINT uq_user_permission
-        UNIQUE (user_uuid, permission_uuid)
-);
 
 
 CREATE TABLE roles (

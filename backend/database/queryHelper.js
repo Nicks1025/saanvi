@@ -164,6 +164,36 @@ class QueryHelper {
       throw new Error('A database error occurred during execution.');
     }
   }
+  async queryRaw(sql, bindings = []) {
+    try {
+      const result = await this._db.raw(sql, bindings);
+      return result;
+    } catch (error) {
+      console.error(`[Database Error] Code: ${error.code} | Message: ${error.message}`);
+      throw new Error('A database error occurred during raw execution.');
+    }
+  }
+
+  /**
+   * Runs a callback inside a Knex transaction.
+   * Usage: await queryHelper.transaction(async (trx) => { ... });
+   * Pass trx to repository methods that accept it.
+   */
+  async transaction(callback) {
+    try {
+      return await this._db.transaction(callback);
+    } catch (error) {
+      console.error(`[Database Error] Code: ${error.code} | Message: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Returns the underlying Knex instance (used to build transactional queries).
+   */
+  get db() {
+    return this._db;
+  }
 }
 
 module.exports = QueryHelper;
