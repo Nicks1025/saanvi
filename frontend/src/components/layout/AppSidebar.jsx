@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Settings, Gamepad2, ChevronDown, ChevronRight, Shield, LogOut } from 'lucide-react';
+import { LayoutDashboard, Settings, Gamepad2, ChevronDown, ChevronRight, Shield, LogOut, MessageSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../store/AuthContext';
 import SButton from '../common/SButton';
@@ -48,6 +48,13 @@ const AppSidebar = ({ isOpen, setSidebarOpen }) => {
           <LayoutDashboard size={20} style={{ flexShrink: 0 }} />
           <span className="sidebar-link-text">{t('navigation.dashboard')}</span>
         </NavLink>
+
+        {userPermissions.includes('chat.access') && (
+          <NavLink to="/chat" className={getNavLinkClass} title={t('navigation.chat', 'Chat')}>
+            <MessageSquare size={20} style={{ flexShrink: 0 }} />
+            <span className="sidebar-link-text">{t('navigation.chat', 'Chat')}</span>
+          </NavLink>
+        )}
 
         {(userPermissions.includes('admin.users') || userPermissions.includes('admin.roles') || userPermissions.includes('admin.system.health')) && (
           <div className="sidebar-group">

@@ -9,8 +9,11 @@ export const AuthProvider = ({ children }) => {
   const [supabaseToken, setSupabaseToken] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const isFetchingMe = React.useRef(false);
 
   const fetchUser = async () => {
+    if (isFetchingMe.current) return;
+    isFetchingMe.current = true;
     try {
       const response = await axios.get('/api/users/me');
       if (response.success && response.data) {
@@ -37,6 +40,7 @@ export const AuthProvider = ({ children }) => {
       logout();
     } finally {
       setLoading(false);
+      isFetchingMe.current = false;
     }
   };
 

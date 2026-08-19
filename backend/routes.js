@@ -5,13 +5,14 @@ const adminApi = require('./features/admin/adminApi');
 const wordSearchApi = require('./features/wordSearch/wordSearchApi');
 const mfaApi = require('./features/mfa/mfaApi');
 const healthApi = require('./features/health/healthApi');
+const chatApi = require('./features/chat/chatApi');
 
 /**
  * Automatically registers all API endpoints to the Express app.
  * @param {import('express').Application} app 
  */
 module.exports = function(app) {
-  const apis = [loginApi, signupApi, userApi, adminApi, wordSearchApi, mfaApi, healthApi];
+  const apis = [loginApi, signupApi, userApi, adminApi, wordSearchApi, mfaApi, healthApi, chatApi];
 
   // Declarative ApiSchema Routes
   for (const api of apis) {
