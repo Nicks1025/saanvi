@@ -4,6 +4,7 @@ import { User, Menu } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import healthService from '../../features/admin/health/healthService';
+import NotificationBell from '../../features/notifications/components/NotificationBell';
 import './layout.css';
 
 const AppHeader = ({ toggleSidebar }) => {
@@ -75,6 +76,8 @@ const AppHeader = ({ toggleSidebar }) => {
             />
           )}
           
+          <NotificationBell />
+
           <div className="header-user-info">
             {user?.profileImageUrl ? (
               <img src={user.profileImageUrl} alt="Profile" className="header-avatar" />

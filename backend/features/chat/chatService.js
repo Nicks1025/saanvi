@@ -1,4 +1,9 @@
 const BaseService = require('../../base/baseService');
+const NotificationRepository = require('../notifications/notificationRepository');
+const NotificationService = require('../notifications/notificationService');
+
+const notificationRepository = new NotificationRepository();
+const notificationService = new NotificationService(notificationRepository);
 
 // ============================================================
 // Per-category MIME type allowlists (server-side validation)
@@ -129,7 +134,18 @@ class ChatService extends BaseService {
       throw new Error("Pending request already exists");
     }
 
-    return await this.chatRepository.createChatRequest(senderUuid, receiverUuid);
+    const request = await this.chatRepository.createChatRequest(senderUuid, receiverUuid);
+
+    notificationService.createNotification({
+      user_uuid: receiverUuid,
+      type: 'CHAT_REQUEST',
+      title: `New Chat Request`,
+      body: `You have received a new chat request.`,
+      entity_type: 'chat_request',
+      entity_uuid: request.uuid
+    }).catch(err => console.error('[NotificationService] Error:', err.message));
+
+    return request;
   }
 
   async getChatRequests(userUuid) {
@@ -160,6 +176,16 @@ class ChatService extends BaseService {
       const conversation = await this.chatRepository.createConversation(false);
       await this.chatRepository.addConversationMember(conversation.uuid, request.sender_uuid);
       await this.chatRepository.addConversationMember(conversation.uuid, request.receiver_uuid);
+      
+      notificationService.createNotification({
+        user_uuid: request.sender_uuid,
+        type: 'CHAT_REQUEST_ACCEPTED',
+        title: `Chat Request Accepted`,
+        body: `Your chat request has been accepted.`,
+        entity_type: 'conversation',
+        entity_uuid: conversation.uuid
+      }).catch(err => console.error('[NotificationService] Error:', err.message));
+
       return { request: updated, conversation };
     }
 
@@ -218,7 +244,26 @@ class ChatService extends BaseService {
       }
     }
 
-    return await this.chatRepository.createMessage(conversationUuid, senderUuid, messageText);
+    const newMessage = await this.chatRepository.createMessage(conversationUuid, senderUuid, messageText);
+
+    // Trigger notifications for all other members
+    isMember.members.forEach(member => {
+      if (member.uuid !== senderUuid) {
+        // We use the sender's name if available, otherwise just "New message"
+        const senderName = isMember.members.find(m => m.uuid === senderUuid)?.name || 'Someone';
+        
+        notificationService.createNotification({
+          user_uuid: member.uuid,
+          type: 'NEW_MESSAGE',
+          title: `New message from ${senderName}`,
+          body: messageText, // Or truncate it
+          entity_type: 'conversation',
+          entity_uuid: conversationUuid
+        }).catch(err => console.error('[NotificationService] Error creating notification:', err.message));
+      }
+    });
+
+    return newMessage;
   }
 
   async getMessages(userUuid, conversationUuid, limit, cursor, after) {

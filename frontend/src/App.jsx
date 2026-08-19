@@ -5,6 +5,7 @@ import SignupPage from './pages/signup';
 
 import { AuthProvider } from './store/AuthContext';
 import { ChatProvider } from './store/ChatProvider';
+import { NotificationProvider } from './features/notifications/store/NotificationProvider';
 import { ThemeProvider } from './store/ThemeContext';
 import { Toaster, ToastBar, toast } from 'react-hot-toast';
 import DashboardPage from './pages/dashboard';
@@ -49,6 +50,7 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
+        <NotificationProvider>
         <ChatProvider>
           <Toaster position="top-right">
             {(t) => (
@@ -67,6 +69,7 @@ function App() {
           </Toaster>
           <RouterProvider router={router} />
         </ChatProvider>
+        </NotificationProvider>
       </AuthProvider>
     </ThemeProvider>
   );
