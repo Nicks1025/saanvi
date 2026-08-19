@@ -4,11 +4,9 @@ const BaseService = require('../../base/baseService');
 // Per-category MIME type allowlists (server-side validation)
 // ============================================================
 const ALLOWED_MIME_TYPES = {
-  images_videos: new Set([
+  images: new Set([
     'image/jpeg', 'image/png', 'image/gif', 'image/webp',
     'image/svg+xml', 'image/bmp', 'image/tiff',
-    'video/mp4', 'video/webm', 'video/ogg', 'video/quicktime',
-    'video/x-msvideo', 'video/x-matroska', 'video/3gpp',
   ]),
   files: new Set([
     'application/pdf',
@@ -37,7 +35,7 @@ const ALLOWED_MIME_TYPES = {
 
 /**
  * Returns true if the MIME type is allowed for the given category.
- * Falls back to wildcard prefix matching for image/* / video* / audio*.
+ * Falls back to wildcard prefix matching for image/* / audio*.
  */
 function isMimeAllowed(mimeType, category) {
   const allowed = ALLOWED_MIME_TYPES[category];
@@ -48,7 +46,7 @@ function isMimeAllowed(mimeType, category) {
   if (allowed.has(baseMime) || allowed.has(mimeType)) return true;
 
   // Wildcard fallback
-  if (category === 'images_videos' && (baseMime.startsWith('image/') || baseMime.startsWith('video/'))) return true;
+  if (category === 'images' && baseMime.startsWith('image/')) return true;
   if ((category === 'music' || category === 'voice') && baseMime.startsWith('audio/')) return true;
 
   return false;
@@ -61,7 +59,6 @@ function resolveAttachmentType(category, mimeType) {
   if (category === 'voice') return 'voice';
   const base = mimeType.split(';')[0].trim().toLowerCase();
   if (base.startsWith('image/')) return 'image';
-  if (base.startsWith('video/')) return 'video';
   if (base.startsWith('audio/')) return 'audio';
   if (
     base === 'application/pdf' ||
@@ -76,7 +73,7 @@ function resolveAttachmentType(category, mimeType) {
  * Map category key to a storage sub-folder name.
  */
 const CATEGORY_FOLDER = {
-  images_videos: 'media',
+  images: 'media',
   files: 'files',
   music: 'music',
   voice: 'voice',
@@ -224,16 +221,29 @@ class ChatService extends BaseService {
     return await this.chatRepository.createMessage(conversationUuid, senderUuid, messageText);
   }
 
-  async getMessages(userUuid, conversationUuid, limit, offset) {
+  async getMessages(userUuid, conversationUuid, limit, cursor, after) {
     const convs = await this.chatRepository.getUserConversations(userUuid);
     const isMember = convs.find(c => c.uuid === conversationUuid);
     if (!isMember) throw new Error("User is not a member of this conversation");
 
-    return await this.chatRepository.getMessages(conversationUuid, limit, offset);
+    return await this.chatRepository.getMessages(conversationUuid, limit, cursor, after);
   }
 
   async markMessageStatus(userUuid, messageUuid, status) {
     if (!['delivered', 'seen'].includes(status)) throw new Error("Invalid status");
+    
+    // Authorization: Verify user is a member of the conversation this message belongs to
+    const msg = await this.chatRepository.queryHelper
+       .from('messages')
+       .where('uuid', 'eq', messageUuid)
+       .execute();
+       
+    if (!msg || msg.length === 0) throw new Error("Message not found");
+    
+    const convs = await this.chatRepository.getUserConversations(userUuid);
+    const isMember = convs.find(c => c.uuid === msg[0].conversation_uuid);
+    if (!isMember) throw new Error("User is not a member of this conversation");
+
     return await this.chatRepository.upsertMessageReceipt(messageUuid, userUuid, status);
   }
 
@@ -256,7 +266,7 @@ class ChatService extends BaseService {
     }
 
     // Validate category
-    const knownCategories = ['images_videos', 'files', 'music', 'voice'];
+    const knownCategories = ['images', 'files', 'music', 'voice'];
     if (!knownCategories.includes(category)) {
       throw new Error(`Unknown attachment category: ${category}`);
     }
@@ -329,6 +339,57 @@ class ChatService extends BaseService {
     
     return message;
   }
+
+  async completeMultiUpload(userUuid, conversationUuid, messageText, attachmentsMetadata) {
+    if (!Array.isArray(attachmentsMetadata) || attachmentsMetadata.length === 0) {
+      throw new Error('attachments must be a non-empty array');
+    }
+    const MAX_IMAGES = parseInt(process.env.CHAT_MAX_IMAGES, 10) || 5;
+    if (attachmentsMetadata.length > MAX_IMAGES) {
+      throw new Error(`Maximum ${MAX_IMAGES} images per message`);
+    }
+
+    const convs = await this.chatRepository.getUserConversations(userUuid);
+    const isMember = convs.find(c => c.uuid === conversationUuid);
+    if (!isMember) throw new Error('User is not a member of this conversation');
+
+    if (!isMember.is_group) {
+      const otherMember = isMember.members.find(m => m.uuid !== userUuid);
+      if (otherMember) await this.checkBlockStatus(userUuid, otherMember.uuid);
+    }
+
+    const r2StorageService = require('../../infrastructure/storage/r2StorageService');
+
+    // Verify all files exist in R2 before creating the DB records
+    for (const metadata of attachmentsMetadata) {
+      try {
+        await r2StorageService.headObject(metadata.storage_key);
+      } catch (e) {
+        throw new Error(`Upload verification failed for "${metadata.original_file_name}". File not found in storage.`);
+      }
+    }
+
+    // Create message once
+    const message = await this.chatRepository.createMessage(conversationUuid, userUuid, messageText || null);
+
+    // Create one attachment record per image
+    const attachments = [];
+    for (const metadata of attachmentsMetadata) {
+      const category = metadata.category || 'images';
+      const enriched = {
+        ...metadata,
+        attachment_type: resolveAttachmentType(category, metadata.mime_type),
+      };
+      const attachment = await this.chatRepository.createMessageAttachment(message.uuid, enriched);
+      attachments.push(attachment);
+    }
+
+    message.attachments = attachments;
+    message.receipts = [];
+
+    return message;
+  }
+
 
   async getDownloadUrl(userUuid, messageUuid, attachmentUuid) {
     const attachment = await this.chatRepository.getAttachment(attachmentUuid);

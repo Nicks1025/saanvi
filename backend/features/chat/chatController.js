@@ -123,8 +123,9 @@ class ChatController extends BaseController {
     try {
       const { uuid } = req.params; // conversation uuid
       const limit = parseInt(req.query.limit) || 50;
-      const offset = parseInt(req.query.offset) || 0;
-      const result = await this.chatService.getMessages(req.user.uuid, uuid, limit, offset);
+      const cursor = req.query.cursor; // ISO timestamp
+      const after = req.query.after; // ISO timestamp
+      const result = await this.chatService.getMessages(req.user.uuid, uuid, limit, cursor, after);
       return this.sendSuccess(res, result, 'Messages retrieved');
     } catch (e) {
       return this.sendError(res, e.message, 400);
@@ -170,6 +171,33 @@ class ChatController extends BaseController {
       return this.sendError(res, e.message, 400);
     }
   }
+
+  async completeMultiUpload(req, res) {
+    try {
+      const { uuid } = req.params; // conversation uuid
+      const { message, attachments } = req.body;
+
+      // Hard limit enforced server-side
+      if (!Array.isArray(attachments) || attachments.length === 0) {
+        return this.sendError(res, 'attachments must be a non-empty array', 400);
+      }
+      if (attachments.length > 5) {
+        return this.sendError(res, 'Maximum 5 images per message', 400);
+      }
+
+      const result = await this.chatService.completeMultiUpload(req.user.uuid, uuid, message, attachments);
+      
+      const io = getIo();
+      if (io) {
+        io.to(`conversation:${uuid}`).emit('message:receive', result);
+      }
+
+      return this.sendSuccess(res, result, 'Multi-upload completed and message sent');
+    } catch (e) {
+      return this.sendError(res, e.message, 400);
+    }
+  }
+
 
   async getDownloadUrl(req, res) {
     try {

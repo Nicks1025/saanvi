@@ -1,229 +1,257 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { chatService } from '../chat.service';
 import { useAuth } from '../../../store/AuthContext';
+import { useGlobalChat } from '../../../store/ChatProvider';
 import socketService from '../../../services/socket.client';
+import { chatStorage } from '../chatStorage';
 
 export const useChatSocket = () => {
   const { user } = useAuth();
-  const [conversations, setConversations] = useState([]);
+  const {
+    conversations,
+    messages: globalMessages,
+    typingUsers,
+    onlineUsers,
+    reloadConversations,
+    updateMessages,
+    setConversationUnreadCount,
+    getCachedMessages
+  } = useGlobalChat();
+
   const [activeConversation, setActiveConversation] = useState(null);
-  const [messages, setMessages] = useState({});
-  const [typingUsers, setTypingUsers] = useState({});
-  const [onlineUsers, setOnlineUsers] = useState({});
-  
   const typingTimeoutRef = useRef({});
-  const fetchedUserUuidRef = useRef(null);
+  const pendingSeenRef = useRef(new Set());
 
-  // Initialize and connect Socket
-  useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    if (user && token) {
-      socketService.connect(token);
-    }
-    return () => {
-      // We don't necessarily disconnect here unless the auth unmounts,
-      // but it's safe to keep the connection alive while ChatFeature is active.
-      // socketService.disconnect();
-    };
-  }, [user]);
-
-  const fetchConversations = useCallback(async () => {
-    try {
-      const res = await chatService.getConversations();
-      if (res.success) {
-        setConversations(res.data);
-      }
-    } catch (err) {
-      console.error("Failed to load conversations", err);
-    }
-  }, []);
-
-  // Load conversations
-  useEffect(() => {
-    if (user && user.uuid && fetchedUserUuidRef.current !== user.uuid) {
-      fetchedUserUuidRef.current = user.uuid;
-      fetchConversations();
-    }
-  }, [user?.uuid, fetchConversations]);
-
-  // Handle incoming messages and status updates
-  useEffect(() => {
-    if (!user) return;
-
-    const handleMessageReceive = (newMessage) => {
-      setMessages(prev => {
-        const convMessages = prev[newMessage.conversation_uuid] || [];
-        if (convMessages.find(m => m.uuid === newMessage.uuid)) return prev; // deduplicate
-        
-        return {
-          ...prev,
-          [newMessage.conversation_uuid]: [newMessage, ...convMessages]
-        };
-      });
-
-      // Update conversations list last_message
-      setConversations(prev => prev.map(c => {
-        if (c.uuid === newMessage.conversation_uuid) {
-          let newUnreadCount = c.unread_count || 0;
-          if (newMessage.sender_uuid !== user.uuid && activeConversation !== newMessage.conversation_uuid) {
-              newUnreadCount = Number(newUnreadCount) + 1;
-          }
-          return { ...c, unread_count: newUnreadCount, last_message: { uuid: newMessage.uuid, message: newMessage.message, sent_at: newMessage.sent_at, sender_uuid: newMessage.sender_uuid } };
-        }
-        return c;
-      }));
-
-      // If not sent by me, mark as delivered (if we are not currently active)
-      if (newMessage.sender_uuid !== user.uuid) {
-         if (activeConversation === newMessage.conversation_uuid) {
-             socketService.emit('message:seen', { message_uuid: newMessage.uuid, conversation_uuid: newMessage.conversation_uuid });
-         } else {
-             socketService.emit('message:delivered', { message_uuid: newMessage.uuid, conversation_uuid: newMessage.conversation_uuid });
-         }
-      }
-    };
-
-    const handleMessageStatus = (payload) => {
-      const { message_uuid, user_uuid, status, delivered_at, seen_at } = payload;
-      setMessages(prev => {
-         const updated = { ...prev };
-         for (let conv of Object.keys(updated)) {
-             updated[conv] = updated[conv].map(msg => {
-                 if (msg.uuid === message_uuid) {
-                     const existingReceipts = msg.receipts || [];
-                     const filtered = existingReceipts.filter(r => r.user_uuid !== user_uuid);
-                     return { ...msg, receipts: [...filtered, { user_uuid, delivered_at, seen_at }] };
-                 }
-                 return msg;
-             });
-         }
-         return updated;
-      });
-    };
-
-    const handleConversationNew = (newConv) => {
-      setConversations(prev => {
-        if (prev.find(c => c.uuid === newConv.uuid)) return prev;
-        return [newConv, ...prev];
-      });
-    };
-
-    socketService.on('message:receive', handleMessageReceive);
-    socketService.on('message:status_update', handleMessageStatus);
-    socketService.on('conversation:new', handleConversationNew);
-
-    return () => {
-      socketService.off('message:receive', handleMessageReceive);
-      socketService.off('message:status_update', handleMessageStatus);
-      socketService.off('conversation:new', handleConversationNew);
-    };
-  }, [user, activeConversation]);
-
-  // Load messages for active conversation and manage presence/typing
+  // 1. Initial / Active Conversation Messages Loading & Sync
   useEffect(() => {
     if (!activeConversation || !user) return;
 
+    let mounted = true;
     const loadMessages = async () => {
       try {
-        const res = await chatService.getMessages(activeConversation);
-        if (res.success) {
-          setMessages(prev => ({ ...prev, [activeConversation]: res.data }));
-          
-          setConversations(prev => prev.map(c => {
-            if (c.uuid === activeConversation) return { ...c, unread_count: 0 };
-            return c;
-          }));
+        const cached = getCachedMessages(activeConversation);
+        
+        // 1. Check local chatStorage first
+        let localMessages = [];
+        try {
+          localMessages = await chatStorage.getMessages(activeConversation);
+        } catch (err) {
+          console.error("Local DB read failed", err);
+        }
+        
+        // Merge cached (socket messages received while chat was unopened) and localMessages (history)
+        // Deduplicate by UUID
+        const mergedMap = new Map();
+        if (localMessages && localMessages.length > 0) {
+          localMessages.forEach(m => mergedMap.set(m.uuid, m));
+        }
+        if (cached && cached.length > 0) {
+          cached.forEach(m => mergedMap.set(m.uuid, m));
+        }
+        
+        let mergedMessages = Array.from(mergedMap.values()).sort((a, b) => new Date(b.sent_at) - new Date(a.sent_at));
 
-          // Mark all unseen messages as seen
-          const unseen = res.data.filter(m => m.sender_uuid !== user.uuid && (!m.receipts || !m.receipts.find(r => r.user_uuid === user.uuid && r.seen_at)));
-          unseen.forEach(m => {
-            socketService.emit('message:seen', { message_uuid: m.uuid, conversation_uuid: activeConversation });
-          });
+        if (mergedMessages.length > 0) {
+           // Update React state with merged history
+           updateMessages(activeConversation, mergedMessages);
+           
+           setConversationUnreadCount(activeConversation, 0);
+           
+           // Identify unseen
+           const unseen = mergedMessages.filter(m => m.sender_uuid !== user.uuid && (!m.receipts || !m.receipts.find(r => r.user_uuid === user.uuid && r.seen_at)));
+           unseen.forEach(m => {
+             if (!pendingSeenRef.current.has(m.uuid)) {
+               pendingSeenRef.current.add(m.uuid);
+               socketService.emit('message:seen', { message_uuid: m.uuid, conversation_uuid: activeConversation });
+             }
+           });
+           
+           // Sync from server
+           const latestMessage = mergedMessages[0];
+           const res = await chatService.getMessages(activeConversation, { limit: 50, after: latestMessage.sent_at });
+           if (res.success && res.data.length > 0 && mounted) {
+             updateMessages(activeConversation, prev => {
+               const newMessages = res.data.filter(nm => !prev.find(pm => pm.uuid === nm.uuid));
+               return [...newMessages, ...prev];
+             });
+           }
+        } else {
+           // No messages at all locally or in state
+           const res = await chatService.getMessages(activeConversation, { limit: 50 });
+           if (res.success && mounted) {
+             updateMessages(activeConversation, res.data);
+             setConversationUnreadCount(activeConversation, 0);
+             
+             const unseen = res.data.filter(m => m.sender_uuid !== user.uuid && (!m.receipts || !m.receipts.find(r => r.user_uuid === user.uuid && r.seen_at)));
+             unseen.forEach(m => {
+               pendingSeenRef.current.add(m.uuid);
+               socketService.emit('message:seen', { message_uuid: m.uuid, conversation_uuid: activeConversation });
+             });
+           }
         }
       } catch (err) {
         console.error("Failed to load messages", err);
       }
     };
+    
     loadMessages();
 
     // Trigger presence sync
     socketService.emit('presence:sync', {});
 
-    const handleTypingUpdate = (payload) => {
-      if (payload.conversation_uuid !== activeConversation) return;
-      if (payload.user_uuid === user.uuid) return;
-
-      setTypingUsers(prev => ({ ...prev, [payload.user_uuid]: payload.is_typing }));
-      
-      if (payload.is_typing) {
-        if (typingTimeoutRef.current[payload.user_uuid]) {
-            clearTimeout(typingTimeoutRef.current[payload.user_uuid]);
-        }
-        typingTimeoutRef.current[payload.user_uuid] = setTimeout(() => {
-            setTypingUsers(prev => ({ ...prev, [payload.user_uuid]: false }));
-        }, 3000);
-      }
+    // Listen for socket reconnects to resync
+    const handleReconnect = () => {
+      loadMessages();
     };
-
-    const handlePresenceOnline = (payload) => {
-       setOnlineUsers(prev => ({ ...prev, [payload.user_uuid]: true }));
-    };
-
-    const handlePresenceOffline = (payload) => {
-       setOnlineUsers(prev => ({ ...prev, [payload.user_uuid]: false }));
-    };
-
-    socketService.on('typing:update', handleTypingUpdate);
-    socketService.on('presence:online', handlePresenceOnline);
-    socketService.on('presence:offline', handlePresenceOffline);
+    socketService.on('connect', handleReconnect);
 
     return () => {
-      socketService.off('typing:update', handleTypingUpdate);
-      socketService.off('presence:online', handlePresenceOnline);
-      socketService.off('presence:offline', handlePresenceOffline);
-      setTypingUsers({});
+      mounted = false;
+      socketService.off('connect', handleReconnect);
     };
   }, [activeConversation, user]);
 
+  const messages = getCachedMessages(activeConversation);
+
+  // 2. Mark incoming messages as seen if chat is actively open
+  useEffect(() => {
+    if (!activeConversation || !user || !messages || messages.length === 0) return;
+    
+    const unseen = messages.filter(m => 
+       m.sender_uuid !== user.uuid && 
+       (!m.receipts || !m.receipts.find(r => r.user_uuid === user.uuid && r.seen_at)) &&
+       !pendingSeenRef.current.has(m.uuid)
+    );
+
+    if (unseen.length > 0) {
+      unseen.forEach(m => {
+        pendingSeenRef.current.add(m.uuid);
+        socketService.emit('message:seen', { message_uuid: m.uuid, conversation_uuid: activeConversation });
+      });
+      // Also clear the unread count in the sidebar immediately
+      setConversationUnreadCount(activeConversation, 0);
+    }
+  }, [messages, activeConversation, user, setConversationUnreadCount]);
+
   const sendMessage = async (conversationUuid, text) => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
+      if (!navigator.onLine) {
+        // Save to outbox
+        const offlineMsg = {
+           uuid: crypto.randomUUID(),
+           conversation_uuid: conversationUuid,
+           message: text,
+           status: 'pending',
+           sent_at: new Date().toISOString()
+        };
+        try {
+          await chatStorage.saveOutboxMessage(offlineMsg);
+          // Add to React state so it persists in UI until online
+          updateMessages(conversationUuid, prev => [offlineMsg, ...prev]);
+          // Return the offline message as optimistic success
+          return resolve(offlineMsg);
+        } catch (err) {
+          return reject(new Error('Failed to save message offline'));
+        }
+      }
+
       socketService.emit('message:send', { conversation_uuid: conversationUuid, message: text }, (response) => {
         if (response && response.error) {
           console.error('Send message failed:', response.error);
           return reject(new Error(response.error));
         }
         
+        // The backend broadcasts `message:receive` to the entire room including the sender.
+        // ChatProvider.handleMessageReceive will add it to globalMessages and update last_message.
+        // We do NOT need to do anything manually here — just resolve so optimistic cleanup runs.
         if (response && response.data) {
-          // Optimistically update
-          setMessages(prev => {
-            const convMessages = prev[conversationUuid] || [];
-            if (convMessages.find(m => m.uuid === response.data.uuid)) return prev;
-            return {
-              ...prev,
-              [conversationUuid]: [response.data, ...convMessages]
-            };
-          });
-          
-          setConversations(prev => prev.map(c => {
-            if (c.uuid === conversationUuid) {
-              return { ...c, last_message: { uuid: response.data.uuid, message: response.data.message, sent_at: response.data.sent_at, sender_uuid: response.data.sender_uuid } };
-            }
-            return c;
-          }));
           resolve(response.data);
+        } else {
+          reject(new Error('No data in response'));
         }
       });
     });
   };
 
+  // 4. Outbox Processing
+  useEffect(() => {
+    const processOutbox = async () => {
+      if (!navigator.onLine) return;
+      try {
+        const pending = await chatStorage.getOutboxMessages();
+        for (let msg of pending) {
+           socketService.emit('message:send', { conversation_uuid: msg.conversation_uuid, message: msg.message }, async (response) => {
+             if (response && response.data) {
+                await chatStorage.deleteOutboxMessage(msg.uuid);
+                // The broadcast will be caught by handleMessageReceive
+             }
+           });
+        }
+      } catch (err) {
+        console.error('Failed to process outbox', err);
+      }
+    };
+    
+    // Process when online
+    window.addEventListener('online', processOutbox);
+    // Process on mount (in case it reconnected before component mounted)
+    processOutbox();
+    
+    return () => window.removeEventListener('online', processOutbox);
+  }, []);
+
   const sendTyping = () => {
     if (activeConversation) {
        socketService.emit('typing:start', { conversation_uuid: activeConversation });
-       // Optional: add a debounce to emit typing:stop after a few seconds of no keystrokes
        if (typingTimeoutRef.current['self']) clearTimeout(typingTimeoutRef.current['self']);
        typingTimeoutRef.current['self'] = setTimeout(() => {
            socketService.emit('typing:stop', { conversation_uuid: activeConversation });
-       }, 2000);
+       }, 1000);
+    }
+  };
+
+  const stopTyping = () => {
+    if (activeConversation) {
+       if (typingTimeoutRef.current['self']) {
+           clearTimeout(typingTimeoutRef.current['self']);
+           delete typingTimeoutRef.current['self'];
+       }
+       socketService.emit('typing:stop', { conversation_uuid: activeConversation });
+    }
+  };
+
+  const addOptimisticMessage = (conversationUuid, message) => {
+    updateMessages(conversationUuid, prev => [message, ...prev]);
+  };
+
+  const updateOptimisticMessage = (conversationUuid, tempId, updatedFields) => {
+    updateMessages(conversationUuid, prev => prev.map(m => m.uuid === tempId ? { ...m, ...updatedFields } : m));
+  };
+
+  const removeOptimisticMessage = (conversationUuid, tempId) => {
+    updateMessages(conversationUuid, prev => prev.filter(m => m.uuid !== tempId));
+  };
+
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const loadMoreMessages = async () => {
+    if (!activeConversation || loadingMore || !hasMore) return;
+    const cached = getCachedMessages(activeConversation);
+    if (!cached || cached.length === 0) return;
+
+    setLoadingMore(true);
+    try {
+      const oldestMessage = cached[cached.length - 1]; // Oldest is at the end because messages are sorted descending (latest first)
+      const res = await chatService.getMessages(activeConversation, { limit: 50, cursor: oldestMessage.sent_at });
+      if (res.success) {
+        if (res.data.length < 50) setHasMore(false);
+        updateMessages(activeConversation, prev => [...prev, ...res.data]);
+      }
+    } catch (err) {
+      console.error('Failed to load more messages', err);
+    } finally {
+      setLoadingMore(false);
     }
   };
 
@@ -231,11 +259,18 @@ export const useChatSocket = () => {
     conversations,
     activeConversation,
     setActiveConversation,
-    messages: messages[activeConversation] || [],
+    messages,
+    hasMore,
+    loadingMore,
+    loadMoreMessages,
     sendMessage,
     sendTyping,
+    stopTyping,
     typingUsers,
     onlineUsers,
-    reloadConversations: fetchConversations,
+    reloadConversations,
+    addOptimisticMessage,
+    updateOptimisticMessage,
+    removeOptimisticMessage
   };
 };

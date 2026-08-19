@@ -1,6 +1,11 @@
 import axios from '../../services/axios.client';
 
 class ChatService {
+  constructor() {
+    this.urlCache = new Map();
+    this.pendingUrlRequests = new Map();
+  }
+
   async getRequests() {
     return await axios.get('/api/chat/requests');
   }
@@ -42,8 +47,67 @@ class ChatService {
     });
   }
 
+  async completeMultiUpload(conversationUuid, message, metadataArray) {
+    return await axios.post(`/api/chat/conversations/${conversationUuid}/attachments/complete-multi`, {
+      message,
+      attachments: metadataArray
+    });
+  }
+
+
   async getDownloadUrl(messageUuid, attachmentUuid) {
-    return await axios.get(`/api/chat/messages/${messageUuid}/attachments/${attachmentUuid}/url`);
+    const cacheKey = `${messageUuid}_${attachmentUuid}`;
+
+    // 1. Check in-memory cache
+    if (this.urlCache.has(cacheKey)) {
+      const cached = this.urlCache.get(cacheKey);
+      if (Date.now() < cached.expiresAt) return cached.res;
+      this.urlCache.delete(cacheKey);
+    }
+
+    // 2. Check sessionStorage (survives page refreshes)
+    try {
+      const sessionCachedStr = sessionStorage.getItem(`chat_url_${cacheKey}`);
+      if (sessionCachedStr) {
+        const sessionCached = JSON.parse(sessionCachedStr);
+        if (Date.now() < sessionCached.expiresAt) {
+          this.urlCache.set(cacheKey, sessionCached);
+          return sessionCached.res;
+        }
+        sessionStorage.removeItem(`chat_url_${cacheKey}`);
+      }
+    } catch (e) {
+      // Ignore parse errors
+    }
+
+    // 3. Avoid duplicate concurrent requests
+    if (this.pendingUrlRequests.has(cacheKey)) {
+      return this.pendingUrlRequests.get(cacheKey);
+    }
+
+    // 4. Fetch and cache
+    const requestPromise = axios.get(`/api/chat/messages/${messageUuid}/attachments/${attachmentUuid}/url`)
+      .then(res => {
+        // Cache for 45 minutes (presigned URLs usually valid for 1 hour)
+        const cacheData = { res, expiresAt: Date.now() + 45 * 60 * 1000 };
+        
+        this.urlCache.set(cacheKey, cacheData);
+        try {
+          sessionStorage.setItem(`chat_url_${cacheKey}`, JSON.stringify(cacheData));
+        } catch (e) {
+          // Ignore storage quota errors
+        }
+        
+        this.pendingUrlRequests.delete(cacheKey);
+        return res;
+      })
+      .catch(err => {
+        this.pendingUrlRequests.delete(cacheKey);
+        throw err;
+      });
+
+    this.pendingUrlRequests.set(cacheKey, requestPromise);
+    return requestPromise;
   }
 
   // ---- Wallpapers ----

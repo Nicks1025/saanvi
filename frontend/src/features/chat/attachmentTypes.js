@@ -4,12 +4,12 @@
  */
 
 export const ATTACHMENT_CATEGORIES = {
-  images_videos: {
-    label: 'Images / Videos',
-    description: 'Upload photos or videos',
+  images: {
+    label: 'Images',
+    description: 'Upload photos',
     icon: '🖼️',
     iconClass: 'images',
-    accept: 'image/*,video/*',
+    accept: 'image/*',
     mimeTypes: [
       'image/jpeg',
       'image/png',
@@ -18,13 +18,6 @@ export const ATTACHMENT_CATEGORIES = {
       'image/svg+xml',
       'image/bmp',
       'image/tiff',
-      'video/mp4',
-      'video/webm',
-      'video/ogg',
-      'video/quicktime',
-      'video/x-msvideo',
-      'video/x-matroska',
-      'video/3gpp',
     ],
   },
   files: {
@@ -97,10 +90,9 @@ export function validateFileForCategory(file, category) {
   // Check against strict MIME list (prefer) or accept wildcard pattern fallback
   const strictMatch = config.mimeTypes.includes(mimeType);
 
-  // Wildcard fallback: images/* / videos/* / audio/*
+  // Wildcard fallback: images/* / audio/*
   const wildcardMatch =
-    (category === 'images_videos' &&
-      (mimeType.startsWith('image/') || mimeType.startsWith('video/'))) ||
+    (category === 'images' && mimeType.startsWith('image/')) ||
     (category === 'music' && mimeType.startsWith('audio/'));
 
   if (!strictMatch && !wildcardMatch) {
@@ -120,7 +112,6 @@ export function validateFileForCategory(file, category) {
  */
 export function mimeToAttachmentType(mimeType) {
   if (mimeType.startsWith('image/')) return 'image';
-  if (mimeType.startsWith('video/')) return 'video';
   if (mimeType.startsWith('audio/')) return 'audio';
   if (mimeType === 'application/pdf') return 'document';
   if (

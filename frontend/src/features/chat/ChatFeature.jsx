@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import './chat.css';
+import './messages.css';
+
 import { useChatSocket } from './hooks/useChatSocket';
 import ChatSidebar from './components/ChatSidebar';
 import ChatWindow from './components/ChatWindow';

@@ -2,6 +2,8 @@ import React, { useRef, useEffect } from 'react';
 import SButton from '../../../components/common/SButton';
 import { ATTACHMENT_CATEGORIES } from '../attachmentTypes';
 
+const MAX_IMAGES = parseInt(import.meta.env.VITE_CHAT_MAX_IMAGES, 10) || 5;
+
 /**
  * AttachmentPopover
  *
@@ -9,28 +11,27 @@ import { ATTACHMENT_CATEGORIES } from '../attachmentTypes';
  * Does NOT use a full-screen overlay.
  * Closes on outside click, Escape key, or when an option is selected.
  *
+ * For the images category:
+ *  - multiple file selection is allowed (up to MAX_IMAGES images)
+ *  - onFilesSelected(files, categoryKey) is called with an array for images
+ *  - onFileSelected(file, categoryKey) is still called for non-image files
+ *
  * Props:
- *  isOpen         {boolean}   – whether the popover is visible
- *  onClose        {Function}  – close without selecting
- *  onFileSelected {Function}  – called with (File, categoryKey)
- *  anchorRef      {React.Ref} – ref to the button the popover is anchored to
+ *  isOpen          {boolean}
+ *  onClose         {Function}
+ *  onFileSelected  {Function(file, categoryKey)}      – single file (audio/doc)
+ *  onFilesSelected {Function(files[], categoryKey)}   – multiple images
+ *  anchorRef       {React.Ref}
  */
-const AttachmentPopover = ({ isOpen, onClose, onFileSelected, anchorRef }) => {
+const AttachmentPopover = ({ isOpen, onClose, onFileSelected, onFilesSelected, anchorRef }) => {
   const popoverRef = useRef(null);
-  const imageVideoRef = useRef(null);
+  const imageRef = useRef(null);
   const filesRef = useRef(null);
   const musicRef = useRef(null);
-
-  const inputRefs = {
-    images_videos: imageVideoRef,
-    files: filesRef,
-    music: musicRef,
-  };
 
   // Close on outside click
   useEffect(() => {
     if (!isOpen) return;
-
     const handlePointerDown = (e) => {
       if (
         popoverRef.current && !popoverRef.current.contains(e.target) &&
@@ -39,11 +40,7 @@ const AttachmentPopover = ({ isOpen, onClose, onFileSelected, anchorRef }) => {
         onClose();
       }
     };
-
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
-    };
-
+    const handleKeyDown = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('pointerdown', handlePointerDown);
     document.addEventListener('keydown', handleKeyDown);
     return () => {
@@ -53,51 +50,74 @@ const AttachmentPopover = ({ isOpen, onClose, onFileSelected, anchorRef }) => {
   }, [isOpen, onClose, anchorRef]);
 
   const handleOptionClick = (categoryKey) => {
-    inputRefs[categoryKey]?.current?.click();
+    if (categoryKey === 'images') imageRef.current?.click();
+    else if (categoryKey === 'files') filesRef.current?.click();
+    else if (categoryKey === 'music') musicRef.current?.click();
   };
 
-  const handleFileChange = (e, categoryKey) => {
+  /** Handle image file selection */
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    e.target.value = '';
+    if (!files.length) return;
+
+    if (files.length > 0) {
+      if (files.length > MAX_IMAGES) {
+        // Validation: reject selection > MAX_IMAGES
+        onFilesSelected?.(files, 'images');
+      } else {
+        onFilesSelected?.(files, 'images');
+      }
+    }
+
+    onClose();
+  };
+
+  const handleSingleFileChange = (e, categoryKey) => {
     const file = e.target.files[0];
     if (file) {
-      onFileSelected(file, categoryKey);
+      onFileSelected?.(file, categoryKey);
       onClose();
     }
     e.target.value = '';
   };
 
   const options = [
-    { key: 'images_videos', ...ATTACHMENT_CATEGORIES.images_videos },
+    { key: 'images', ...ATTACHMENT_CATEGORIES.images },
     { key: 'files', ...ATTACHMENT_CATEGORIES.files },
     { key: 'music', ...ATTACHMENT_CATEGORIES.music },
   ];
 
-  // Always render the hidden inputs so refs are valid even when closed
   return (
     <>
+      {/* Images — multiple for images */}
       <input
         type="file"
-        ref={imageVideoRef}
+        ref={imageRef}
         style={{ display: 'none' }}
-        accept={ATTACHMENT_CATEGORIES.images_videos.accept}
-        onChange={(e) => handleFileChange(e, 'images_videos')}
+        accept={ATTACHMENT_CATEGORIES.images.accept}
+        multiple
+        onChange={handleImageChange}
         tabIndex={-1}
         aria-hidden="true"
       />
+      {/* Files — single */}
       <input
         type="file"
         ref={filesRef}
         style={{ display: 'none' }}
         accept={ATTACHMENT_CATEGORIES.files.accept}
-        onChange={(e) => handleFileChange(e, 'files')}
+        onChange={(e) => handleSingleFileChange(e, 'files')}
         tabIndex={-1}
         aria-hidden="true"
       />
+      {/* Music — single */}
       <input
         type="file"
         ref={musicRef}
         style={{ display: 'none' }}
         accept={ATTACHMENT_CATEGORIES.music.accept}
-        onChange={(e) => handleFileChange(e, 'music')}
+        onChange={(e) => handleSingleFileChange(e, 'music')}
         tabIndex={-1}
         aria-hidden="true"
       />

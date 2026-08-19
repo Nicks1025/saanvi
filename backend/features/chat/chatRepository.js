@@ -40,8 +40,7 @@ class ChatRepository extends BaseRepository {
       .leftJoin('user_details', 'sd', 's.uuid = sd.user_uuid')
       .join('users', 'r', 'cr.receiver_uuid = r.uuid')
       .leftJoin('user_details', 'rd', 'r.uuid = rd.user_uuid')
-      .where(`cr.sender_uuid = '${userUuid}'`)
-      .or(`cr.receiver_uuid = '${userUuid}'`)
+      .where(`cr.sender_uuid = '${userUuid}' OR cr.receiver_uuid = '${userUuid}'`)
       .orderBy('cr.created_at', false)
       .execute();
     return result;
@@ -140,7 +139,22 @@ class ChatRepository extends BaseRepository {
       .whereNull('m.archived_at')
       .orderBy('m.sent_at', 'desc')
       .limit(1)
-      .select(db.raw(`json_build_object('uuid', m.uuid, 'message', m.message, 'sent_at', m.sent_at, 'sender_uuid', m.sender_uuid)`))
+      .select(db.raw(`
+        json_build_object(
+          'uuid', m.uuid,
+          'message', m.message,
+          'sent_at', m.sent_at,
+          'sender_uuid', m.sender_uuid,
+          'attachments', (
+            SELECT json_agg(json_build_object('attachment_type', ma.attachment_type, 'mime_type', ma.mime_type))
+            FROM message_attachments ma WHERE ma.message_uuid = m.uuid AND ma.archived_at IS NULL
+          ),
+          'receipts', (
+            SELECT json_agg(json_build_object('user_uuid', mr.user_uuid, 'delivered_at', mr.delivered_at, 'seen_at', mr.seen_at))
+            FROM message_receipts mr WHERE mr.message_uuid = m.uuid
+          )
+        )
+      `))
       .as('last_message');
 
     const unreadCountSubquery = db('messages as m2')
@@ -208,7 +222,7 @@ class ChatRepository extends BaseRepository {
     return result[0];
   }
 
-  async getMessages(conversationUuid, limit = 50, offset = 0) {
+  async getMessages(conversationUuid, limit = 50, cursor = null, after = null) {
     const db = this.queryHelper.db;
 
     // Correlated JSON aggregate subqueries — reference outer alias `m` and use
@@ -221,10 +235,10 @@ class ChatRepository extends BaseRepository {
     const attachmentsSubquery = db('message_attachments as ma')
       .whereRaw('ma.message_uuid = m.uuid')
       .whereNull('ma.archived_at')
-      .select(db.raw(`json_agg(json_build_object('uuid', ma.uuid, 'file_name', ma.file_name, 'original_file_name', ma.original_file_name, 'mime_type', ma.mime_type, 'file_size', ma.file_size, 'attachment_type', ma.attachment_type, 'width', ma.width, 'height', ma.height))`))
+      .select(db.raw(`json_agg(json_build_object('uuid', ma.uuid, 'file_name', ma.file_name, 'original_file_name', ma.original_file_name, 'mime_type', ma.mime_type, 'file_size', ma.file_size, 'attachment_type', ma.attachment_type, 'width', ma.width, 'height', ma.height, 'preview_data', ma.preview_data))`))
       .as('attachments');
 
-    const result = await this.queryHelper
+    const query = this.queryHelper
       .from('messages', 'm')
       .field('m.*')
       .field(receiptsSubquery)
@@ -232,9 +246,17 @@ class ChatRepository extends BaseRepository {
       .where('m.conversation_uuid', 'eq', conversationUuid)
       .where('m.archived_at', 'is', null)
       .orderBy('m.sent_at', false)
-      .limit(limit)
-      .offset(offset)
-      .execute();
+      .limit(limit);
+
+    if (cursor) {
+      query.where('m.sent_at', '<', cursor);
+    }
+    
+    if (after) {
+      query.where('m.sent_at', '>', after);
+    }
+
+    const result = await query.execute();
     return result;
   }
   
@@ -248,7 +270,7 @@ class ChatRepository extends BaseRepository {
   }
 
   async createMessageAttachment(messageUuid, metadata) {
-    const uuid = uuidv4();
+    const uuid = metadata.uuid || uuidv4();
     const result = await this.queryHelper
       .from('message_attachments')
       .insert({
@@ -262,7 +284,8 @@ class ChatRepository extends BaseRepository {
         attachment_type: metadata.attachment_type,
         width: metadata.width || null,
         height: metadata.height || null,
-        duration: metadata.duration || null
+        duration: metadata.duration || null,
+        preview_data: metadata.preview_data || null
       })
       .execute();
     return result[0];
@@ -307,11 +330,40 @@ class ChatRepository extends BaseRepository {
     if (status === 'seen') {
       payload.seen_at = new Date();
     }
-    const result = await this.queryHelper
-      .from('message_receipts')
-      .insert(payload)
-      .execute();
-    return result[0];
+    
+    try {
+      const result = await this.queryHelper
+        .from('message_receipts')
+        .insert(payload)
+        .execute();
+      return result[0];
+    } catch (err) {
+      // 23505 is PostgreSQL's code for unique_violation
+      if (err.code === '23505') {
+        // Race condition occurred, it was inserted by another request.
+        // Re-run the update logic.
+        const refetched = await this.queryHelper
+          .from('message_receipts')
+          .where('message_uuid', 'eq', messageUuid)
+          .where('user_uuid', 'eq', userUuid)
+          .execute();
+          
+        if (refetched && refetched.length > 0) {
+          const updatePayload = { updated_at: new Date() };
+          if (status === 'seen') updatePayload.seen_at = new Date();
+          if (!refetched[0].delivered_at || status === 'delivered') updatePayload.delivered_at = new Date();
+
+          const result = await this.queryHelper
+            .from('message_receipts')
+            .update(updatePayload)
+            .where('message_uuid', 'eq', messageUuid)
+            .where('user_uuid', 'eq', userUuid)
+            .execute();
+          return result[0];
+        }
+      }
+      throw err;
+    }
   }
 
   async markOfflineMessagesAsDelivered(userUuid) {
@@ -409,8 +461,7 @@ class ChatRepository extends BaseRepository {
     const result = await this.queryHelper
       .from('user_blocks')
       .where('archived_at', 'is', null)
-      .where(`blocker_uuid = '${user1}' AND blocked_uuid = '${user2}'`)
-      .or(`blocker_uuid = '${user2}' AND blocked_uuid = '${user1}'`)
+      .where(`(blocker_uuid = '${user1}' AND blocked_uuid = '${user2}') OR (blocker_uuid = '${user2}' AND blocked_uuid = '${user1}')`)
       .execute();
     return result;
   }
@@ -431,10 +482,7 @@ class ChatRepository extends BaseRepository {
       // `query` is free-text user input — escape single quotes before interpolating.
       const safe = query.replace(/'/g, "''");
       qh = qh
-        .where(`u.email ILIKE '%${safe}%'`)
-        .or(`ud.display_name ILIKE '%${safe}%'`)
-        .or(`ud.first_name ILIKE '%${safe}%'`)
-        .or(`ud.last_name ILIKE '%${safe}%'`);
+        .where(`u.email ILIKE '%${safe}%' OR ud.display_name ILIKE '%${safe}%' OR ud.first_name ILIKE '%${safe}%' OR ud.last_name ILIKE '%${safe}%'`);
     }
 
     qh = qh.limit(limit);

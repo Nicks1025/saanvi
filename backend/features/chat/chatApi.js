@@ -7,6 +7,8 @@ const ChatRepository = require('./chatRepository');
 const ChatService = require('./chatService');
 const ChatController = require('./chatController');
 
+const MAX_IMAGES = parseInt(process.env.CHAT_MAX_IMAGES, 10) || 5;
+
 const chatRepository = new ChatRepository();
 const chatService = new ChatService(chatRepository);
 const chatController = new ChatController(chatService);
@@ -108,7 +110,7 @@ const ChatApi = {
         file_name: Joi.string().required(),
         mime_type: Joi.string().required(),
         file_size: Joi.number().required(),
-        category: Joi.string().valid('images_videos', 'files', 'music', 'voice').default('files')
+        category: Joi.string().valid('images', 'files', 'music', 'voice').default('files')
       }) }
     },
     {
@@ -120,17 +122,42 @@ const ChatApi = {
       request: { body: Joi.object({ 
         message: Joi.string().allow('', null).optional(),
         metadata: Joi.object({
+          uuid: Joi.string().required(),
           storage_key: Joi.string().required(),
           file_name: Joi.string().required(),
           original_file_name: Joi.string().required(),
           mime_type: Joi.string().required(),
           file_size: Joi.number().required(),
-          category: Joi.string().valid('images_videos', 'files', 'music', 'voice').default('files'),
+          category: Joi.string().valid('images', 'files', 'music', 'voice').default('files'),
           width: Joi.number().optional(),
-          height: Joi.number().optional()
+          height: Joi.number().optional(),
+          preview_data: Joi.string().optional()
         }).required()
       }) }
     },
+    {
+      path: '/conversations/:uuid/attachments/complete-multi',
+      verb: 'POST',
+      auditMessage: 'completing multi-image upload',
+      handler: { controller: chatController, method: 'completeMultiUpload' },
+      middleware: { requireAuth: true, requirePermission: ['chat.access'] },
+      request: { body: Joi.object({
+        message: Joi.string().allow('', null).optional(),
+        attachments: Joi.array().items(Joi.object({
+          uuid: Joi.string().required(),
+          storage_key: Joi.string().required(),
+          file_name: Joi.string().required(),
+          original_file_name: Joi.string().required(),
+          mime_type: Joi.string().required(),
+          file_size: Joi.number().required(),
+          category: Joi.string().valid('images').default('images'),
+          width: Joi.number().optional(),
+          height: Joi.number().optional(),
+          preview_data: Joi.string().optional()
+        })).min(1).max(MAX_IMAGES).required()
+      }) }
+    },
+
     {
       path: '/messages/:messageUuid/attachments/:attachmentUuid/url',
       verb: 'GET',

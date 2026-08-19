@@ -8,8 +8,10 @@ import { Users, MoreVertical, MessageSquare } from 'lucide-react';
 import { chatService } from '../chat.service';
 import { toast } from 'react-hot-toast';
 import { CHAT_THEMES } from '../chatThemes';
+import { useTranslation } from 'react-i18next';
 
 const ChatWindow = ({ chatRealtime }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { activeConversation, conversations, messages, typingUsers, onlineUsers } = chatRealtime;
   
@@ -69,7 +71,7 @@ const ChatWindow = ({ chatRealtime }) => {
 
   const handleAdjusterSave = async (data) => {
     try {
-      const toastId = toast.loading('Applying background...');
+      const toastId = toast.loading(t('chat.applyingBackground'));
       let finalBackgroundData;
 
       if (data.isNew) {
@@ -97,9 +99,9 @@ const ChatWindow = ({ chatRealtime }) => {
       const res = await chatService.updateBackground(activeConversation, finalBackgroundData);
       setLocalWallpaperUrl(res.data?.wallpaper_url || res.wallpaper_url);
       setAdjusterData(null);
-      toast.success('Wallpaper applied!', { id: toastId });
+      toast.success(t('chat.wallpaperApplied'), { id: toastId });
     } catch (err) {
-      toast.error('Failed to apply wallpaper');
+      toast.error(t('chat.failedWallpaper'));
     }
   };
 
@@ -111,7 +113,7 @@ const ChatWindow = ({ chatRealtime }) => {
       setShowMenu(false);
       setShowThemeMenu(false);
     } catch (err) {
-      toast.error('Failed to update theme');
+      toast.error(t('chat.failedTheme'));
     }
   };
 
@@ -120,7 +122,7 @@ const ChatWindow = ({ chatRealtime }) => {
       <div className="chat-window chat-window--empty">
         <div className="chat-window-empty-state">
            <MessageSquare size={48} className="chat-window-empty-icon" />
-           <h3>Select a conversation to start messaging</h3>
+           <h3>{t('chat.selectConversation')}</h3>
         </div>
       </div>
     );
@@ -133,11 +135,11 @@ const ChatWindow = ({ chatRealtime }) => {
   let subtitle = '';
   
   if (conv.is_group) {
-     subtitle = `${conv.members?.length || 0} members`;
+     subtitle = t('chat.membersCount', { count: conv.members?.length || 0 });
   } else {
      const otherMember = conv.members?.find(m => m.uuid !== user.uuid);
-     title = otherMember ? otherMember.display_name : 'Unknown';
-     subtitle = otherMember && onlineUsers[otherMember.uuid] ? 'Online' : 'Offline';
+     title = otherMember ? otherMember.display_name : t('chat.unknown');
+     subtitle = otherMember && onlineUsers[otherMember.uuid] ? t('chat.online') : t('chat.offline');
   }
 
   // Determine typing indicator text
@@ -145,12 +147,20 @@ const ChatWindow = ({ chatRealtime }) => {
     .filter(uuid => typingUsers[uuid])
     .map(uuid => {
         const member = conv.members?.find(m => m.uuid === uuid);
-        return member ? member.display_name : 'Someone';
+        return member ? member.display_name : t('chat.unknown');
     });
   
+  const handleScroll = (e) => {
+    const { scrollTop, clientHeight, scrollHeight } = e.target;
+    const isAtTop = Math.abs(scrollTop) + clientHeight >= scrollHeight - 50; 
+    if (isAtTop && !chatRealtime.loadingMore && chatRealtime.hasMore) {
+      chatRealtime.loadMoreMessages();
+    }
+  };
+
   let typingText = '';
-  if (typingNames.length === 1) typingText = `${typingNames[0]} is typing...`;
-  else if (typingNames.length > 1) typingText = `${typingNames.join(', ')} are typing...`;
+  if (typingNames.length === 1) typingText = t('chat.isTyping', { names: typingNames[0] });
+  else if (typingNames.length > 1) typingText = t('chat.areTyping', { names: typingNames.join(', ') });
 
   return (
     <div className="chat-window">
@@ -196,14 +206,14 @@ const ChatWindow = ({ chatRealtime }) => {
                      <SButton
                        color="ghost"
                        size="s"
-                       text="Theme"
+                       text={t('chat.theme')}
                        onClick={() => setShowThemeMenu(true)}
                        className="chat-dropdown-menu-item"
                      />
                      <SButton
                        color="ghost"
                        size="s"
-                       text="Wallpaper"
+                       text={t('chat.wallpaper')}
                        onClick={() => fileInputRef.current?.click()}
                        className="chat-dropdown-menu-item"
                      />
@@ -254,36 +264,83 @@ const ChatWindow = ({ chatRealtime }) => {
             }
             return null;
           })()}
-          <div className="chat-messages">
-            {messages.map((msg, index) => {
-             const currentDate = new Date(msg.sent_at).toDateString();
-             const nextDate = messages[index + 1] ? new Date(messages[index + 1].sent_at).toDateString() : null;
-             
-             const today = new Date();
-             const yesterday = new Date(today);
-             yesterday.setDate(yesterday.getDate() - 1);
-             
-             let dateLabel = '';
-             if (currentDate === today.toDateString()) dateLabel = 'Today';
-             else if (currentDate === yesterday.toDateString()) dateLabel = 'Yesterday';
-             else dateLabel = new Date(msg.sent_at).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+          <div className="chat-messages" onScroll={handleScroll}>
+            {(() => {
+              const clusteredMessages = [];
+              const isMediaMsg = (m) => {
+                if (m.attachments && m.attachments.length === 1) {
+                  const type = m.attachments[0].attachment_type || m.attachments[0].mime_type || '';
+                  return type.includes('image') || type === 'image';
+                }
+                return false;
+              };
 
-             return (
-               <React.Fragment key={msg.uuid}>
-                 <MessageBubble 
-                    message={msg} 
-                    isOwn={msg.sender_uuid === user.uuid}
-                    conversation={conv}
-                 />
-                 {currentDate !== nextDate && (
-                   <div className="chat-date-separator">
-                     <span>{dateLabel}</span>
-                   </div>
-                 )}
-               </React.Fragment>
-             );
-          })}
+              for (let i = 0; i < messages.length; i++) {
+                const msg = messages[i];
+                const isMsgPending = msg.status === 'uploading' || msg.status === 'failed';
+                
+                if (isMediaMsg(msg) && !msg.message) {
+                  const clusterAttachments = [{ ...msg.attachments[0], _messageUuid: msg.uuid, _status: msg.status, _progress: msg.progress }];
+                  const clusterIds = [msg.uuid];
+                  let j = i + 1;
+                  while (j < messages.length && isMediaMsg(messages[j]) && !messages[j].message) {
+                    const nextMsg = messages[j];
+                    if (nextMsg.sender_uuid !== msg.sender_uuid) break;
+                    const timeDiff = Math.abs(new Date(msg.sent_at) - new Date(nextMsg.sent_at));
+                    if (timeDiff > 60000) break;
+                    
+                    const isNextPending = nextMsg.status === 'uploading' || nextMsg.status === 'failed';
+                    if (isMsgPending !== isNextPending) break;
+                    
+                    clusterAttachments.unshift({ ...nextMsg.attachments[0], _messageUuid: nextMsg.uuid, _status: nextMsg.status, _progress: nextMsg.progress });
+                    clusterIds.unshift(nextMsg.uuid);
+                    j++;
+                  }
+                  if (clusterAttachments.length > 1) {
+                    clusteredMessages.push({
+                      ...msg,
+                      uuid: msg.uuid,
+                      attachments: clusterAttachments,
+                      _clusterIds: clusterIds
+                    });
+                    i = j - 1;
+                    continue;
+                  }
+                }
+                clusteredMessages.push(msg);
+              }
+              
+              return clusteredMessages.map((msg, index) => {
+                const currentDate = new Date(msg.sent_at).toDateString();
+                const nextDate = clusteredMessages[index + 1] ? new Date(clusteredMessages[index + 1].sent_at).toDateString() : null;
+                
+                const today = new Date();
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                
+                let dateLabel = '';
+                if (currentDate === today.toDateString()) dateLabel = t('chat.today');
+                else if (currentDate === yesterday.toDateString()) dateLabel = t('chat.yesterday');
+                else dateLabel = new Date(msg.sent_at).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+
+                return (
+                  <React.Fragment key={msg.uuid}>
+                    <MessageBubble 
+                        message={msg} 
+                        isOwn={msg.sender_uuid === user.uuid}
+                        conversation={conv}
+                    />
+                    {currentDate !== nextDate && (
+                      <div className="chat-date-separator">
+                        <span>{dateLabel}</span>
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+              });
+            })()}
           </div>
+
           {adjusterData && (
              <InlineWallpaperCropper 
                wallpaperData={adjusterData} 
@@ -297,7 +354,7 @@ const ChatWindow = ({ chatRealtime }) => {
             {typingText}
           </div>
         )}
-        <ChatInput chatRealtime={chatRealtime} />
+        <ChatInput chatRealtime={chatRealtime} user={user} />
       </div>
     </div>
   );

@@ -91,18 +91,20 @@ const ChatRequestsModal = ({ isOpen, onClose, chatRealtime }) => {
   return (
     <SModal isOpen={isOpen} onCancel={onClose} cancelText="Close" title="Chat Hub">
       <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', borderBottom: '1px solid var(--border)' }}>
-         <button 
-           style={{ padding: '8px', background: 'none', border: 'none', borderBottom: activeTab === 'requests' ? '2px solid var(--primary-color)' : 'none', cursor: 'pointer', fontWeight: activeTab === 'requests' ? 'bold' : 'normal' }}
+         <SButton 
+           color="ghost"
+           style={{ padding: '8px', borderBottom: activeTab === 'requests' ? '2px solid var(--primary-color)' : 'none', fontWeight: activeTab === 'requests' ? 'bold' : 'normal', borderRadius: 0 }}
            onClick={() => setActiveTab('requests')}
          >
            Pending Requests
-         </button>
-         <button 
-           style={{ padding: '8px', background: 'none', border: 'none', borderBottom: activeTab === 'new' ? '2px solid var(--primary-color)' : 'none', cursor: 'pointer', fontWeight: activeTab === 'new' ? 'bold' : 'normal' }}
+         </SButton>
+         <SButton 
+           color="ghost"
+           style={{ padding: '8px', borderBottom: activeTab === 'new' ? '2px solid var(--primary-color)' : 'none', fontWeight: activeTab === 'new' ? 'bold' : 'normal', borderRadius: 0 }}
            onClick={() => setActiveTab('new')}
          >
            Find Users
-         </button>
+         </SButton>
       </div>
 
       <div style={{ minHeight: '300px', maxHeight: '400px', overflowY: 'auto' }}>

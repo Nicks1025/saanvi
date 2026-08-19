@@ -740,18 +740,6 @@
   cursor: pointer;
 }
 
-.attachment-video-preview {
-  margin-bottom: 8px;
-  border-radius: 8px;
-  overflow: hidden;
-  max-width: 280px;
-}
-
-.attachment-video-preview video {
-  width: 100%;
-  max-height: 240px;
-  display: block;
-}
 
 .attachment-audio-preview {
   margin-bottom: 8px;

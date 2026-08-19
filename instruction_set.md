@@ -19,6 +19,7 @@ Every new feature must reside in `backend/features/<featureName>/` and contain e
 ## 3. Environment & Configuration
 - All secrets, API keys, and connection strings must be stored in `.env`.
 - Never hardcode credentials in the source code.
+- Do not hardcode configurable limits (e.g., `MAX_IMAGES`, `MAX_FILE_SIZE`) in the source code. Always read these from environment variables (`process.env` on backend, `import.meta.env` on frontend) with safe fallbacks.
 - `server.js` is responsible for failing fast at startup if critical environment variables (like `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`) are missing.
 
 ## 4. Error Handling
@@ -62,21 +63,19 @@ Every new feature must reside in `backend/features/<featureName>/` and contain e
 - **Never** create specialised helper functions for conditions that `.where()`, `.and()`, or `.or()` can already express. This explicitly prohibits: `whereLike()`, `whereOr()`, `whereAnd()`, `whereRaw()`, `rawWhere()`, `rawCondition()`, `rawJoin()`, `leftJoinOn()`, etc.
 
 ### WHERE / AND / OR conditions
-- **Preferred form** — plain condition string with direct interpolation:
+- **Preferred form** — plain condition string with direct interpolation for simple queries:
   ```js
-  .where(`cr.sender_uuid = '${userUuid}'`)
-  .or(`cr.receiver_uuid = '${userUuid}'`)
+  .where(`cr.sender_uuid = '${userUuid}' OR cr.receiver_uuid = '${userUuid}'`)
   ```
-- **Chain `.or()` / `.and()`** for additional branches instead of embedding everything in one string.
+- **Do not** chain `.or()` or `.and()`, as they are not supported by the queryHelper.
 - **Do not** use `.whereOr([...])` condition-object arrays, `db.ref()`, or `db.val()`.
 - **Do not** use `?` placeholder arrays when direct interpolation is safe (see security rule below).
 
 ### LIKE / ILIKE searches
-- Use `.where().or()` chains with direct interpolation. Do **not** create a `whereLike()` helper:
+- Use `.where()` with standard SQL `OR` clauses and direct interpolation. Do **not** create a `whereLike()` helper:
   ```js
   const safe = query.replace(/'/g, "''"); // SQL-escape before interpolating
-  qh.where(`u.email ILIKE '%${safe}%'`)
-    .or(`ud.display_name ILIKE '%${safe}%'`)
+  qh.where(`u.email ILIKE '%${safe}%' OR ud.display_name ILIKE '%${safe}%'`)
   ```
 
 ### JOIN conditions
@@ -105,7 +104,9 @@ Every new feature must reside in `backend/features/<featureName>/` and contain e
 - Static configuration data (theme lists, attachment categories, MIME type mappings, option lists, static labels) must live in dedicated files under `/src/features/<feature>/` or `/src/constants/`, NOT inside component files.
 - Components must import and consume configuration data; they must not define it inline.
 - Theme definitions for the chat background system must live in `/src/features/chat/chatThemes.js`.
-- Attachment category definitions must live in `/src/features/chat/attachmentTypes.js` (already correct).
+- Attachment category definitions must live in `/src/features/chat/attachmentTypes.js`.
+- Attachment type detection and routing logic must be centralized (e.g., `attachmentUtils.js`) rather than duplicated across components.
+- Missing or deleted attachments MUST trigger a standardized fallback UI (e.g., `MissingAttachment`) rather than rendering raw metadata or filenames. Always hook native media elements with `onError` handlers to detect storage failures gracefully.
 
 ## 12. Inline CSS
 - Avoid `style={{ ... }}` for static presentational styling. Move all static styles to the feature's `.css` file and apply via `className`.
