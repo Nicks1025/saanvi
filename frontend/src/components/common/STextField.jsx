@@ -14,6 +14,8 @@ const STextField = ({
   error = '',
   validate,
   autoComplete,
+  className = '',
+  ...props
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [internalError, setInternalError] = useState('');
@@ -49,12 +51,13 @@ const STextField = ({
           value={text}
           placeholder={placeholder}
           onChange={handleChange}
-          className="s-input"
+          className={`s-input ${className}`.trim()}
           autoComplete={autoComplete}
           style={{
             paddingRight: isPasswordType ? '2.5rem' : '0.8rem',
             borderColor: displayError ? '#ef4444' : undefined,
           }}
+          {...props}
         />
         {isPasswordType && (
           <button

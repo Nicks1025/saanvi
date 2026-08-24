@@ -9,6 +9,8 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'en',
+    supportedLngs: ['en', 'hi'],
+    load: 'languageOnly',
     backend: {
       loadPath: `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/locales/{{lng}}.json`,
     },

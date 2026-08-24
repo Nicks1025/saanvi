@@ -69,7 +69,8 @@ const SystemHealthFeature = () => {
     backendUptime: 'Backend API',
     supabaseDatabase: 'Supabase Database',
     supabaseStorage: 'Supabase Storage',
-    redis: 'Redis Cache'
+    redis: 'Redis Cache',
+    socketIo: 'Socket.IO (Realtime)'
   };
 
   return (
@@ -108,27 +109,53 @@ const SystemHealthFeature = () => {
             </div>
           </div>
 
-          {Object.entries(healthData.services).map(([key, service]) => (
-            <div key={key} className="health-card">
-              <div className="health-card-header">
-                <h3 className="health-card-title">{serviceNames[key] || key}</h3>
-                {getStatusBadge(service.status)}
-              </div>
-              <div className="health-card-body">
-                {service.responseTime !== undefined && (
-                  <div className="health-metric">
-                    <span className="metric-label">Ping:</span>
-                    <span className="metric-value">{service.responseTime} ms</span>
+            {Object.entries(healthData.services).map(([key, service]) => {
+              let parsedMessage = null;
+              if (service.message) {
+                try {
+                  parsedMessage = JSON.parse(service.message);
+                } catch (e) {
+                  // Not JSON, ignore
+                }
+              }
+
+              return (
+                <div key={key} className="health-card">
+                  <div className="health-card-header">
+                    <h3 className="health-card-title">{serviceNames[key] || key}</h3>
+                    {getStatusBadge(service.status)}
                   </div>
-                )}
-                {service.message && (
-                  <div className="health-message">
-                    {key === 'backendUptime' ? `Uptime: ${service.message}` : service.message}
-                  </div>
-                )}
+                  <div className="health-card-body">
+                    {service.responseTime !== undefined && (
+                      <div className="health-metric">
+                        <span className="metric-label">Ping:</span>
+                        <span className="metric-value">{service.responseTime} ms</span>
+                      </div>
+                    )}
+                  {parsedMessage ? (
+                    <div className="health-message" style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
+                      <div className="health-metric">
+                        <span className="metric-label">Storage:</span>
+                        <span className="metric-value">{parsedMessage.used_mb} MB / 10 GB </span>
+                      </div>
+                      <div className="health-metric">
+                        <span className="metric-label">Class A Ops:</span>
+                        <span className="metric-value">{parsedMessage.class_a.toLocaleString()} / 1M </span>
+                      </div>
+                      <div className="health-metric">
+                        <span className="metric-label">Class B Ops:</span>
+                        <span className="metric-value">{parsedMessage.class_b.toLocaleString()} / 10M </span>
+                      </div>
+                    </div>
+                  ) : service.message ? (
+                    <div className="health-message">
+                      {key === 'backendUptime' ? `Uptime: ${service.message}` : service.message}
+                    </div>
+                  ) : null}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="health-error">Failed to load system health.</div>
