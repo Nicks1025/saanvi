@@ -10,7 +10,10 @@ const SDataTable = ({
   searchPlaceholder = 'Search...',
   loading = false,
   title = '',
-  headerActions = null
+  headerActions = null,
+  tabs = [], // [{ label: 'All', count: 10 }]
+  activeTab = '',
+  onTabChange = null
 }) => {
   const { sortColu, sortOrder, noOfPagesToDisplay } = pagination;
   const [internalSearch, setInternalSearch] = useState('');
@@ -117,6 +120,26 @@ const SDataTable = ({
           </div>
         </div>
       </div>
+      {tabs.length > 0 && (
+        <div style={{ display: 'flex', gap: '1.5rem', marginTop: '1rem', marginBottom: '0.25rem', paddingBottom: '0.5rem', overflowX: 'auto', paddingLeft: '1rem', paddingRight: '1rem' }}>
+          {tabs.map(tab => (
+            <div 
+              key={tab.label} 
+              onClick={() => onTabChange && onTabChange(tab.label)}
+              style={{ 
+                cursor: 'pointer', 
+                fontWeight: activeTab === tab.label ? 'bold' : 'normal',
+                color: activeTab === tab.label ? 'var(--text-primary)' : 'var(--text-secondary)',
+                borderBottom: activeTab === tab.label ? '2px solid var(--primary)' : 'none',
+                whiteSpace: 'nowrap',
+                paddingBottom: '0.25rem'
+              }}
+            >
+              {tab.label} {tab.count !== undefined ? `(${tab.count})` : ''}
+            </div>
+          ))}
+        </div>
+      )}
       <div style={{ position: 'relative', width: '100%' }}>
         {loading && (
           <div className="sdt-progress-container">

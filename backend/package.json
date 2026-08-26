@@ -17,6 +17,8 @@
     "@socket.io/redis-adapter": "^8.3.0",
     "@supabase/supabase-js": "^2.112.3",
     "argon2": "^0.45.1",
+    "axios": "^1.19.0",
+    "cheerio": "^1.2.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
@@ -26,6 +28,7 @@
     "knex": "^3.3.0",
     "multer": "^2.2.0",
     "pg": "^8.23.0",
+    "puppeteer": "^25.8.0",
     "redis": "^6.2.1",
     "socket.io": "^4.8.3",
     "uuid": "^14.0.1"

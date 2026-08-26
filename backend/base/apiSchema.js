@@ -70,14 +70,16 @@ class ApiSchema {
           if (error) {
             return res.status(400).json({ success: false, error: 'Validation Error', details: error.details.map(x => x.message) });
           }
-          req.query = value;
+          Object.keys(req.query).forEach(k => delete req.query[k]);
+          Object.assign(req.query, value);
         }
         if (endpoint.request.params) {
           const { error, value } = endpoint.request.params.validate(req.params, { abortEarly: false, stripUnknown: true });
           if (error) {
             return res.status(400).json({ success: false, error: 'Validation Error', details: error.details.map(x => x.message) });
           }
-          req.params = value;
+          Object.keys(req.params).forEach(k => delete req.params[k]);
+          Object.assign(req.params, value);
         }
         next();
       });

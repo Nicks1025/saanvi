@@ -19,6 +19,9 @@ import RoleDetailsPage from './pages/admin/roles/details';
 import SystemHealthPage from './pages/admin/health';
 import ChatPage from './pages/chat';
 
+import IpoAllotmentPage from './pages/IpoAllotmentPage';
+import AddIpoAllotmentPage from './pages/AddIpoAllotmentPage';
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -40,6 +43,8 @@ const router = createBrowserRouter([
       { path: "games/word-search", element: <WordSearchPage /> },
       { path: "games/word-search/play", element: <WordSearchPlayPage /> },
       { path: "chat", element: <ChatPage /> },
+      { path: "ipo-allotment", element: <IpoAllotmentPage /> },
+      { path: "ipo-allotment/add", element: <AddIpoAllotmentPage /> },
       { path: "*", element: <NotFoundPage /> }
     ]
   }

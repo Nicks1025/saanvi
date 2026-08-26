@@ -1,0 +1,3352 @@
+{
+  "market-priority-jewels": {
+    "issueSize": "₹91.50 Crores",
+    "symbol": null,
+    "registrar": "MUFG Intime India Private Limited",
+    "updatedAt": "2026-08-24T19:18:16.315Z"
+  },
+  "market-lumino-industries": {
+    "issueSize": "₹700 Crores",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:18:18.913Z"
+  },
+  "market-annu-projects": {
+    "issueSize": "₹175 Crores, 1,76,83,000 Equity Shares",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:18:21.564Z"
+  },
+  "market-symbiotec-pharmalab": {
+    "issueSize": "₹1,757 Crores",
+    "symbol": null,
+    "registrar": "MUFG Intime India Pvt.",
+    "updatedAt": "2026-08-24T19:18:24.021Z"
+  },
+  "market-hy-tech-engineers": {
+    "issueSize": "₹135.73 Crores",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:18:26.450Z"
+  },
+  "market-skyways-air": {
+    "issueSize": "₹582.80 Crores",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:18:28.924Z"
+  },
+  "market-augmont-enterprises": {
+    "issueSize": "₹825 Crores",
+    "symbol": null,
+    "registrar": "MUFG Intime India Pvt.",
+    "updatedAt": "2026-08-24T19:18:31.738Z"
+  },
+  "market-tempsens-instruments": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "updatedAt": "2026-08-24T19:38:27.396Z"
+  },
+  "market-gaja-alternative": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-shankesh-jewellers": {
+    "issueSize": "₹367.18 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:18:38.590Z"
+  },
+  "market-sunshine-pictures": {
+    "issueSize": "₹282.14 Crores",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:18:41.398Z"
+  },
+  "market-horizon-industrial-parks": {
+    "issueSize": "₹2,600 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:18:44.031Z"
+  },
+  "market-lalithaa-jewellery-mart": {
+    "issueSize": "₹1700 Crores",
+    "symbol": null,
+    "registrar": "MUFG Intime India Pvt.",
+    "updatedAt": "2026-08-24T19:18:46.558Z"
+  },
+  "market-behari-lal-engineering": {
+    "issueSize": "₹301.62 Crores",
+    "symbol": null,
+    "registrar": "MUFG Intime India Pvt.",
+    "updatedAt": "2026-08-24T19:18:49.012Z"
+  },
+  "market-shiprocket": {
+    "issueSize": "₹1,617.48 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:18:51.775Z"
+  },
+  "market-milky-mist": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-molbio-diagnostics": {
+    "issueSize": "₹939.70 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:18:54.251Z"
+  },
+  "market-dhoot-transmission": {
+    "issueSize": "₹3,066.89 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:18:56.801Z"
+  },
+  "market-leap-india": {
+    "issueSize": "₹2,480 Crores",
+    "symbol": null,
+    "registrar": "MUFG Intime India Pvt.",
+    "updatedAt": "2026-08-24T19:18:59.468Z"
+  },
+  "market-technocraft-ventures": {
+    "issueSize": "₹251.88 Crores",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:19:01.934Z"
+  },
+  "market-ardee-industries": {
+    "issueSize": "₹425.87 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:19:04.613Z"
+  },
+  "market-mv-electrosystems": {
+    "issueSize": "₹290 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:19:07.117Z"
+  },
+  "market-juniper-green-energy": {
+    "issueSize": "₹1,800 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:19:09.588Z"
+  },
+  "market-manipal-health": {
+    "issueSize": "₹9,273.64 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:19:12.159Z"
+  },
+  "market-indo-mim": {
+    "issueSize": "₹3,811.21 Crores",
+    "symbol": null,
+    "registrar": "MUFG Intime India Pvt.",
+    "updatedAt": "2026-08-24T19:19:14.843Z"
+  },
+  "market-xtranet-technologies": {
+    "issueSize": "₹166.80 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:19:17.471Z"
+  },
+  "market-lohia-corp": {
+    "issueSize": "₹1,101.28 Crores",
+    "symbol": null,
+    "registrar": "MUFG Intime India Pvt.",
+    "updatedAt": "2026-08-24T19:19:19.985Z"
+  },
+  "market-cube-highways-trust-invit": {
+    "issueSize": "₹5000 Crores",
+    "symbol": null,
+    "registrar": "KFin Technologies Limited",
+    "updatedAt": "2026-08-24T19:19:22.612Z"
+  },
+  "market-caliber-mining": {
+    "issueSize": "₹450 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:19:25.261Z"
+  },
+  "market-alpine-texworld": {
+    "issueSize": "₹126.25 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:19:28.046Z"
+  },
+  "market-sbi-funds-management": {
+    "issueSize": "₹9,813 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:19:30.780Z"
+  },
+  "market-laser-power---infra": {
+    "issueSize": "₹742 Crores, 3,46,72,896 Equity Shares",
+    "symbol": null,
+    "registrar": "MUFG Intime India Pvt.",
+    "updatedAt": "2026-08-24T19:19:33.668Z"
+  },
+  "market-kusumgar": {
+    "issueSize": "₹650 Crores",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:19:36.256Z"
+  },
+  "market-knack-packaging": {
+    "issueSize": "₹439.50 Crores, 2,58,52,941 Equity Shares",
+    "symbol": null,
+    "registrar": "MUFG Intime India Pvt.",
+    "updatedAt": "2026-08-24T19:19:38.914Z"
+  },
+  "market-aastha-spintex": {
+    "issueSize": "₹170 Crores",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:19:41.433Z"
+  },
+  "market-csm-technologies": {
+    "issueSize": "₹146 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:19:43.899Z"
+  },
+  "market-waterways-leisure-tourism": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "updatedAt": "2026-08-24T19:38:29.848Z"
+  },
+  "market-advit-jewels": {
+    "issueSize": "₹165.16 Crores",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:19:48.812Z"
+  },
+  "market-turtlemint-fintech": {
+    "issueSize": "₹883 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:19:51.358Z"
+  },
+  "market-hexagon-nutrition": {
+    "issueSize": "₹138.87 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:19:53.918Z"
+  },
+  "market-cmr-green-technologies": {
+    "issueSize": "₹631 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:19:56.702Z"
+  },
+  "market-bagmane-reit": {
+    "issueSize": "₹3,405 Crores, 34,05,00,000  Equity Shares",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:19:59.149Z"
+  },
+  "market-kissht": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:20:02.551Z"
+  },
+  "market-citius-transnet-invit": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:20:06.071Z"
+  },
+  "market-propshare-celestia": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:20:09.499Z"
+  },
+  "market-om-power-transmission": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:20:13.586Z"
+  },
+  "market-powerica": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:20:17.163Z"
+  },
+  "market-sai-parenteral-s": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-amir-chand": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:20:20.166Z"
+  },
+  "market-central-mine-planning": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:20:23.519Z"
+  },
+  "market-gsp-crop-science": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:20:26.877Z"
+  },
+  "market-raajmarg-infra-invit": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-innovision": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:20:30.465Z"
+  },
+  "market-rajputana-stainless": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:20:34.057Z"
+  },
+  "market-sedemac-mechatronics": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:20:37.684Z"
+  },
+  "market-omnitech-engineering": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:20:40.857Z"
+  },
+  "market-pngs-reva-diamond": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:20:45.751Z"
+  },
+  "market-clean-max-enviro": {
+    "issueSize": null,
+    "symbol": "CLEANMAX",
+    "registrar": "KFin Technologies",
+    "updatedAt": "2026-08-24T19:38:33.099Z"
+  },
+  "market-shree-ram-twistex": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:20:52.037Z"
+  },
+  "market-gaudium-ivf": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:20:55.555Z"
+  },
+  "market-aye-finance": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:20:59.175Z"
+  },
+  "market-fractal-analytics": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:21:02.213Z"
+  },
+  "market-shadowfax": {
+    "issueSize": "₹1907.27 Crores",
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "updatedAt": "2026-08-24T19:38:36.516Z"
+  },
+  "market-amagi-media-labs": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:21:09.084Z"
+  },
+  "market-bharat-coking-coal": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": null,
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:02:01.961Z"
+  },
+  "market-paluck-technologies": {
+    "issueSize": "₹33 Crores",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:21:15.227Z"
+  },
+  "market-complete-sports---management": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "updatedAt": "2026-08-24T19:38:42.165Z"
+  },
+  "market-kwick-forensic-solutions": {
+    "issueSize": "₹50.77 Crores",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:21:20.575Z"
+  },
+  "market-sumax-engineering": {
+    "issueSize": "₹53.40 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:21:23.622Z"
+  },
+  "market-madhur-knit-crafts": {
+    "issueSize": "₹27.00 Crores",
+    "symbol": null,
+    "registrar": "Skyline Financial Services Pvt.",
+    "updatedAt": "2026-08-24T19:21:26.125Z"
+  },
+  "market-abh-healthcare": {
+    "issueSize": "₹34.98 Crores",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:21:28.861Z"
+  },
+  "market-dhanwel-hybrid-seeds": {
+    "issueSize": "₹27 Crores",
+    "symbol": null,
+    "registrar": "Cameo Corporate Services Ltd.",
+    "updatedAt": "2026-08-24T19:21:31.522Z"
+  },
+  "market-mopshop-distribution": {
+    "issueSize": "₹27.26 Crores",
+    "symbol": null,
+    "registrar": "Cameo Corporate Services Ltd.",
+    "updatedAt": "2026-08-24T19:21:33.943Z"
+  },
+  "market-technocrats-plasma": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-ens-enterprises": {
+    "issueSize": "₹33.14 Crores",
+    "symbol": null,
+    "registrar": "Abhipra Capital Limited",
+    "updatedAt": "2026-08-24T19:21:36.551Z"
+  },
+  "market-skytech-infinite-platform": {
+    "issueSize": "₹22.68 Crores",
+    "symbol": null,
+    "registrar": "Integrated Registry Management Services Pvt.",
+    "updatedAt": "2026-08-24T19:21:39.614Z"
+  },
+  "market-credent-connect-n-care": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-q-t-foods": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "updatedAt": "2026-08-24T19:38:44.519Z"
+  },
+  "market-pramodini-medicare": {
+    "issueSize": "₹69.04 Crores",
+    "symbol": null,
+    "registrar": "Purva Sharegistry (India) Pvt.",
+    "updatedAt": "2026-08-24T19:21:45.266Z"
+  },
+  "market-sham-foam": {
+    "issueSize": "₹40.48 Crores",
+    "symbol": null,
+    "registrar": "Alankit Assignments Ltd.",
+    "updatedAt": "2026-08-24T19:21:47.900Z"
+  },
+  "market-fascinate-textiles": {
+    "issueSize": "₹67 Crores",
+    "symbol": null,
+    "registrar": "Cameo Corporate Services Ltd.",
+    "updatedAt": "2026-08-24T19:21:50.302Z"
+  },
+  "market-optimystix-entertainment": {
+    "issueSize": "₹108.50 Crores",
+    "symbol": null,
+    "registrar": "Maashitla Securities Pvt.",
+    "updatedAt": "2026-08-24T19:21:52.755Z"
+  },
+  "market-lapl-automotive": {
+    "issueSize": "₹32.40 Crores",
+    "symbol": null,
+    "registrar": "Maashitla Securities Pvt.",
+    "updatedAt": "2026-08-24T19:21:55.357Z"
+  },
+  "market-aegeus-technologies": {
+    "issueSize": "₹23.71 Crores",
+    "symbol": null,
+    "registrar": "Skyline Financial Services Pvt.",
+    "updatedAt": "2026-08-24T19:21:58.028Z"
+  },
+  "market-anawil-wire---engineering": {
+    "issueSize": null,
+    "symbol": "ANAWIL",
+    "registrar": "KFin Technologies",
+    "updatedAt": "2026-08-24T19:38:47.824Z"
+  },
+  "market-g-v--electricals": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "updatedAt": "2026-08-24T19:38:50.373Z"
+  },
+  "market-fusion-klassroom": {
+    "issueSize": "₹39.04 Crores",
+    "symbol": null,
+    "registrar": "Maashitla Securities Pvt.",
+    "updatedAt": "2026-08-24T19:22:06.498Z"
+  },
+  "market-oneindig-technologies": {
+    "issueSize": "₹27.65 Crores",
+    "symbol": null,
+    "registrar": "Maashitla Securities Pvt.",
+    "updatedAt": "2026-08-24T19:22:09.041Z"
+  },
+  "market-dhaval-packaging": {
+    "issueSize": "₹36.36 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:22:11.516Z"
+  },
+  "market-h-r--hygiene-products": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "updatedAt": "2026-08-24T19:38:52.917Z"
+  },
+  "market-poojaa-precision": {
+    "issueSize": "₹159.83 Crores",
+    "symbol": null,
+    "registrar": "MUFG Intime India Pvt.",
+    "updatedAt": "2026-08-24T19:22:16.576Z"
+  },
+  "market-propshop-events": {
+    "issueSize": "₹28.57 Crores",
+    "symbol": null,
+    "registrar": "MUFG Intime India Pvt.",
+    "updatedAt": "2026-08-24T19:22:19.185Z"
+  },
+  "market-advance-technoforge": {
+    "issueSize": "₹24.03 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:22:21.642Z"
+  },
+  "market-silverstorm-parks": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "updatedAt": "2026-08-24T19:38:56.036Z"
+  },
+  "market-shree-balaji--mala--textiles": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-metalic-technoforge": {
+    "issueSize": "₹49.96 Crores, 64,88,000 Equity Shares",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:22:26.759Z"
+  },
+  "market-gulf-lloyds": {
+    "issueSize": "₹18.19 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:22:29.158Z"
+  },
+  "market-sotefin-bharat": {
+    "issueSize": "₹90 Crores, 48,00,000 Equity Shares",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:22:31.606Z"
+  },
+  "market-millworks-technologies": {
+    "issueSize": "₹160.34 Crores",
+    "symbol": null,
+    "registrar": "Purva Sharegistry (India) Pvt.",
+    "updatedAt": "2026-08-24T19:22:35.123Z"
+  },
+  "market-happy-steels": {
+    "issueSize": "₹25 Crores",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:22:37.630Z"
+  },
+  "market-devson-catalyst": {
+    "issueSize": "₹42.34 Crores, 35,88,000 Equity Shares",
+    "symbol": null,
+    "registrar": "MUFG Intime India Pvt.",
+    "updatedAt": "2026-08-24T19:22:41.276Z"
+  },
+  "market-ic-electricals": {
+    "issueSize": "₹48 Crores, 48,39,600 Equity Shares",
+    "symbol": null,
+    "registrar": "Skyline Financial Services Pvt.",
+    "updatedAt": "2026-08-24T19:22:44.084Z"
+  },
+  "market-teja-engineering": {
+    "issueSize": "₹37.36 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:22:47.607Z"
+  },
+  "market-vinit-mobile": {
+    "issueSize": "₹34.13 Crores",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:22:51.257Z"
+  },
+  "market-seemax-resources": {
+    "issueSize": "₹20 Crores",
+    "symbol": null,
+    "registrar": "Cameo Corporate Services Ltd.",
+    "updatedAt": "2026-08-24T19:22:54.669Z"
+  },
+  "market-sampark-india-logistics": {
+    "issueSize": "₹27.22 Crores",
+    "symbol": null,
+    "registrar": "Maashitla Securities Pvt.",
+    "updatedAt": "2026-08-24T19:22:58.172Z"
+  },
+  "market-kratikal-tech": {
+    "issueSize": "₹40 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:23:00.837Z"
+  },
+  "market-atharva-polyplast": {
+    "issueSize": "₹27 Crores",
+    "symbol": null,
+    "registrar": "MUFG Intime India Pvt.",
+    "updatedAt": "2026-08-24T19:23:05.174Z"
+  },
+  "market-adon-agro-commodities": {
+    "issueSize": "₹44.03 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:23:08.425Z"
+  },
+  "market-crazy-snacks": {
+    "issueSize": "₹31.47 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:23:11.767Z"
+  },
+  "market-jivial-industries": {
+    "issueSize": "₹32 Crores",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:23:14.348Z"
+  },
+  "market-shreedhar-spinners": {
+    "issueSize": "₹31 Crores",
+    "symbol": null,
+    "registrar": "MUFG Intime India Pvt.",
+    "updatedAt": "2026-08-24T19:23:16.762Z"
+  },
+  "market-anubhav-plast": {
+    "issueSize": "₹24 Crores",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:23:19.343Z"
+  },
+  "market-riyaasat-lifestyle": {
+    "issueSize": "₹31 Crores",
+    "symbol": null,
+    "registrar": "Accurate Securities & Registry Pvt.",
+    "updatedAt": "2026-08-24T19:23:22.835Z"
+  },
+  "market-avience-biomedicals": {
+    "issueSize": "₹30.24 Crores",
+    "symbol": null,
+    "registrar": "Skyline Financial Services Pvt.",
+    "updatedAt": "2026-08-24T19:23:25.226Z"
+  },
+  "market-clay-craft": {
+    "issueSize": "₹110.11 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:23:28.467Z"
+  },
+  "market-diksha-polymers": {
+    "issueSize": "₹18 Crores",
+    "symbol": null,
+    "registrar": "Cameo Corporate Services Ltd.",
+    "updatedAt": "2026-08-24T19:23:31.809Z"
+  },
+  "market-leapfrog-engineering": {
+    "issueSize": "₹89 Crores, 3,84,84,000 Equity Shares",
+    "symbol": null,
+    "registrar": "Integrated Registry Management Services Pvt.",
+    "updatedAt": "2026-08-24T19:23:34.230Z"
+  },
+  "market-liotech-industries": {
+    "issueSize": "₹36.02 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:23:36.699Z"
+  },
+  "market-horizon-reclaim": {
+    "issueSize": "₹54.27 Crores, 52,69,200 Equity Shares",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:23:39.197Z"
+  },
+  "market-susan-electricals": {
+    "issueSize": "₹70.38 Crores",
+    "symbol": null,
+    "registrar": "Mudra RTA Ventures Private Limited",
+    "updatedAt": "2026-08-24T19:23:41.624Z"
+  },
+  "market-utkal-speciality-industries": {
+    "issueSize": "₹34.54 Crores",
+    "symbol": null,
+    "registrar": "Cameo Corporate Services Ltd.",
+    "updatedAt": "2026-08-24T19:23:44.976Z"
+  },
+  "market-genxai-analytics": {
+    "issueSize": "₹55 Crores",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:23:47.528Z"
+  },
+  "market-uhm-vacation": {
+    "issueSize": "₹36.02 Crores",
+    "symbol": null,
+    "registrar": "MUFG Intime India Pvt.",
+    "updatedAt": "2026-08-24T19:23:51.156Z"
+  },
+  "market-vahh-chemicals": {
+    "issueSize": "₹13.45 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:23:54.868Z"
+  },
+  "market-merritronix": {
+    "issueSize": "₹70.03 Crores, 47,00,000 Equity Shares",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:23:58.286Z"
+  },
+  "market-aureate-tradde": {
+    "issueSize": "₹27.29 Crores",
+    "symbol": null,
+    "registrar": "MUFG Intime India Pvt.",
+    "updatedAt": "2026-08-24T19:24:01.626Z"
+  },
+  "market-rajnandini-fashion": {
+    "issueSize": "₹18.21 Crores, 28,90,000 Equity Shares",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:24:05.118Z"
+  },
+  "market-smr-jewels": {
+    "issueSize": "₹63.74 Crores, 49,80,000 Equity Shares",
+    "symbol": null,
+    "registrar": "Purva Sharegistry (India) Pvt.",
+    "updatedAt": "2026-08-24T19:24:08.560Z"
+  },
+  "market-yaashvi-jewellers": {
+    "issueSize": "₹43.88 Crores, 51,39,200 Equity Shares",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:24:11.024Z"
+  },
+  "market-m-r-maniveni-foods": {
+    "issueSize": null,
+    "symbol": "544768",
+    "registrar": "KFin Technologies",
+    "updatedAt": "2026-08-24T19:38:59.165Z"
+  },
+  "market-q-line-biotech": {
+    "issueSize": "₹214.48 Crores, 62,53,200 Equity Shares",
+    "symbol": null,
+    "registrar": "Purva Sharegistry (India) Pvt.Limited",
+    "updatedAt": "2026-08-24T19:24:19.035Z"
+  },
+  "market-autofurnish": {
+    "issueSize": "₹15 Crores",
+    "symbol": null,
+    "registrar": "Skyline Financial Services Pvt.",
+    "updatedAt": "2026-08-24T19:24:22.666Z"
+  },
+  "market-bio-medica-laboratories": {
+    "issueSize": "₹52.43 Crores, 37,72,000 Equity Shares",
+    "symbol": null,
+    "registrar": "Skyline Financial Services Pvt.",
+    "updatedAt": "2026-08-24T19:24:25.994Z"
+  },
+  "market-vegorama-punjabi-angithi": {
+    "issueSize": "₹38.38 Crores",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:24:29.264Z"
+  },
+  "market-harikanta-overseas": {
+    "issueSize": "₹24.30 Crores",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:24:31.914Z"
+  },
+  "market-teamtech-formwork": {
+    "issueSize": null,
+    "symbol": "TEAMTECH",
+    "registrar": "KFin Technologies",
+    "updatedAt": "2026-08-24T19:39:02.363Z"
+  },
+  "market-nfp-sampoorna-foods": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:24:40.587Z"
+  },
+  "market-rfbl-flexi-pack": {
+    "issueSize": "₹35.33 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:24:44.019Z"
+  },
+  "market-goldline-pharmaceutical": {
+    "issueSize": "₹12 Crores",
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt.",
+    "updatedAt": "2026-08-24T19:24:47.395Z"
+  },
+  "market-simca-advertising": {
+    "issueSize": "₹58.04 Crores",
+    "symbol": null,
+    "registrar": "MUFG Intime India Pvt.",
+    "updatedAt": "2026-08-24T19:24:49.848Z"
+  },
+  "market-recode-studios": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:24:52.903Z"
+  },
+  "market-value-360-communications": {
+    "issueSize": "₹42 Crores 42,54,000 Equity Shares",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:24:56.271Z"
+  },
+  "market-amba-auto-sales": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-adisoft-technologies": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:25:03.184Z"
+  },
+  "market-mehul-telecom": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:25:06.891Z"
+  },
+  "market-safety-controls": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:25:11.274Z"
+  },
+  "market-emiac-technologies": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:25:16.701Z"
+  },
+  "market-vivid-electromech": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:25:19.987Z"
+  },
+  "market-highness-microelectronics": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:25:24.354Z"
+  },
+  "market-tipco-engineering": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:25:28.362Z"
+  },
+  "market-speciality-medicines": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:25:32.527Z"
+  },
+  "market-novus-loyalty": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:25:36.852Z"
+  },
+  "market-apsis-aerocom": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:25:41.033Z"
+  },
+  "market-srinibas-pradhan": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:25:45.442Z"
+  },
+  "market-elfin-agro": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:25:48.489Z"
+  },
+  "market-acetech-e-commerce": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:25:52.309Z"
+  },
+  "market-striders-impex": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:25:57.652Z"
+  },
+  "market-yaap-digital": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:26:02.168Z"
+  },
+  "market-kiaasa-retail": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:26:06.943Z"
+  },
+  "market-accord-transformer": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:26:11.172Z"
+  },
+  "market-mobilise-app": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:26:15.840Z"
+  },
+  "market-manilam-industries": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:26:20.445Z"
+  },
+  "market-yashhtej-industries": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:26:24.688Z"
+  },
+  "market-fractal-industries": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:26:28.823Z"
+  },
+  "market-marushika-technology": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:26:32.735Z"
+  },
+  "market-pan-hr-solutions": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:26:36.916Z"
+  },
+  "market-biopol-chemicals": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:26:41.190Z"
+  },
+  "market-brandman-retail": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:26:45.046Z"
+  },
+  "market-grover-jewells": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:26:49.883Z"
+  },
+  "market-ckk-retail-mart": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:26:54.439Z"
+  },
+  "market-kanishk-aluminium": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:26:57.544Z"
+  },
+  "market-msafe-equipments": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:27:01.611Z"
+  },
+  "market-accretion-nutraveda": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:27:07.511Z"
+  },
+  "market-kasturi-metal-composite": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-hannah-joseph-hospital": {
+    "issueSize": null,
+    "symbol": "–",
+    "registrar": "KFin Technologies",
+    "updatedAt": "2026-08-24T19:39:05.533Z"
+  },
+  "market-shayona-engineering": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:27:17.722Z"
+  },
+  "market-krm-ayurveda": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:27:22.345Z"
+  },
+  "market-digilogic-systems": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:27:26.716Z"
+  },
+  "market-aritas-vinyl": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:27:31.615Z"
+  },
+  "market-armour-security": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:27:36.012Z"
+  },
+  "market-gre-renew-enertech": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:27:40.155Z"
+  },
+  "market-indo-smc": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:27:44.960Z"
+  },
+  "market-narmadesh-brass": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:27:49.722Z"
+  },
+  "market-avana-electrosystems": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:27:54.635Z"
+  },
+  "market-defrail-technologies": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:27:59.664Z"
+  },
+  "market-victory-electric-vehicles": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:28:03.793Z"
+  },
+  "market-yajur-fibres": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:28:09.063Z"
+  },
+  "market-gabion-technologies": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "updatedAt": "2026-08-24T19:39:08.900Z"
+  },
+  "market-modern-diagnostic": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "is responsible for the IPO allotment and refund process.",
+    "updatedAt": "2026-08-24T19:28:17.576Z"
+  },
+  "market-reliance-jio": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": ":Adding SoonNote: Check Reliance Jio ipo allotment status on – website allotment url.",
+    "updatedAt": "2026-08-24T19:28:21.620Z"
+  },
+  "market-phonepe-ltd": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-boat": {
+    "issueSize": "₹1,500 Crores",
+    "symbol": null,
+    "registrar": "MUFG Intime India Private Limited",
+    "updatedAt": "2026-08-24T19:28:26.828Z"
+  },
+  "market-cordelia-cruises": {
+    "issueSize": "₹585 Crores, 72,40,099 Equity Shares",
+    "symbol": null,
+    "registrar": "MUFG Intime India Pvt.",
+    "updatedAt": "2026-08-24T19:28:29.300Z"
+  },
+  "market-sbi-mutual-fund": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-hero-fincorp": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "updatedAt": "2026-08-24T19:39:12.060Z"
+  },
+  "market-flipkart": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-zepto": {
+    "issueSize": "₹11,000 Crores",
+    "symbol": null,
+    "registrar": "To be updated soon",
+    "updatedAt": "2026-08-24T19:28:41.086Z"
+  },
+  "market-oyo": {
+    "issueSize": "₹[.] Crores",
+    "symbol": null,
+    "registrar": "MUFG Intime India Private Limited",
+    "updatedAt": "2026-08-24T19:28:44.595Z"
+  },
+  "market-nse--national-stock-exchange-": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-manipal-payment": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-rays-of-belief": {
+    "issueSize": "₹125 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:28:53.520Z"
+  },
+  "market-shanti-inorganics": {
+    "issueSize": "₹41.50 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.",
+    "updatedAt": "2026-08-24T19:28:56.062Z"
+  },
+  "market-gujarat-kidney": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:02:04.634Z"
+  },
+  "market-ksh-international": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFGIntime",
+    "allotmentDate": 1766082600000,
+    "listingDate": 1766428200000,
+    "updatedAt": "2026-08-26T19:02:07.669Z"
+  },
+  "market-icici-prudential-amc": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1765909800000,
+    "listingDate": 1766082600000,
+    "updatedAt": "2026-08-26T19:02:10.696Z"
+  },
+  "market-nephrocare-health": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1765737000000,
+    "listingDate": 1765909800000,
+    "updatedAt": "2026-08-26T19:02:13.660Z"
+  },
+  "market-park-medi-world": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1765737000000,
+    "listingDate": 1765909800000,
+    "updatedAt": "2026-08-26T19:02:16.615Z"
+  },
+  "market-corona-remedies": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": 1765391400000,
+    "listingDate": 1765737000000,
+    "updatedAt": "2026-08-26T19:02:20.000Z"
+  },
+  "market-wakefit-innovations": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFGIntime",
+    "allotmentDate": 1765391400000,
+    "listingDate": 1765737000000,
+    "updatedAt": "2026-08-26T19:02:22.945Z"
+  },
+  "market-meesho": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1765132200000,
+    "listingDate": 1765305000000,
+    "updatedAt": "2026-08-26T19:02:26.668Z"
+  },
+  "market-aequs": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1765132200000,
+    "listingDate": 1765305000000,
+    "updatedAt": "2026-08-26T19:02:30.109Z"
+  },
+  "market-vidya-wires": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFGIntime",
+    "allotmentDate": 1765132200000,
+    "listingDate": 1765305000000,
+    "updatedAt": "2026-08-26T19:02:33.469Z"
+  },
+  "market-sudeep-pharma": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFGIntime",
+    "allotmentDate": 1764095400000,
+    "listingDate": 1764268200000,
+    "updatedAt": "2026-08-26T19:02:36.428Z"
+  },
+  "market-excelsoft-technologies": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFGIntime",
+    "allotmentDate": 1763922600000,
+    "listingDate": 1764095400000,
+    "updatedAt": "2026-08-26T19:02:39.723Z"
+  },
+  "market-capillary-technologies": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFGIntime",
+    "allotmentDate": 1763490600000,
+    "listingDate": 1763663400000,
+    "updatedAt": "2026-08-26T19:02:43.106Z"
+  },
+  "market-fujiyama-power": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-tenneco-clean-air": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:02:46.235Z"
+  },
+  "market-physicswallah": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFGIntime",
+    "allotmentDate": 1763058600000,
+    "listingDate": 1763404200000,
+    "updatedAt": "2026-08-26T19:02:49.374Z"
+  },
+  "market-emmvee-photovoltaic": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1763058600000,
+    "listingDate": 1763404200000,
+    "updatedAt": "2026-08-26T19:02:52.345Z"
+  },
+  "market-pine-labs": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1762885800000,
+    "listingDate": 1763058600000,
+    "updatedAt": "2026-08-26T19:02:55.372Z"
+  },
+  "market-lenskart-solutions": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFGIntime",
+    "allotmentDate": 1762367400000,
+    "listingDate": 1762713000000,
+    "updatedAt": "2026-08-26T19:02:59.311Z"
+  },
+  "market-studds-accessories": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFGIntime",
+    "allotmentDate": 1762194600000,
+    "listingDate": 1762453800000,
+    "updatedAt": "2026-08-26T19:03:03.735Z"
+  },
+  "market-orkla-india": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1762108200000,
+    "listingDate": 1762367400000,
+    "updatedAt": "2026-08-26T19:03:06.720Z"
+  },
+  "market-midwest": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1760898600000,
+    "listingDate": 1761244200000,
+    "updatedAt": "2026-08-26T19:03:10.039Z"
+  },
+  "market-canara-hsbc-life": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1760466600000,
+    "listingDate": 1760639400000,
+    "updatedAt": "2026-08-26T19:03:13.059Z"
+  },
+  "market-canara-robeco": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFGIntime",
+    "allotmentDate": 1760380200000,
+    "listingDate": 1760553000000,
+    "updatedAt": "2026-08-26T19:03:16.028Z"
+  },
+  "market-rubicon-research": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFGIntime",
+    "allotmentDate": 1760380200000,
+    "listingDate": 1760553000000,
+    "updatedAt": "2026-08-26T19:03:20.150Z"
+  },
+  "market-lg-electronics": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1760034600000,
+    "listingDate": 1760380200000,
+    "updatedAt": "2026-08-26T19:03:23.520Z"
+  },
+  "market-tata-capital": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFGIntime",
+    "allotmentDate": 1759948200000,
+    "listingDate": 1760293800000,
+    "updatedAt": "2026-08-26T19:03:29.186Z"
+  },
+  "market-wework-india": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFGIntime",
+    "allotmentDate": 1759861800000,
+    "listingDate": 1760034600000,
+    "updatedAt": "2026-08-26T19:03:32.974Z"
+  },
+  "market-om-freight-forwarders": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": 1759689000000,
+    "listingDate": 1759861800000,
+    "updatedAt": "2026-08-26T19:03:36.314Z"
+  },
+  "market-advance-agrolife": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1759689000000,
+    "listingDate": 1759861800000,
+    "updatedAt": "2026-08-26T19:03:39.371Z"
+  },
+  "market-glottis": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1759429800000,
+    "listingDate": 1759775400000,
+    "updatedAt": "2026-08-26T19:03:42.629Z"
+  },
+  "market-fabtech-technologies": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Maashitla Securities",
+    "allotmentDate": 1736274600000,
+    "listingDate": 1736447400000,
+    "updatedAt": "2026-08-26T19:03:46.105Z"
+  },
+  "market-pace-digitek": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFGIntime",
+    "allotmentDate": 1759257000000,
+    "listingDate": 1759689000000,
+    "updatedAt": "2026-08-26T19:03:49.136Z"
+  },
+  "market-trualt-bioenergy": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": 1759170600000,
+    "listingDate": 1759429800000,
+    "updatedAt": "2026-08-26T19:03:53.343Z"
+  },
+  "market-jinkushal-industries": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": null,
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:03:56.310Z"
+  },
+  "market-jain-resource-recycling": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1759084200000,
+    "listingDate": 1759257000000,
+    "updatedAt": "2026-08-26T19:03:59.345Z"
+  },
+  "market-epack-prefab": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": null,
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:04:02.310Z"
+  },
+  "market-bmw-ventures": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Cameo Corporate Services",
+    "allotmentDate": 1759084200000,
+    "listingDate": 1759257000000,
+    "updatedAt": "2026-08-26T19:04:05.482Z"
+  },
+  "market-seshaasai-technologies": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": null,
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:04:08.830Z"
+  },
+  "market-anand-rathi-share": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:04:12.376Z"
+  },
+  "market-jaro-institute": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:04:15.629Z"
+  },
+  "market-solarworld-energy": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFGIntime",
+    "allotmentDate": 1758825000000,
+    "listingDate": 1759170600000,
+    "updatedAt": "2026-08-26T19:04:19.243Z"
+  },
+  "market-atlanta-electricals": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFG Intime",
+    "allotmentDate": 1758738600000,
+    "listingDate": 1759084200000,
+    "updatedAt": "2026-08-26T19:04:22.247Z"
+  },
+  "market-ganesh-consumer": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFG Intime",
+    "allotmentDate": 1758738600000,
+    "listingDate": 1759084200000,
+    "updatedAt": "2026-08-26T19:04:25.540Z"
+  },
+  "market-gk-energy": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFGIntime",
+    "allotmentDate": 1758652200000,
+    "listingDate": 1758825000000,
+    "updatedAt": "2026-08-26T19:04:29.913Z"
+  },
+  "market-saatvik-green-energy": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1758652200000,
+    "listingDate": 1758825000000,
+    "updatedAt": "2026-08-26T19:04:35.434Z"
+  },
+  "market-ivalue-infosolutions": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1758565800000,
+    "listingDate": 1758738600000,
+    "updatedAt": "2026-08-26T19:04:39.375Z"
+  },
+  "market-vms-tmt": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1758479400000,
+    "listingDate": 1758652200000,
+    "updatedAt": "2026-08-26T19:04:42.715Z"
+  },
+  "market-euro-pratik-sales": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFGIntime",
+    "allotmentDate": 1758220200000,
+    "listingDate": 1758565800000,
+    "updatedAt": "2026-08-26T19:04:45.743Z"
+  },
+  "market-urban-company": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFGIntime",
+    "allotmentDate": 1757874600000,
+    "listingDate": 1758047400000,
+    "updatedAt": "2026-08-26T19:04:48.874Z"
+  },
+  "market-dev-accelerator": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1757874600000,
+    "listingDate": 1758047400000,
+    "updatedAt": "2026-08-26T19:04:52.684Z"
+  },
+  "market-shringar-house": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-amanta-healthcare": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFGIntime",
+    "allotmentDate": 1756924200000,
+    "listingDate": 1757356200000,
+    "updatedAt": "2026-08-26T19:04:55.862Z"
+  },
+  "market-anlon-healthcare": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1756665000000,
+    "listingDate": 1756837800000,
+    "updatedAt": "2026-08-26T19:04:59.221Z"
+  },
+  "market-vikran-engineering": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": 1756665000000,
+    "listingDate": 1756837800000,
+    "updatedAt": "2026-08-26T19:05:02.319Z"
+  },
+  "market-mangal-electrical": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": 1756060200000,
+    "listingDate": 1756319400000,
+    "updatedAt": "2026-08-26T19:05:05.697Z"
+  },
+  "market-gem-aromatics": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1755801000000,
+    "listingDate": 1756146600000,
+    "updatedAt": "2026-08-26T19:05:10.702Z"
+  },
+  "market-vikram-solar": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "MUFG Intime",
+    "allotmentDate": 1755801000000,
+    "listingDate": 1756146600000,
+    "updatedAt": "2026-08-26T19:05:14.934Z"
+  },
+  "market-patel-retail": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": 1755801000000,
+    "listingDate": 1756146600000,
+    "updatedAt": "2026-08-26T19:05:18.791Z"
+  },
+  "market-shreeji-shipping-global": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": 1755801000000,
+    "listingDate": 1756146600000,
+    "updatedAt": "2026-08-26T19:05:21.724Z"
+  },
+  "market-regaal-resources": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1755455400000,
+    "listingDate": 1755628200000,
+    "updatedAt": "2026-08-26T19:05:24.786Z"
+  },
+  "market-bluestone-jewellery": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1755109800000,
+    "listingDate": 1755541800000,
+    "updatedAt": "2026-08-26T19:05:28.066Z"
+  },
+  "market-knowledge-realty-trust-reit": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1754591400000,
+    "listingDate": 1754937000000,
+    "updatedAt": "2026-08-26T19:05:31.554Z"
+  },
+  "market-all-time-plastics": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1754937000000,
+    "listingDate": 1755109800000,
+    "updatedAt": "2026-08-26T19:05:34.725Z"
+  },
+  "market-jsw-cement": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1754937000000,
+    "listingDate": 1755109800000,
+    "updatedAt": "2026-08-26T19:05:37.808Z"
+  },
+  "market-highway-infrastructure": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": 1754591400000,
+    "listingDate": 1754937000000,
+    "updatedAt": "2026-08-26T19:05:40.884Z"
+  },
+  "market-sri-lotus-developers": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:05:43.892Z"
+  },
+  "market-nsdl": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1754245800000,
+    "listingDate": 1754418600000,
+    "updatedAt": "2026-08-26T19:05:47.026Z"
+  },
+  "market-m-b-engineering": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-laxmi-india-finance": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:05:50.113Z"
+  },
+  "market-aditya-infotech": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1753986600000,
+    "listingDate": 1754332200000,
+    "updatedAt": "2026-08-26T19:05:53.157Z"
+  },
+  "market-shanti-gold-international": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-brigade-hotel-ventures": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1753727400000,
+    "listingDate": 1753900200000,
+    "updatedAt": "2026-08-26T19:05:56.679Z"
+  },
+  "market-indiqube-spaces": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1753641000000,
+    "listingDate": 1753813800000,
+    "updatedAt": "2026-08-26T19:05:59.953Z"
+  },
+  "market-gng-electronics": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": 1753641000000,
+    "listingDate": 1753813800000,
+    "updatedAt": "2026-08-26T19:06:03.036Z"
+  },
+  "market-anthem-biosciences": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1752690600000,
+    "listingDate": 1753036200000,
+    "updatedAt": "2026-08-26T19:06:06.637Z"
+  },
+  "market-smartworks-coworking": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1752517800000,
+    "listingDate": 1752690600000,
+    "updatedAt": "2026-08-26T19:06:10.271Z"
+  },
+  "market-travel-food-services": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1752085800000,
+    "listingDate": 1752431400000,
+    "updatedAt": "2026-08-26T19:06:13.334Z"
+  },
+  "market-crizac": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1751826600000,
+    "listingDate": 1751999400000,
+    "updatedAt": "2026-08-26T19:06:16.700Z"
+  },
+  "market-indogulf-cropsciences": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": 1751308200000,
+    "listingDate": 1751481000000,
+    "updatedAt": "2026-08-26T19:06:20.300Z"
+  },
+  "market-hdb-financial": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1751221800000,
+    "listingDate": 1751394600000,
+    "updatedAt": "2026-08-26T19:06:23.437Z"
+  },
+  "market-sambhv-steel-tubes": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1751221800000,
+    "listingDate": 1751394600000,
+    "updatedAt": "2026-08-26T19:06:26.392Z"
+  },
+  "market-globe-civil-projects": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1750962600000,
+    "listingDate": 1751308200000,
+    "updatedAt": "2026-08-26T19:06:29.487Z"
+  },
+  "market-kalpataru": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1750962600000,
+    "listingDate": 1751308200000,
+    "updatedAt": "2026-08-26T19:06:32.577Z"
+  },
+  "market-ellenbarrie-industrial-gases": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1750962600000,
+    "listingDate": 1751308200000,
+    "updatedAt": "2026-08-26T19:06:36.220Z"
+  },
+  "market-oswal-pumps": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1750185000000,
+    "listingDate": 1750357800000,
+    "updatedAt": "2026-08-26T19:06:39.474Z"
+  },
+  "market-scoda-tubes": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1748802600000,
+    "listingDate": 1748975400000,
+    "updatedAt": "2026-08-26T19:06:42.623Z"
+  },
+  "market-belrise-industries": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1748197800000,
+    "listingDate": 1748370600000,
+    "updatedAt": "2026-08-26T19:06:46.048Z"
+  },
+  "market-borana-weaves": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1747938600000,
+    "listingDate": 1748284200000,
+    "updatedAt": "2026-08-26T19:06:49.123Z"
+  },
+  "market-ather-energy": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1746124200000,
+    "listingDate": 1746469800000,
+    "updatedAt": "2026-08-26T19:06:52.177Z"
+  },
+  "market-quality-power": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1739903400000,
+    "listingDate": 1740076200000,
+    "updatedAt": "2026-08-26T19:06:55.322Z"
+  },
+  "market-hexaware-technologies": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1739730600000,
+    "listingDate": 1739903400000,
+    "updatedAt": "2026-08-26T19:06:58.822Z"
+  },
+  "market-ajax-engineering": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1739385000000,
+    "listingDate": 1739730600000,
+    "updatedAt": "2026-08-26T19:07:02.480Z"
+  },
+  "market-dr--agarwal-s-health-care": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-denta-water": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1737916200000,
+    "listingDate": 1738089000000,
+    "updatedAt": "2026-08-26T19:07:06.054Z"
+  },
+  "market-stallion-india": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": 1737397800000,
+    "listingDate": 1737570600000,
+    "updatedAt": "2026-08-26T19:07:09.290Z"
+  },
+  "market-laxmi-dental": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": null,
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:07:12.465Z"
+  },
+  "market-quadrant-future-tek": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1736447400000,
+    "listingDate": 1736793000000,
+    "updatedAt": "2026-08-26T19:07:17.725Z"
+  },
+  "market-standard-glass-lining": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1736361000000,
+    "listingDate": 1736706600000,
+    "updatedAt": "2026-08-26T19:07:21.800Z"
+  },
+  "market-indo-farm-equipment": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1735842600000,
+    "listingDate": 1736188200000,
+    "updatedAt": "2026-08-26T19:07:24.881Z"
+  },
+  "market-unimech-aerospace": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1735237800000,
+    "listingDate": 1735583400000,
+    "updatedAt": "2026-08-26T19:07:29.386Z"
+  },
+  "market-ventive-hospitality": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1735151400000,
+    "listingDate": 1735497000000,
+    "updatedAt": "2026-08-26T19:07:33.803Z"
+  },
+  "market-senores-pharmaceuticals": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1735151400000,
+    "listingDate": 1735497000000,
+    "updatedAt": "2026-08-26T19:07:38.399Z"
+  },
+  "market-carraro-india": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1735151400000,
+    "listingDate": 1735497000000,
+    "updatedAt": "2026-08-26T19:07:42.448Z"
+  },
+  "market-concord-enviro-systems": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1734978600000,
+    "listingDate": 1735237800000,
+    "updatedAt": "2026-08-26T19:07:47.644Z"
+  },
+  "market-dam-capital-advisors": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1734978600000,
+    "listingDate": 1735237800000,
+    "updatedAt": "2026-08-26T19:07:51.739Z"
+  },
+  "market-sanathan-textiles": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": null,
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:07:54.650Z"
+  },
+  "market-transrail-lighting": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1734978600000,
+    "listingDate": 1735237800000,
+    "updatedAt": "2026-08-26T19:07:59.671Z"
+  },
+  "market-mamata-machinery": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1734978600000,
+    "listingDate": 1735237800000,
+    "updatedAt": "2026-08-26T19:08:04.018Z"
+  },
+  "market-inventurus-knowledge": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-sai-life-sciences": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1734287400000,
+    "listingDate": 1734460200000,
+    "updatedAt": "2026-08-26T19:08:08.460Z"
+  },
+  "market-mobikwik": {
+    "issueSize": "₹572 Crores",
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "updatedAt": "2026-08-24T19:56:41.151Z"
+  },
+  "market-vishal-mega-mart": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1734287400000,
+    "listingDate": 1734460200000,
+    "updatedAt": "2026-08-26T19:08:12.642Z"
+  },
+  "market-suraksha-diagnostic": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:08:17.348Z"
+  },
+  "market-enviro-infra": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": 1732645800000,
+    "listingDate": 1732818600000,
+    "updatedAt": "2026-08-26T19:08:21.526Z"
+  },
+  "market-ntpc-green-energy": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1732473000000,
+    "listingDate": 1732645800000,
+    "updatedAt": "2026-08-26T19:08:26.574Z"
+  },
+  "market-zinka-logistics--blackbuck-": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1731954600000,
+    "listingDate": 1732127400000,
+    "updatedAt": "2026-08-26T19:08:30.938Z"
+  },
+  "market-niva-bupa-health": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-acme-solar": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-swiggy": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1731263400000,
+    "listingDate": 1731436200000,
+    "updatedAt": "2026-08-26T19:08:34.827Z"
+  },
+  "market-sagility-india": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1731004200000,
+    "listingDate": 1731349800000,
+    "updatedAt": "2026-08-26T19:08:39.180Z"
+  },
+  "market-afcons-infrastructure": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1730226600000,
+    "listingDate": 1730658600000,
+    "updatedAt": "2026-08-26T19:08:44.260Z"
+  },
+  "market-waaree-energies": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1729708200000,
+    "listingDate": 1730053800000,
+    "updatedAt": "2026-08-26T19:08:48.529Z"
+  },
+  "market-deepak-builders": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1729708200000,
+    "listingDate": 1730053800000,
+    "updatedAt": "2026-08-26T19:08:51.902Z"
+  },
+  "market-hyundai-motor-india": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:08:55.944Z"
+  },
+  "market-garuda-construction": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1728585000000,
+    "listingDate": 1728930600000,
+    "updatedAt": "2026-08-26T19:09:00.540Z"
+  },
+  "market-diffusion-engineers": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": 1727721000000,
+    "listingDate": 1727980200000,
+    "updatedAt": "2026-08-26T19:09:05.114Z"
+  },
+  "market-krn-heat-exchanger": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": 1727634600000,
+    "listingDate": 1727893800000,
+    "updatedAt": "2026-08-26T19:09:08.945Z"
+  },
+  "market-manba-finance": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1727289000000,
+    "listingDate": 1727634600000,
+    "updatedAt": "2026-08-26T19:09:13.142Z"
+  },
+  "market-northern-arc-capital": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1726770600000,
+    "listingDate": 1727116200000,
+    "updatedAt": "2026-08-26T19:09:17.227Z"
+  },
+  "market-arkade-developers": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": 1726770600000,
+    "listingDate": 1727116200000,
+    "updatedAt": "2026-08-26T19:09:20.551Z"
+  },
+  "market-western-carriers": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1726770600000,
+    "listingDate": 1727116200000,
+    "updatedAt": "2026-08-26T19:09:24.282Z"
+  },
+  "market-p-n-gadgil-jewellers": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": 1726165800000,
+    "listingDate": 1726511400000,
+    "updatedAt": "2026-08-26T19:09:28.286Z"
+  },
+  "market-bajaj-housing-finance": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1726079400000,
+    "listingDate": 1726425000000,
+    "updatedAt": "2026-08-26T19:09:32.434Z"
+  },
+  "market-kross": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1726079400000,
+    "listingDate": 1726425000000,
+    "updatedAt": "2026-08-26T19:09:36.989Z"
+  },
+  "market-tolins-tyres": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Cameo Corporate Services",
+    "allotmentDate": 1726079400000,
+    "listingDate": 1726425000000,
+    "updatedAt": "2026-08-26T19:09:41.806Z"
+  },
+  "market-shree-tirupati-balajee": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:09:46.119Z"
+  },
+  "market-gala-precision-engineering": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:09:50.738Z"
+  },
+  "market-baazar-style-retail": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Cameo Corporate Services",
+    "allotmentDate": 1725388200000,
+    "listingDate": 1725561000000,
+    "updatedAt": "2026-08-26T19:09:54.934Z"
+  },
+  "market-premier-energies": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:09:59.307Z"
+  },
+  "market-ecos-mobility": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-orient-technologies": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1724610600000,
+    "listingDate": 1724783400000,
+    "updatedAt": "2026-08-26T19:10:03.758Z"
+  },
+  "market-interarch-building-products": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:10:07.608Z"
+  },
+  "market-saraswati-saree": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-firstcry": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:10:12.027Z"
+  },
+  "market-unicommerce-esolutions": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:10:16.290Z"
+  },
+  "market-ola-electric": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:10:20.877Z"
+  },
+  "market-ceigall-india": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:10:23.789Z"
+  },
+  "market-akums-drugs": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:10:26.878Z"
+  },
+  "market-sanstar": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:10:29.808Z"
+  },
+  "market-emcure-pharmaceuticals": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:10:33.600Z"
+  },
+  "market-bansal-wire": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:10:37.583Z"
+  },
+  "market-vraj-iron-and-steel": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:10:41.664Z"
+  },
+  "market-allied-blenders-and-distillers": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:10:44.835Z"
+  },
+  "market-stanley-lifestyles": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:10:49.634Z"
+  },
+  "market-dee-piping-systems": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:10:53.900Z"
+  },
+  "market-akme-fintrade": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:10:57.788Z"
+  },
+  "market-ixigo": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:11:01.909Z"
+  },
+  "market-kronox-lab-sciences": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:11:06.122Z"
+  },
+  "market-awfis-space": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services Pvt LtdPhone: +91-22-6263 8200Email: ipo@bigshareonline.comWebsite: https://ipo.bigshareonline.com/",
+    "allotmentDate": 1716834600000,
+    "listingDate": 1717007400000,
+    "updatedAt": "2026-08-26T19:11:10.409Z"
+  },
+  "market-go-digit-insurance": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:11:14.816Z"
+  },
+  "market-tbo-tek": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:11:19.598Z"
+  },
+  "market-aadhar-housing": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-indegene": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:11:23.665Z"
+  },
+  "market-jnk-india": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:11:28.531Z"
+  },
+  "market-vodafone-idea": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:11:32.347Z"
+  },
+  "market-bharti-hexacom": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:11:37.285Z"
+  },
+  "market-srm-contractors": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:11:41.209Z"
+  },
+  "market-krystal-integrated": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:11:45.424Z"
+  },
+  "market-popular-vehicles": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:11:50.304Z"
+  },
+  "market-gopal-snacks": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:11:55.044Z"
+  },
+  "market-jg-chemicals": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:11:59.346Z"
+  },
+  "market-r-k-swamy": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:12:03.622Z"
+  },
+  "market-mukka-proteins": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Cameo Corporate Services",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:12:08.321Z"
+  },
+  "market-exicom-tele-systems": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:12:12.263Z"
+  },
+  "market-platinum-industries": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:12:17.174Z"
+  },
+  "market-gpt-healthcare": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:12:21.559Z"
+  },
+  "market-juniper-hotels": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:12:26.503Z"
+  },
+  "market-vibhor-steel-tubes": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:12:29.743Z"
+  },
+  "market-entero-healthcare-solutions": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:12:33.971Z"
+  },
+  "market-rashi-peripherals": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:12:38.463Z"
+  },
+  "market-capital-small-finance-bank": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:12:42.770Z"
+  },
+  "market-jana-small-finance-bank": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:12:46.713Z"
+  },
+  "market-apeejay-surrendra-park-hotels": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:12:49.902Z"
+  },
+  "market-bls-e-services": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:12:53.593Z"
+  },
+  "market-nova-agri-tech": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:12:57.920Z"
+  },
+  "market-epack-durable": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:13:02.719Z"
+  },
+  "market-medi-assist-healthcare": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:13:07.248Z"
+  },
+  "market-jyoti-cnc-automation": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:13:11.815Z"
+  },
+  "market-innova-captab": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1703615400000,
+    "listingDate": 1703788200000,
+    "updatedAt": "2026-08-26T19:13:16.164Z"
+  },
+  "market-azad-engineering": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1703529000000,
+    "listingDate": 1703701800000,
+    "updatedAt": "2026-08-26T19:13:19.546Z"
+  },
+  "market-rbz-jewellers": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:13:22.496Z"
+  },
+  "market-happy-forgings": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:13:25.854Z"
+  },
+  "market-credo-brands--mufti-jeans-": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:13:30.247Z"
+  },
+  "market-motisons-jewellers": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:13:34.365Z"
+  },
+  "market-suraj-estate-developers": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:13:37.351Z"
+  },
+  "market-muthoot-microfin": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:13:41.616Z"
+  },
+  "market-inox-india": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:13:45.683Z"
+  },
+  "market-india-shelter-finance": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:13:50.615Z"
+  },
+  "market-doms": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:13:54.771Z"
+  },
+  "market-flair-writing": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:13:58.903Z"
+  },
+  "market-gandhar-oil": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:14:03.350Z"
+  },
+  "market-fedbank-financial-services": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:14:07.722Z"
+  },
+  "market-tata-technologies": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:14:12.162Z"
+  },
+  "market-ireda": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:14:16.717Z"
+  },
+  "market-ask-automotive": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:14:21.135Z"
+  },
+  "market-protean-egov-technologies": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:14:25.743Z"
+  },
+  "market-esaf-small-finance-bank": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:14:30.371Z"
+  },
+  "market-mamaearth": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:14:33.521Z"
+  },
+  "market-cello-world": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1698949800000,
+    "listingDate": 1699468200000,
+    "updatedAt": "2026-08-26T19:14:38.768Z"
+  },
+  "market-blue-jet-healthcare": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:14:43.048Z"
+  },
+  "market-irm-energy": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1698345000000,
+    "listingDate": 1698690600000,
+    "updatedAt": "2026-08-26T19:14:47.798Z"
+  },
+  "market-plaza-wires": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:14:52.245Z"
+  },
+  "market-valiant-laboratories": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:14:56.774Z"
+  },
+  "market-updater-services": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:15:02.347Z"
+  },
+  "market-manoj-vaibhav-gems": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:15:07.461Z"
+  },
+  "market-jsw-infrastructure": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:15:12.490Z"
+  },
+  "market-yatra-online": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:15:16.536Z"
+  },
+  "market-sai-silks-kalamandir": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:15:20.599Z"
+  },
+  "market-signature-global": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:15:24.873Z"
+  },
+  "market-zaggle-prepaid-ocean-services": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:15:29.250Z"
+  },
+  "market-samhi-hotels": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:15:33.507Z"
+  },
+  "market-ems": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:15:36.504Z"
+  },
+  "market-rr-kabel": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:15:40.709Z"
+  },
+  "market-jupiter-life-line-hospitals": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:15:44.779Z"
+  },
+  "market-rishabh-instruments": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:15:48.830Z"
+  },
+  "market-ratnaveer-precision-engineering": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:15:53.624Z"
+  },
+  "market-vishnu-prakash-r-punglia": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:15:58.954Z"
+  },
+  "market-aeroflex-industries": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:16:02.976Z"
+  },
+  "market-pyramid-technoplast": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:16:07.062Z"
+  },
+  "market-tvs-supply-chain-solutions": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:16:10.867Z"
+  },
+  "market-concord-biotech": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:16:15.076Z"
+  },
+  "market-sbfc-finance": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:16:18.934Z"
+  },
+  "market-yatharth-hospital": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:16:22.847Z"
+  },
+  "market-netweb-technologies": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:16:27.172Z"
+  },
+  "market-utkarsh-small-finance-bank": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:16:31.489Z"
+  },
+  "market-senco-gold": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:16:35.398Z"
+  },
+  "market-cyient-dlm": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:16:40.012Z"
+  },
+  "market-ideaforge": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:16:44.054Z"
+  },
+  "market-hma-agro": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:16:49.019Z"
+  },
+  "market-ikio-lighting": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:16:53.134Z"
+  },
+  "market-nexus-select-trust": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:16:57.480Z"
+  },
+  "market-mankind-pharma": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:17:00.568Z"
+  },
+  "market-avalon-technologies": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:17:05.061Z"
+  },
+  "market-udayshivakumar-infra": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:17:09.224Z"
+  },
+  "market-global-surfaces": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:17:13.169Z"
+  },
+  "market-divgi-torqtransfer-systems": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:17:17.520Z"
+  },
+  "market-ipo-name": {
+    "failed": true,
+    "reason": "404"
+  },
+  "market-sah-polymers": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:17:21.525Z"
+  },
+  "market-radiant-cash-management": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:17:27.064Z"
+  },
+  "market-elin-electronics": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:17:31.632Z"
+  },
+  "market-kfin-technologies": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": 1671993000000,
+    "listingDate": 1672252200000,
+    "updatedAt": "2026-08-26T19:17:36.112Z"
+  },
+  "market-abans-holdings": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Bigshare Services",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:17:40.759Z"
+  },
+  "market-landmark-cars": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:17:45.348Z"
+  },
+  "market-sula-vineyards": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:17:50.129Z"
+  },
+  "market-uniparts-india": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:17:54.595Z"
+  },
+  "market-dharmaj-crop-guard": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:17:57.568Z"
+  },
+  "market-keystone-realtors": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-26T19:18:01.725Z"
+  },
+  "market-inox-green-energy": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1668709800000,
+    "listingDate": 1669141800000,
+    "updatedAt": "2026-08-26T19:18:06.289Z"
+  },
+  "market-kaynes-technology": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1668623400000,
+    "listingDate": 1669055400000,
+    "updatedAt": "2026-08-24T21:22:03.959Z"
+  },
+  "market-five-star-business-finance": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1668537000000,
+    "listingDate": 1668969000000,
+    "updatedAt": "2026-08-24T21:22:08.190Z"
+  },
+  "market-archean-chemical": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1668537000000,
+    "listingDate": 1668969000000,
+    "updatedAt": "2026-08-24T21:22:11.528Z"
+  },
+  "market-global-health": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1668105000000,
+    "listingDate": 1668537000000,
+    "updatedAt": "2026-08-24T21:22:16.360Z"
+  },
+  "market-bikaji-foods": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-24T21:22:21.321Z"
+  },
+  "market-dcx-systems": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-24T21:22:25.857Z"
+  },
+  "market-tracxn": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1665945000000,
+    "listingDate": 1666204200000,
+    "updatedAt": "2026-08-24T21:22:30.101Z"
+  },
+  "market-electronics-mart": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1665513000000,
+    "listingDate": 1665945000000,
+    "updatedAt": "2026-08-24T21:22:34.215Z"
+  },
+  "market-harsha-engineers": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1663698600000,
+    "listingDate": 1664130600000,
+    "updatedAt": "2026-08-24T21:22:37.910Z"
+  },
+  "market-tamilnad-mercantile-bank": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": null,
+    "listingDate": null,
+    "updatedAt": "2026-08-24T21:22:41.924Z"
+  },
+  "market-dreamfolks-services": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1661970600000,
+    "listingDate": 1662402600000,
+    "updatedAt": "2026-08-24T21:22:46.145Z"
+  },
+  "market-syrma-sgs": {
+    "issueSize": null,
+    "symbol": null,
+    "registrar": "Link Intime",
+    "allotmentDate": 1661193000000,
+    "listingDate": 1661452200000,
+    "updatedAt": "2026-08-24T21:22:49.333Z"
+  },
+  "market-purple-style-labs": {
+    "issueSize": "₹680 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.Phone: 040-79615565Email: purplestyle.ipo@kfintech.comWebsite: https://ipostatus.kfintech.com/",
+    "allotmentDate": 1788373800000,
+    "listingDate": 1788719400000,
+    "updatedAt": "2026-08-26T18:55:17.563Z"
+  },
+  "market-esds-software": {
+    "issueSize": "₹720 Crores",
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1788287400000,
+    "listingDate": 1788460200000,
+    "updatedAt": "2026-08-26T18:55:21.059Z"
+  },
+  "market-phychem-technologies": {
+    "issueSize": "₹14.58 Crores",
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1788373800000,
+    "listingDate": 1788719400000,
+    "updatedAt": "2026-08-26T18:55:26.376Z"
+  },
+  "market-deepa-jewellers": {
+    "issueSize": "₹[.] Crores",
+    "symbol": null,
+    "registrar": "KFin Technologies",
+    "allotmentDate": 1788460200000,
+    "listingDate": 1788805800000,
+    "updatedAt": "2026-08-26T18:55:29.007Z"
+  },
+  "market-ashutosh-fibre": {
+    "issueSize": "₹56.35 Crores",
+    "symbol": null,
+    "registrar": "Kfin Technologies Ltd.Phone: 040-79615565Email: ashutosh.ipo@kfintech.comWebsite: https://ipostatus.kfintech.com/",
+    "allotmentDate": 1788373800000,
+    "listingDate": 1788719400000,
+    "updatedAt": "2026-08-26T18:55:31.545Z"
+  }
+}

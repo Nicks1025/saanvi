@@ -40,6 +40,14 @@ class RedisHelper {
     }, false);
   }
 
+  static async setNxEx(key, value, ttlSeconds) {
+    const serialized = serialize(value);
+    return await execute(async (client) => {
+      const result = await client.set(key, serialized, { NX: true, EX: ttlSeconds });
+      return result === 'OK';
+    }, false);
+  }
+
   static async delete(key) {
     return await execute((client) => client.del(key), 0);
   }
@@ -117,6 +125,58 @@ class RedisHelper {
   static async setHas(key, value) {
     const serialized = serialize(value);
     return await execute((client) => client.sIsMember(key, serialized), false);
+  }
+
+  // Atomic Lua Operations
+  static async deleteIfEquals(key, expectedValue) {
+    const script = `
+      if redis.call("get",KEYS[1]) == ARGV[1] then
+          return redis.call("del",KEYS[1])
+      else
+          return 0
+      end
+    `;
+    const serialized = serialize(expectedValue);
+    const res = await execute((client) => client.eval(script, { keys: [key], arguments: [serialized] }), 0);
+    return res > 0;
+  }
+
+  static async atomicRateLimit(key, ttlSeconds, limit) {
+    const script = `
+      local count = redis.call("INCR", KEYS[1])
+      if count == 1 then
+          redis.call("EXPIRE", KEYS[1], tonumber(ARGV[1]))
+      end
+      if count > tonumber(ARGV[2]) then
+          redis.call("DECR", KEYS[1])
+          return -1
+      end
+      return count
+    `;
+    return await execute((client) => client.eval(script, { keys: [key], arguments: [String(ttlSeconds), String(limit)] }), null);
+  }
+
+  static async atomicSemaphoreAcquire(key, limit, ttlSeconds) {
+    const script = `
+      local count = redis.call("INCR", KEYS[1])
+      if count == 1 then
+          redis.call("EXPIRE", KEYS[1], tonumber(ARGV[1]))
+      else
+          local ttl = redis.call("TTL", KEYS[1])
+          if ttl == -1 then
+              redis.call("EXPIRE", KEYS[1], tonumber(ARGV[1]))
+          end
+      end
+      if count > tonumber(ARGV[2]) then
+          local rollback = redis.call("DECR", KEYS[1])
+          if rollback <= 0 then
+              redis.call("DEL", KEYS[1])
+          end
+          return -1
+      end
+      return count
+    `;
+    return await execute((client) => client.eval(script, { keys: [key], arguments: [String(ttlSeconds), String(limit)] }), null);
   }
 }
 

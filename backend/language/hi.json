@@ -133,5 +133,43 @@
     "addMoreTitle": "और जोड़ें (अधिकतम {{max}})",
     "sendImages": "चित्र भेजें",
     "sendImages_plural": "{{count}} चित्र भेजें"
+  },
+  "ipo": {
+    "page": {
+      "title": "आईपीओ सत्यापन",
+      "allotmentTitle": "आईपीओ आवंटन",
+      "noIpos": "कोई सक्रिय आईपीओ नहीं मिला।",
+      "noApplicants": "कृपया पहले एक आवेदक जोड़ें।",
+      "registrar": "रजिस्ट्रार",
+      "verifyVia": "के माध्यम से सत्यापित करें",
+      "checkAllotment": "आवंटन की जांच करें",
+      "addApplicant": "आवेदक जोड़ें",
+      "applicantDetails": "आवेदक विवरण",
+      "applicantName": "नाम",
+      "pan": "पैन (PAN)",
+      "dpid": "डीपीआईडी (DPID)",
+      "appNumber": "आवेदन संख्या",
+      "addPAN": "पैन जोड़ें",
+      "addDPID": "डीपीआईडी जोड़ें",
+      "addApplication Number": "आवेदन संख्या जोड़ें",
+      "nameRequired": "आवेदक का नाम आवश्यक है",
+      "panRequired": "पैन (PAN) नंबर आवश्यक है",
+      "panInvalid": "कृपया ABCDE1234F प्रारूप में एक वैध पैन (PAN) दर्ज करें।",
+      "applicantSaved": "आवेदक सफलतापूर्वक सहेजा गया",
+      "results": "परिणाम",
+      "verificationComplete": "सत्यापन पूरा हुआ",
+      "ipoName": "आईपीओ",
+      "noIdentifiers": "कोई पहचानकर्ता नहीं मिला। कृपया अपने आवेदकों में पैन/डीपीआईडी जोड़ें।"
+    },
+    "modal": {
+      "title": "आईपीओ आवंटन की जांच करें",
+      "verify": "सत्यापित करें",
+      "verifying": "सत्यापन हो रहा है...",
+      "submit": "जमा करें",
+      "selectMethod": "सत्यापन विधि",
+      "method": "विधि",
+      "captcha": "कैप्चा (CAPTCHA)",
+      "enterCaptcha": "कैप्चा दर्ज करें"
+    }
   }
 }

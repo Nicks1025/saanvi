@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Settings, Gamepad2, ChevronDown, ChevronRight, Shield, LogOut, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Settings, Gamepad2, ChevronDown, ChevronRight, Shield, LogOut, MessageSquare, Briefcase } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../store/AuthContext';
 import SButton from '../common/SButton';
@@ -53,6 +53,13 @@ const AppSidebar = ({ isOpen, setSidebarOpen }) => {
           <NavLink to="/chat" className={getNavLinkClass} title={t('navigation.chat', 'Chat')}>
             <MessageSquare size={20} style={{ flexShrink: 0 }} />
             <span className="sidebar-link-text">{t('navigation.chat', 'Chat')}</span>
+          </NavLink>
+        )}
+
+        {userPermissions.includes('ipo.verification.access') && (
+          <NavLink to="/ipo-allotment" className={getNavLinkClass} title={t('navigation.ipo', 'IPO Allotment')}>
+            <Briefcase size={20} style={{ flexShrink: 0 }} />
+            <span className="sidebar-link-text">{t('navigation.ipo', 'IPO Allotment')}</span>
           </NavLink>
         )}
 

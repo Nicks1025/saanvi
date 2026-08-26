@@ -133,5 +133,43 @@
     "addMoreTitle": "Add more (max {{max}})",
     "sendImages": "Send image",
     "sendImages_plural": "Send {{count}} images"
+  },
+  "ipo": {
+    "page": {
+      "title": "IPO Verification",
+      "allotmentTitle": "IPO Allotment",
+      "noIpos": "No active IPOs found.",
+      "noApplicants": "Please add an applicant first.",
+      "registrar": "Registrar",
+      "verifyVia": "Verify via",
+      "checkAllotment": "Check Allotment",
+      "addApplicant": "Add Applicant",
+      "applicantDetails": "Applicant Details",
+      "applicantName": "Name",
+      "pan": "PAN",
+      "dpid": "DPID",
+      "appNumber": "Application Number",
+      "addPAN": "Add PAN",
+      "addDPID": "Add DPID",
+      "addApplication Number": "Add Application Number",
+      "nameRequired": "Applicant Name is required",
+      "panRequired": "PAN Number is required",
+      "panInvalid": "Enter a valid PAN in the format ABCDE1234F.",
+      "applicantSaved": "Applicant saved successfully",
+      "results": "Results",
+      "verificationComplete": "Verification complete",
+      "ipoName": "IPO",
+      "noIdentifiers": "No identifiers found. Please add PAN/DPID to your applicants."
+    },
+    "modal": {
+      "title": "Check IPO Allotment",
+      "verify": "Verify",
+      "verifying": "Verifying...",
+      "submit": "Submit",
+      "selectMethod": "Verification Method",
+      "method": "Method",
+      "captcha": "CAPTCHA",
+      "enterCaptcha": "Enter CAPTCHA"
+    }
   }
 }
