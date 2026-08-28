@@ -10,8 +10,7 @@ class SocketService {
 
   connect(token) {
     if (this.socket) {
-      if (this.socket.connected) return;
-      this.socket.disconnect();
+      return; // Already connecting or connected
     }
 
     this.socket = io(SOCKET_URL, {
@@ -72,9 +71,9 @@ class SocketService {
   }
 
   emit(event, payload, callback) {
-    if (!this.socket || !this.socket.connected) {
-      console.warn(`[Socket] Cannot emit ${event} because socket is not connected`);
-      if (callback) callback({ error: 'SOCKET_DISCONNECTED' });
+    if (!this.socket) {
+      console.warn(`[Socket] Cannot emit ${event} because socket is not initialized`);
+      if (callback) callback({ error: 'SOCKET_NOT_INITIALIZED' });
       return;
     }
     this.socket.emit(event, payload, callback);

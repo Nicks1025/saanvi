@@ -5,7 +5,7 @@ import AppFooter from './AppFooter';
 import { Menu } from 'lucide-react';
 import './layout.css';
 
-const AppLayout = ({ children }) => {
+const AppLayout = ({ children, noContentContainer = false }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(() => {
     const saved = localStorage.getItem('sidebarOpen');
     return saved !== null ? saved === 'true' : true;
@@ -35,9 +35,13 @@ const AppLayout = ({ children }) => {
         <AppSidebar isOpen={isSidebarOpen} setSidebarOpen={handleSetSidebarOpen} />
         
         <main className="layout-main">
-          <div className="content-container">
-            {children}
-          </div>
+          {noContentContainer ? (
+            children
+          ) : (
+            <div className="content-container">
+              {children}
+            </div>
+          )}
           {/* Footer - Sits at the bottom of the main content */}
           <AppFooter />
         </main>

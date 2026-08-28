@@ -94,31 +94,34 @@ const AppSidebar = ({ isOpen, setSidebarOpen }) => {
           </div>
         )}
 
-        {userPermissions.includes('games.words.wordsearch') && (
-          <div className="sidebar-group">
-            <button 
-              className={`sidebar-link sidebar-group-btn ${location.pathname.startsWith('/games') ? 'active-parent' : ''}`} 
-              onClick={handleGamesClick}
-              title={t('navigation.games', 'Games')}
-            >
-              <Gamepad2 size={20} style={{ flexShrink: 0 }} />
-              <span className="sidebar-link-text">{t('navigation.games', 'Games')}</span>
-              {isOpen && (
-                <span className="sidebar-group-toggle" style={{ marginLeft: 'auto' }}>
-                  {isGamesOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                </span>
-              )}
-            </button>
-            
-            {isGamesOpen && (
-              <div className="sidebar-sub-menu">
+        <div className="sidebar-group">
+          <button 
+            className={`sidebar-link sidebar-group-btn ${location.pathname.startsWith('/games') ? 'active-parent' : ''}`} 
+            onClick={handleGamesClick}
+            title={t('navigation.games', 'Games')}
+          >
+            <Gamepad2 size={20} style={{ flexShrink: 0 }} />
+            <span className="sidebar-link-text">{t('navigation.games', 'Games')}</span>
+            {isOpen && (
+              <span className="sidebar-group-toggle" style={{ marginLeft: 'auto' }}>
+                {isGamesOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </span>
+            )}
+          </button>
+          
+          {isGamesOpen && (
+            <div className="sidebar-sub-menu">
+              <NavLink to="/games/uno" className={getSubNavLinkClass} title="UNO">
+                <span className="sidebar-link-text">UNO</span>
+              </NavLink>
+              {userPermissions.includes('games.words.wordsearch') && (
                 <NavLink to="/games/word-search" className={getSubNavLinkClass} title={t('navigation.word_search', 'Word Search')}>
                   <span className="sidebar-link-text">{t('navigation.word_search', 'Word Search')}</span>
                 </NavLink>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          )}
+        </div>
         
         <NavLink to="/settings" className={getNavLinkClass} title={t('navigation.settings')}>
           <Settings size={20} style={{ flexShrink: 0 }} />
