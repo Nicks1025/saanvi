@@ -12,6 +12,7 @@ const chatService = new ChatService(chatRepository);
 // Handlers
 const registerChatHandlers = require('./handlers/chat');
 const registerPresenceHandlers = require('./handlers/presence');
+const registerUnoHandlers = require('./handlers/uno');
 
 let io = null;
 
@@ -66,6 +67,7 @@ const initSocket = (httpServer) => {
     // Register module-specific handlers
     registerChatHandlers(io, socket, chatService);
     registerPresenceHandlers(io, socket, chatService);
+    registerUnoHandlers(io, socket);
 
     socket.on('disconnect', () => {
        // Disconnect logic is handled in presence handlers if needed
