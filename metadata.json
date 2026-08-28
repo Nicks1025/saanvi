@@ -1,0 +1,8 @@
+{
+  "name": "Saanvi",
+  "description": "Saanvi web application with dashboard, Saanvi Cards multiplayer tabletop game, word search game, admin management, and communication features.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

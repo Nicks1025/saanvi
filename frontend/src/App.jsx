@@ -11,6 +11,7 @@ import DashboardPage from './pages/dashboard';
 import SettingsPage from './pages/settings';
 import WordSearchPage from './pages/games/words/word-search';
 import WordSearchPlayPage from './pages/games/words/word-search/play';
+import UnoGamePage from './pages/games/cards';
 import NotFoundPage from './pages/not-found';
 import UsersPage from './pages/admin/users';
 import UserDetailsPage from './pages/admin/users/details';
@@ -39,6 +40,8 @@ const router = createBrowserRouter([
       { path: "admin/health", element: <SystemHealthPage /> },
       { path: "games/word-search", element: <WordSearchPage /> },
       { path: "games/word-search/play", element: <WordSearchPlayPage /> },
+      { path: "games/uno", element: <UnoGamePage /> },
+      { path: "games/uno/:roomId", element: <UnoGamePage /> },
       { path: "chat", element: <ChatPage /> },
       { path: "*", element: <NotFoundPage /> }
     ]
