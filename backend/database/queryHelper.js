@@ -71,6 +71,18 @@ class QueryHelper {
     return this;
   }
 
+  count(column, alias) {
+    if (!this._query) throw new Error('Must call from() before count()');
+    this._query = this._query.count(`${column} as ${alias || 'count'}`);
+    return this;
+  }
+
+  countDistinct(column, alias) {
+    if (!this._query) throw new Error('Must call from() before countDistinct()');
+    this._query = this._query.countDistinct(`${column} as ${alias || 'count'}`);
+    return this;
+  }
+
   join(table, alias, onCondition) {
     if (!this._query) throw new Error('Must call from() before join()');
     const target = alias ? `${table} as ${alias}` : table;

@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Pencil, Eye } from 'lucide-react';
+import { Pencil, Eye, Archive, Trash2, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import SDataTable from '../../../components/common/SDataTable';
+import SModal from '../../../components/common/SModal';
 import * as usersService from './usersService';
 import './users.css';
 
 const UsersFeature = () => {
   const [users, setUsers] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [loading, setLoading] = useState(true);
+  const [showArchived, setShowArchived] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [modalState, setModalState] = useState({ isOpen: false, type: null, user: null });
+  const [isProcessing, setIsProcessing] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -17,14 +25,16 @@ const UsersFeature = () => {
   useEffect(() => {
     if (isFetched.current) return;
     isFetched.current = true;
-    fetchUsers();
+    fetchUsers('', showArchived, 1, 10);
   }, []);
 
-  const fetchUsers = async (searchQuery = '') => {
+  const fetchUsers = async (query = searchQuery, archived = showArchived, p = page, l = limit) => {
     setLoading(true);
     try {
-      const data = await usersService.getUsers(searchQuery);
-      setUsers(data || []);
+      const response = await usersService.getUsers(query, archived, p, l);
+      const usersData = Array.isArray(response) ? response : (response?.data || []);
+      setUsers(usersData);
+      setTotal(response?.total || 0);
     } catch (err) {
       console.error('Failed to fetch users', err);
     } finally {
@@ -38,6 +48,41 @@ const UsersFeature = () => {
 
   const handleEdit = (user) => {
     navigate(`/admin/users/${user.uuid}?mode=edit`, { state: { user } });
+  };
+
+  const handleArchive = (user) => {
+    setModalState({ isOpen: true, type: 'archive', user });
+  };
+
+  const handleRestore = (user) => {
+    setModalState({ isOpen: true, type: 'restore', user });
+  };
+
+  const handleDelete = (user) => {
+    setModalState({ isOpen: true, type: 'delete', user });
+  };
+
+  const confirmAction = async () => {
+    const { type, user } = modalState;
+    if (!user) return;
+    
+    setIsProcessing(true);
+    try {
+      if (type === 'archive') {
+        await usersService.archiveUser(user.uuid);
+      } else if (type === 'restore') {
+        await usersService.restoreUser(user.uuid);
+      } else if (type === 'delete') {
+        await usersService.deleteUser(user.uuid);
+      }
+      setModalState({ isOpen: false, type: null, user: null });
+      fetchUsers(searchQuery, showArchived, page, limit);
+    } catch (err) {
+      console.error(`Failed to ${type} user`, err);
+      alert(err.response?.data?.message || `Failed to ${type} user. They may have associated records preventing deletion.`);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const columns = [
@@ -66,22 +111,118 @@ const UsersFeature = () => {
           >
             <Pencil size={18} />
           </button>
+          {!showArchived ? (
+            <button 
+              className="manage-btn" 
+              onClick={() => handleArchive(item)}
+              title={t('admin.archiveUser', 'Archive User')}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer', color: '#f59e0b' }}
+            >
+              <Archive size={18} />
+            </button>
+          ) : (
+            <button 
+              className="manage-btn" 
+              onClick={() => handleRestore(item)}
+              title={t('admin.restoreUser', 'Restore User')}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer', color: '#10b981' }}
+            >
+              <RefreshCw size={18} />
+            </button>
+          )}
+          <button 
+            className="manage-btn" 
+            onClick={() => handleDelete(item)}
+            title={t('admin.deleteUser', 'Delete User')}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444' }}
+          >
+            <Trash2 size={18} />
+          </button>
         </div>
       )
     }
   ];
 
+  const handleTabChange = (archived) => {
+    setShowArchived(archived);
+    setPage(1);
+    fetchUsers(searchQuery, archived, 1, limit);
+  };
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    setPage(1);
+    fetchUsers(query, showArchived, 1, limit);
+  };
+
+  const tabs = (
+    <div className="admin-users-tabs" style={{ margin: 0, borderBottom: 'none' }}>
+      <button 
+        className={`admin-tab ${!showArchived ? 'active' : ''}`}
+        onClick={() => handleTabChange(false)}
+      >
+        {t('admin.active', 'Active')}
+      </button>
+      <button 
+        className={`admin-tab ${showArchived ? 'active' : ''}`}
+        onClick={() => handleTabChange(true)}
+      >
+        {t('admin.archived', 'Archived')}
+      </button>
+    </div>
+  );
+
   return (
-    <div className="admin-users-container">
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
       <SDataTable 
         title={t('admin.users')}
         data={users} 
         columns={columns} 
         serverSideSearch={true}
-        onSearch={(query) => fetchUsers(query)}
+        onSearch={handleSearch}
         searchPlaceholder={t('admin.searchUsers')}
         loading={loading}
+        topTabs={tabs}
+        pagination={{
+          page,
+          limit,
+          total,
+          onPageChange: (newPage) => {
+            setPage(newPage);
+            fetchUsers(searchQuery, showArchived, newPage, limit);
+          },
+          onLimitChange: (newLimit) => {
+            setLimit(newLimit);
+            setPage(1);
+            fetchUsers(searchQuery, showArchived, 1, newLimit);
+          }
+        }}
       />
+      
+      <SModal
+        isOpen={modalState.isOpen}
+        title={
+          modalState.type === 'archive' ? 'Archive User' :
+          modalState.type === 'restore' ? 'Restore User' :
+          'Delete User'
+        }
+        onConfirm={confirmAction}
+        onCancel={() => setModalState({ isOpen: false, type: null, user: null })}
+        isProcessing={isProcessing}
+        confirmText={
+          modalState.type === 'archive' ? 'Archive' :
+          modalState.type === 'restore' ? 'Restore' :
+          'Delete'
+        }
+      >
+        <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
+          {modalState.type === 'delete' && modalState.user ? (
+            `Are you sure you want to PERMANENTLY delete user ${modalState.user.email}? This cannot be undone.`
+          ) : modalState.user ? (
+            `Are you sure you want to ${modalState.type} user ${modalState.user.email}?`
+          ) : ''}
+        </p>
+      </SModal>
     </div>
   );
 };

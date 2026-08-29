@@ -740,7 +740,7 @@
 
 .draw-pile-top-left {
   position: absolute;
-  top: 18px;
+  top: 72px;
   left: 24px;
   display: flex;
   flex-direction: column;
@@ -1421,16 +1421,19 @@
    ========================================================================== */
 
 .table-top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 20px;
-  background: rgba(15, 23, 42, 0.85);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
+  padding: 16px 24px;
+  background: transparent;
+  border-bottom: none;
+  backdrop-filter: none;
   z-index: 30;
-  flex-wrap: wrap;
-    gap: 8px;
+  pointer-events: none;
 }
 
 .table-bar-left,
@@ -1438,6 +1441,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  pointer-events: auto;
 }
 
 .table-bar-btn {
@@ -1928,8 +1932,6 @@
 
 /* Lobby Hero */
 .cards-lobby-view {
-  max-width: 1080px;
-  margin: 0 auto;
   padding: 0;
   width: 100%;
   box-sizing: border-box;
@@ -3277,4 +3279,61 @@
     left: 0;
     border-radius: 0;
   }
+}
+
+/* ==========================================================================
+   15. MOBILE RESPONSIVE GAME TABLE
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* Scale down base card sizes for mobile */
+  .card-size-hand {
+    width: 52px;
+    height: 78px;
+  }
+  
+  .card-size-table {
+    width: 60px;
+    height: 88px;
+  }
+  
+  /* Draw Pile scaling and repositioning */
+  .draw-pile-top-left {
+    top: 55px;
+    left: 10px;
+    zoom: 0.8;
+  }
+  
+  /* Central Table Elements scaled down */
+  .center-table-zone {
+    width: 140px;
+    height: 120px;
+  }
+  
+  .discard-stack-wrapper, .discard-stack-area {
+    width: 140px;
+    height: 120px;
+  }
+  
+  .center-table-ring {
+    width: 200px;
+    height: 200px;
+  }
+  
+  .empty-discard-slot, .discard-stacked-card, .flying-card-entity {
+    width: 60px;
+    height: 88px;
+  }
+  
+  /* Reduce font sizes inside scaled cards */
+  .card-size-hand .symbol-number-text { font-size: 20px; }
+  .card-size-hand .symbol-action svg { width: 16px; height: 16px; }
+  .card-size-hand .corner-val { font-size: 9px; }
+  .card-size-hand .symbol-draw-two .symbol-text { font-size: 14px; }
+  .card-size-hand .symbol-wild-gem, .card-size-hand .symbol-wild-four { width: 22px; height: 22px; }
+  
+  .card-size-table .symbol-number-text { font-size: 24px; }
+  .card-size-table .symbol-action svg { width: 18px; height: 18px; }
+  .card-size-table .corner-val { font-size: 11px; }
+  .card-size-table .symbol-draw-two .symbol-text { font-size: 16px; }
+  .card-size-table .symbol-wild-gem, .card-size-table .symbol-wild-four { width: 26px; height: 26px; }
 }

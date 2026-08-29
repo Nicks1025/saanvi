@@ -74,7 +74,7 @@ const SystemHealthFeature = () => {
   };
 
   return (
-    <div className="system-health-container">
+    <div className="system-health-container page-container">
       <div className="health-header">
         <div>
           <h2>System Health</h2>

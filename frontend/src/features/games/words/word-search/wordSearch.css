@@ -1,8 +1,8 @@
 .ws-container {
   display: flex;
   flex-direction: column;
-  width: 100%;
   font-family: var(--sans);
+  box-sizing: border-box;
 }
 
 .ws-menu, .ws-loading, .ws-error, .ws-result {
@@ -11,12 +11,9 @@
   align-items: center;
   justify-content: center;
   padding: 3rem;
-  background: var(--bg);
-  border-radius: 8px;
-  box-shadow: var(--shadow);
   text-align: center;
   gap: 1.5rem;
-  width: 100%;
+  box-sizing: border-box;
 }
 
 .ws-menu-buttons {
@@ -27,10 +24,10 @@
 }
 
 .ws-game {
-  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  box-sizing: border-box;
 }
 
 /* Header */
@@ -107,10 +104,6 @@
   flex-direction: column;
   align-items: center;
   gap: 1rem;
-  background: var(--bg);
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: var(--shadow);
 }
 
 /* Grid */
@@ -182,10 +175,6 @@
 /* Word List */
 .ws-word-list-container {
   width: 250px;
-  background: var(--bg);
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: var(--shadow);
 }
 
 .ws-word-list-container h3 {

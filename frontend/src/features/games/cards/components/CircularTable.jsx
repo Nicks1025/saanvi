@@ -18,6 +18,7 @@ export const CircularTable = ({
   onToggleMute,
   turnTimeLeft,
   tableScale = 0.85,
+  tableConfig = { w: 960, h: 520 },
 }) => {
   const localPlayer = players.find((p) => p.isLocal) || players[0];
   const opponents = players.filter((p) => !p.isLocal);
@@ -102,7 +103,7 @@ export const CircularTable = ({
     <div
       className="circular-table-container"
       id="saanvi-circular-table"
-      style={{ zoom: tableScale }}
+      style={{ zoom: tableScale, width: `${tableConfig.w}px`, height: `${tableConfig.h}px` }}
     >
       {/* Table Felt Surface with Active Color border/glow */}
       <div className={`table-felt-mat active-color-${activeColor}`}>

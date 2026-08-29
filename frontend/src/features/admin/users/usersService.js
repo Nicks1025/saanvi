@@ -1,8 +1,13 @@
 import axios from '../../../services/axios.client';
 
-export const getUsers = async (search = '') => {
-  const query = search ? `?search=${encodeURIComponent(search)}` : '';
-  const response = await axios.get(`/api/admin/users${query}`);
+export const getUsers = async (search = '', showArchived = false, page = 1, limit = 10) => {
+  const queryParams = new URLSearchParams();
+  if (search) queryParams.append('search', search);
+  if (showArchived) queryParams.append('archived', 'true');
+  queryParams.append('page', page);
+  queryParams.append('limit', limit);
+  
+  const response = await axios.get(`/api/admin/users?${queryParams.toString()}`);
   return response.data || [];
 };
 
@@ -23,5 +28,20 @@ export const getUserRoles = async (uuid) => {
 
 export const updateUserRoles = async (uuid, roleUuids) => {
   const response = await axios.put(`/api/admin/users/${uuid}/roles`, { roleUuids });
+  return response.data;
+};
+
+export const archiveUser = async (uuid) => {
+  const response = await axios.put(`/api/admin/users/${uuid}/archive`);
+  return response.data;
+};
+
+export const restoreUser = async (uuid) => {
+  const response = await axios.put(`/api/admin/users/${uuid}/restore`);
+  return response.data;
+};
+
+export const deleteUser = async (uuid) => {
+  const response = await axios.delete(`/api/admin/users/${uuid}`);
   return response.data;
 };

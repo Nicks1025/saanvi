@@ -174,7 +174,7 @@ const WordSearchFeature = () => {
   };
 
   return (
-    <div className="ws-container">
+    <div className="ws-container page-container">
       {status === 'loading' && (
         <div className="ws-loading">{t('games.word_search.preparing')}</div>
       )}

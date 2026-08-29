@@ -170,6 +170,45 @@ const getPermissions = {
   middleware: { requirePermission: ['admin.roles'] }
 };
 
+const archiveUser = {
+  path: '/users/:uuid/archive',
+  verb: 'PUT',
+  auditMessage: 'archiving user',
+  handler: { controller: adminController, method: 'archiveUser' },
+  middleware: { requirePermission: ['admin.users'] },
+  request: {
+    params: Joi.object({
+      uuid: Joi.string().uuid().required()
+    })
+  }
+};
+
+const restoreUser = {
+  path: '/users/:uuid/restore',
+  verb: 'PUT',
+  auditMessage: 'restoring user',
+  handler: { controller: adminController, method: 'restoreUser' },
+  middleware: { requirePermission: ['admin.users'] },
+  request: {
+    params: Joi.object({
+      uuid: Joi.string().uuid().required()
+    })
+  }
+};
+
+const deleteUser = {
+  path: '/users/:uuid',
+  verb: 'DELETE',
+  auditMessage: 'deleting user',
+  handler: { controller: adminController, method: 'deleteUser' },
+  middleware: { requirePermission: ['admin.users'] },
+  request: {
+    params: Joi.object({
+      uuid: Joi.string().uuid().required()
+    })
+  }
+};
+
 const AdminApi = {
   name: 'Admin',
   url: '/api/admin',
@@ -177,6 +216,9 @@ const AdminApi = {
     getUsers,
     getUser,
     updateUser,
+    archiveUser,
+    restoreUser,
+    deleteUser,
     getUserRoles,
     updateUserRoles,
     getRoles,

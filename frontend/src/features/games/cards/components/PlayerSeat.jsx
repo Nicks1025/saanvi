@@ -116,12 +116,7 @@ export const PlayerSeat = ({
           <span className="card-count-number">{cardCount} {cardCount === 1 ? 'card' : 'cards'}</span>
         </div>
 
-        {/* Current Turn Active Indicator for Opponents */}
-        {isCurrentTurn && !isLocal && (
-          <div className="seat-turn-indicator">
-            <span className="turn-label">Playing...</span>
-          </div>
-        )}
+
 
         {/* Catch UNO Action Button for opponents */}
         {showCatchUnoButton && onCatchUno && (

@@ -8,9 +8,13 @@ class AdminController extends BaseController {
 
   async getUsers(req, res) {
     try {
-      const { search } = req.query;
-      const users = await this.adminService.getAllUsers(search);
-      return this.sendSuccess(res, users, 'Users retrieved successfully');
+      const { search, archived, page, limit } = req.query;
+      const isArchived = archived === 'true';
+      const pageNum = parseInt(page) || 1;
+      const limitNum = parseInt(limit) || 10;
+      
+      const result = await this.adminService.getAllUsers(search, isArchived, pageNum, limitNum);
+      return this.sendSuccess(res, result, 'Users retrieved successfully');
     } catch (error) {
       return this.sendError(res, error.message, 500);
     }
@@ -44,6 +48,47 @@ class AdminController extends BaseController {
     } catch (error) {
       if (error.message.includes('not found')) {
         return this.sendError(res, error.message, 404);
+      }
+      return this.sendError(res, error.message, 500);
+    }
+  }
+
+  async archiveUser(req, res) {
+    try {
+      const { uuid } = req.params;
+      const result = await this.adminService.archiveUser(uuid);
+      return this.sendSuccess(res, result, 'User archived successfully');
+    } catch (error) {
+      if (error.message.includes('not found')) {
+        return this.sendError(res, error.message, 404);
+      }
+      return this.sendError(res, error.message, 500);
+    }
+  }
+
+  async restoreUser(req, res) {
+    try {
+      const { uuid } = req.params;
+      const result = await this.adminService.restoreUser(uuid);
+      return this.sendSuccess(res, result, 'User restored successfully');
+    } catch (error) {
+      if (error.message.includes('not found')) {
+        return this.sendError(res, error.message, 404);
+      }
+      return this.sendError(res, error.message, 500);
+    }
+  }
+
+  async deleteUser(req, res) {
+    try {
+      const { uuid } = req.params;
+      await this.adminService.deleteUser(uuid);
+      return this.sendSuccess(res, null, 'User deleted successfully');
+    } catch (error) {
+      if (error.message.includes('not found')) {
+        return this.sendError(res, error.message, 404);
+      } else if (error.message.includes('constraint') || error.code === '23503') {
+        return this.sendError(res, 'Cannot delete user because they have associated records (e.g., chat history) that would be corrupted. Please use Archive instead.', 400);
       }
       return this.sendError(res, error.message, 500);
     }

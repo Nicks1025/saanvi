@@ -7,8 +7,8 @@ class AdminService extends BaseService {
     this.rbacService = new RbacService(adminRepository);
   }
 
-  async getAllUsers(searchQuery) {
-    return await this.repository.getAllUsers(searchQuery);
+  async getAllUsers(searchQuery, showArchived = false, page = 1, limit = 10) {
+    return await this.repository.getAllUsers(searchQuery, showArchived, page, limit);
   }
 
   async getAllPermissions() {
@@ -39,6 +39,30 @@ class AdminService extends BaseService {
     }
 
     return await this.repository.getUserByUuid(uuid);
+  }
+
+  async archiveUser(uuid) {
+    const user = await this.repository.getUserByUuid(uuid);
+    if (!user) throw new Error('User not found.');
+
+    await this.repository.archiveUser(uuid);
+    return await this.repository.getUserByUuid(uuid);
+  }
+
+  async restoreUser(uuid) {
+    // Note: We bypass the getUserByUuid check since it ignores archived users,
+    // or we can just call it if we change how getUserByUuid works. But it's easier
+    // to just run the restore query directly since UUIDs are unique.
+    await this.repository.restoreUser(uuid);
+    return await this.repository.getUserByUuid(uuid);
+  }
+
+  async deleteUser(uuid) {
+    const user = await this.repository.getUserByUuid(uuid, true);
+    if (!user) throw new Error('User not found.');
+
+    await this.repository.deleteUser(uuid);
+    return true;
   }
 
   async getAllRoles(searchQuery) {
