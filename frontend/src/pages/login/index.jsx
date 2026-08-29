@@ -1,13 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import HomeNavbar from '../../features/home/components/HomeNavbar';
 import LoginFeature from '../../features/login/LoginFeature';
 
 /**
  * Route: /login
  */
 const LoginPage = () => {
+  useEffect(() => {
+    document.title = "Sign In — Saanvi";
+  }, []);
+
   return (
-    <div className="login-page-container" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f5f7fa' }}>
-      <LoginFeature />
+    <div className="saanvi-public-page login-page-wrapper">
+      <HomeNavbar />
+      <div className="login-page-container">
+        <LoginFeature />
+      </div>
     </div>
   );
 };

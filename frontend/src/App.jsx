@@ -1,9 +1,11 @@
 import React from 'react';
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom';
+import HomePage from './pages/home';
 import LoginPage from './pages/login';
 import SignupPage from './pages/signup';
 
-import { AuthProvider } from './store/AuthContext';
+import { AuthProvider, useAuth } from './store/AuthContext';
+import FullScreenLoader from './components/common/FullScreenLoader';
 import { ChatProvider } from './store/ChatProvider';
 import { ThemeProvider } from './store/ThemeContext';
 import { Toaster, ToastBar, toast } from 'react-hot-toast';
@@ -20,15 +22,26 @@ import RoleDetailsPage from './pages/admin/roles/details';
 import SystemHealthPage from './pages/admin/health';
 import ChatPage from './pages/chat';
 
+const AppRoot = () => {
+  const { isSessionInitializing } = useAuth();
+  
+  if (isSessionInitializing) {
+    return <FullScreenLoader />;
+  }
+  
+  return (
+    <div className="app-container" style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
+      <Outlet />
+    </div>
+  );
+};
+
 const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <div className="app-container" style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
-        <Outlet />
-      </div>
-    ),
+    element: <AppRoot />,
     children: [
+      { index: true, element: <HomePage /> },
       { path: "login", element: <LoginPage /> },
       { path: "signup", element: <SignupPage /> },
       { path: "dashboard", element: <DashboardPage /> },

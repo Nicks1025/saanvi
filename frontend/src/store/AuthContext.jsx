@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [supabaseToken, setSupabaseToken] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isSessionInitializing, setIsSessionInitializing] = useState(false);
   const isFetchingMe = React.useRef(false);
 
   const fetchUser = async () => {
@@ -40,6 +41,7 @@ export const AuthProvider = ({ children }) => {
       logout();
     } finally {
       setLoading(false);
+      setIsSessionInitializing(false);
       isFetchingMe.current = false;
     }
   };
@@ -69,6 +71,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (token, userData, sbToken) => {
+    setIsSessionInitializing(true);
     localStorage.setItem('auth_token', token);
     if (sbToken) {
       sessionStorage.setItem('supabase_token', sbToken);
@@ -93,7 +96,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, supabaseToken, isAuthenticated, loading, login, logout, fetchUser }}>
+    <AuthContext.Provider value={{ user, setUser, supabaseToken, isAuthenticated, loading, isSessionInitializing, login, logout, fetchUser }}>
       {children}
     </AuthContext.Provider>
   );
