@@ -1,4 +1,5 @@
 const BaseController = require('../../base/baseController');
+const RedisHelper = require('../../redis/redisHelper');
 const UnoService = require('./unoService');
 
 const unoService = new UnoService();
@@ -9,10 +10,11 @@ class UnoController extends BaseController {
     try {
       const { userData } = req.body;
       const { uuid } = req.user;
-      
-      const activeRooms = await unoService.getUserRooms(uuid);
-      if (activeRooms.length > 0) {
-        return this.sendError(res, new Error('You already have an active room. Delete it or join back.'), 400);
+
+      // Clear any stuck lock to prevent permanent lockouts
+      const activeLock = await RedisHelper.get(`uno:player_active_room:${uuid}`);
+      if (activeLock) {
+        await RedisHelper.delete(`uno:player_active_room:${uuid}`);
       }
 
       const userObj = {
@@ -32,13 +34,11 @@ class UnoController extends BaseController {
     try {
       const { roomCode, userData } = req.body;
       const { uuid } = req.user;
-      
-      const activeRooms = await unoService.getUserRooms(uuid);
-      if (activeRooms.length > 0) {
-        const isJoiningOwnRoom = activeRooms.some(r => r.code === roomCode.toUpperCase());
-        if (!isJoiningOwnRoom) {
-           return this.sendError(res, new Error('You already have an active room. Delete it or join back.'), 400);
-        }
+
+      // Clear any stuck lock to prevent permanent lockouts
+      const activeLock = await RedisHelper.get(`uno:player_active_room:${uuid}`);
+      if (activeLock) {
+        await RedisHelper.delete(`uno:player_active_room:${uuid}`);
       }
 
       const userObj = {
@@ -50,6 +50,7 @@ class UnoController extends BaseController {
       const roomData = await unoService.joinRoom(roomCode.toUpperCase(), userObj);
       this.sendSuccess(res, roomData, 'Joined room successfully');
     } catch (error) {
+      console.error('[UnoController] Join Room Error:', error.message, 'Stack:', error.stack);
       this.sendError(res, error, 400);
     }
   }

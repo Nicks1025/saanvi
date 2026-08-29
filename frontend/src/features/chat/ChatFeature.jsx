@@ -11,8 +11,10 @@ const ChatFeature = () => {
   const chatRealtime = useChatSocket();
   const [showRequests, setShowRequests] = useState(false);
 
+  const isMobileChatOpen = !!chatRealtime.activeConversation;
+
   return (
-    <div className="chat-container">
+    <div className={`chat-container page-container ${isMobileChatOpen ? 'mobile-chat-open' : ''}`} style={{ flex: 1, minHeight: 0, padding: 0 }}>
       <ChatSidebar 
         chatRealtime={chatRealtime} 
         onShowRequests={() => setShowRequests(true)} 

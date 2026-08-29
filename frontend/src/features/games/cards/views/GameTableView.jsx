@@ -15,8 +15,8 @@ import { ArrowLeft, HelpCircle, Users, Clock } from 'lucide-react';
 import SModal from '../../../../components/common/SModal';
 
 export const GameTableView = ({ game, onLeaveGame }) => {
-  const [showExitModal, setShowExitModal] = useState(false);
   const [tableScale, setTableScale] = useState(0.85);
+  const [tableConfig, setTableConfig] = useState({ w: 960, h: 520 });
   const arenaRef = useRef(null);
 
   const TABLE_W = 960;
@@ -26,9 +26,22 @@ export const GameTableView = ({ game, onLeaveGame }) => {
   const recalcScale = useCallback(() => {
     if (!arenaRef.current) return;
     const { clientWidth: w, clientHeight: h } = arenaRef.current;
-    const scaleW = (w - 40) / TABLE_W;
-    const scaleH = (h - 40) / TABLE_H;
+    
+    const isMobile = window.innerWidth <= 768;
+    const isPortrait = window.innerHeight > window.innerWidth;
+    
+    let baseW = 960;
+    let baseH = 520;
+    
+    if (isMobile) {
+      baseW = isPortrait ? 420 : 700;
+      baseH = isPortrait ? 460 : 360;
+    }
+    
+    const scaleW = (w - 20) / baseW;
+    const scaleH = (h - 20) / baseH;
     setTableScale(Math.min(MAX_SCALE, scaleW, scaleH));
+    setTableConfig({ w: baseW, h: baseH });
   }, []);
 
   useEffect(() => {
@@ -83,25 +96,16 @@ export const GameTableView = ({ game, onLeaveGame }) => {
     <div className="game-table-view" id="saanvi-cards-game-table-view">
       {/* Top Table Control Bar */}
       <div className="table-top-bar">
-        {/* Left: Exit button & Room info (No Game Code) */}
+        {/* Left: Exit button */}
         <div className="table-bar-left">
           <button
             className="table-bar-btn btn-exit"
-            onClick={() => setShowExitModal(true)}
+            onClick={() => onLeaveGame()}
             title="Exit game"
           >
             <ArrowLeft size={16} />
             <span className="btn-text">Exit</span>
           </button>
-
-          <div className="table-room-chip">
-            <span className="room-chip-title">{room?.name || 'UNO'}</span>
-          </div>
-
-          <div className="table-players-count-chip">
-            <Users size={13} />
-            <span>{players.length} Players</span>
-          </div>
         </div>
 
         {/* Right: Turn Timer & Rules Button */}
@@ -115,9 +119,9 @@ export const GameTableView = ({ game, onLeaveGame }) => {
             className="table-bar-btn btn-rules"
             onClick={() => openRules('basics')}
             title="Open game rules"
+            style={{ padding: '0.5rem' }}
           >
-            <HelpCircle size={16} />
-            <span className="btn-text">Rules</span>
+            <HelpCircle size={18} />
           </button>
         </div>
       </div>
@@ -157,6 +161,7 @@ export const GameTableView = ({ game, onLeaveGame }) => {
           onToggleMute={toggleMic}
           turnTimeLeft={turnTimeLeft}
           tableScale={tableScale}
+          tableConfig={tableConfig}
         />
       </div>
 
@@ -166,6 +171,7 @@ export const GameTableView = ({ game, onLeaveGame }) => {
         players={players}
         arenaRef={arenaRef}
         tableScale={tableScale}
+        tableConfig={tableConfig}
       />
 
       {/* Visual Draw Card Flying Animation Layer - outside zoom so coords are screen-relative */}
@@ -174,6 +180,7 @@ export const GameTableView = ({ game, onLeaveGame }) => {
         players={players}
         arenaRef={arenaRef}
         tableScale={tableScale}
+        tableConfig={tableConfig}
       />
 
       {/* Fixed Bottom-Left Voice Controls (Overlay, Zero Layout Footprint) */}
@@ -219,22 +226,6 @@ export const GameTableView = ({ game, onLeaveGame }) => {
         roomRules={room?.rules}
       />
 
-      {/* Exit Game Confirmation Modal */}
-      <SModal
-        isOpen={showExitModal}
-        title="Leave Game Table?"
-        onConfirm={() => {
-          setShowExitModal(false);
-          onLeaveGame();
-        }}
-        onCancel={() => setShowExitModal(false)}
-        confirmText="Leave Game"
-        cancelText="Stay & Play"
-      >
-        <p className="text-gray-300">
-          Are you sure you want to leave room <strong>{room?.name}</strong>? Your current hand and points will be forfeited.
-        </p>
-      </SModal>
     </div>
   );
 };

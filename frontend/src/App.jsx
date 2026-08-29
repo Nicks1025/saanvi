@@ -6,6 +6,7 @@ import SignupPage from './pages/signup';
 
 import { AuthProvider, useAuth } from './store/AuthContext';
 import FullScreenLoader from './components/common/FullScreenLoader';
+import GlobalErrorBoundary from './components/common/GlobalErrorBoundary';
 import { ChatProvider } from './store/ChatProvider';
 import { ThemeProvider } from './store/ThemeContext';
 import { Toaster, ToastBar, toast } from 'react-hot-toast';
@@ -40,6 +41,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <AppRoot />,
+    errorElement: <GlobalErrorBoundary />,
     children: [
       { index: true, element: <HomePage /> },
       { path: "login", element: <LoginPage /> },

@@ -12,7 +12,7 @@ const WordSearchMenu = () => {
   };
 
   return (
-    <div className="ws-container">
+    <div className="ws-container page-container">
       <div className="ws-menu">
         <h2>{t('games.word_search.select_difficulty')}</h2>
         <div className="ws-menu-buttons">

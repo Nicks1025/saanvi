@@ -2,10 +2,21 @@ import React from 'react';
 import { Trophy, RotateCcw, LogOut, Award, Flame, Users, Sparkles } from 'lucide-react';
 import { GAME_SCREENS } from '../types';
 
-export const GameResultView = ({ gameResult, onPlayAgain, onLeaveGame }) => {
+export const GameResultView = ({ gameResult, onLeaveGame }) => {
   const winner = gameResult?.winner || { name: 'You (Nikhil)', isLocal: true, score: 320 };
   const isLocalWinner = gameResult?.isLocalWinner ?? true;
   const scores = gameResult?.scores || [];
+  
+  const [timeLeft, setTimeLeft] = React.useState(10);
+  
+  React.useEffect(() => {
+    if (timeLeft <= 0) {
+      onLeaveGame();
+      return;
+    }
+    const timer = setTimeout(() => setTimeLeft(prev => prev - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [timeLeft, onLeaveGame]);
 
   return (
     <div className="game-result-view animate-fadeIn" id="game-result-view">
@@ -109,14 +120,9 @@ export const GameResultView = ({ gameResult, onPlayAgain, onLeaveGame }) => {
 
         {/* Action Buttons */}
         <div className="result-actions-row">
-          <button className="s-button btn-primary btn-play-again" onClick={onPlayAgain}>
-            <RotateCcw size={18} />
-            <span>Play Again</span>
-          </button>
-
           <button className="s-button btn-hero-secondary" onClick={onLeaveGame}>
             <LogOut size={18} />
-            <span>Back to Lobby</span>
+            <span>Back to Lobby ({timeLeft}s)</span>
           </button>
         </div>
       </div>

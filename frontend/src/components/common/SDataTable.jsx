@@ -4,30 +4,33 @@ import STextField from './STextField';
 const SDataTable = ({
   columns = [],
   data = [],
-  pagination = {},
+  pagination = {}, // e.g., { page, limit, total, onPageChange, onLimitChange }
   serverSideSearch = false,
   onSearch = () => { },
   searchPlaceholder = 'Search...',
   loading = false,
   title = '',
-  headerActions = null
+  headerActions = null,
+  topTabs = null
 }) => {
-  const { sortColu, sortOrder, noOfPagesToDisplay } = pagination;
+  const { page = 1, limit = 10, total = 0, onPageChange, onLimitChange } = pagination;
   const [internalSearch, setInternalSearch] = useState('');
   const [filteredData, setFilteredData] = useState(data);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [isLimitDropdownOpen, setIsLimitDropdownOpen] = useState(false);
 
   // Sync internal data when props change (for server-side or initial load)
   useEffect(() => {
+    const safeData = Array.isArray(data) ? data : [];
     if (serverSideSearch) {
-      setFilteredData(data);
+      setFilteredData(safeData);
     } else {
       if (!internalSearch) {
-        setFilteredData(data);
+        setFilteredData(safeData);
       } else {
         const lowerSearch = internalSearch.toLowerCase();
-        const filtered = data.filter(row => {
-          return Object.values(row).some(val =>
+        const filtered = safeData.filter(row => {
+          return Object.values(row || {}).some(val =>
             String(val).toLowerCase().includes(lowerSearch)
           );
         });
@@ -51,6 +54,7 @@ const SDataTable = ({
   }, [internalSearch, serverSideSearch, previousSearch]);
 
   const sortedData = React.useMemo(() => {
+    if (!Array.isArray(filteredData)) return [];
     let sortableItems = [...filteredData];
     if (sortConfig.key !== null) {
       sortableItems.sort((a, b) => {
@@ -75,7 +79,7 @@ const SDataTable = ({
   };
 
   return (
-    <div className="s-data-table" style={{ position: 'relative', margin: '0 -1rem', width: 'calc(100% + 2rem)' }}>
+    <div className="s-data-table page-container" style={{ position: 'relative' }}>
       <style>{`
         @keyframes sdt-indeterminate {
           0% { left: -30%; width: 30%; }
@@ -101,7 +105,14 @@ const SDataTable = ({
           z-index: 10;
         }
       `}</style>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '1rem', paddingLeft: '1rem', paddingRight: '1rem' }}>
+      
+      {topTabs && (
+        <div style={{ padding: '1rem 1rem 0 1rem' }}>
+          {topTabs}
+        </div>
+      )}
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem' }}>
         <div>
           {title && <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600, color: 'var(--text)' }}>{title}</h2>}
         </div>
@@ -175,6 +186,121 @@ const SDataTable = ({
           ))}
         </tbody>
         </table>
+        
+        {/* Pagination Footer */}
+        {onPageChange && onLimitChange && (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '1rem',
+            borderTop: '1px solid var(--border, #e5e5e5)',
+            backgroundColor: '#ffffff'
+          }}>
+            <div style={{ color: 'var(--text-secondary, #64748b)', fontSize: '0.875rem' }}>
+              Total Records: {total}
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ color: 'var(--text-secondary, #64748b)', fontSize: '0.875rem' }}>Rows per page:</span>
+                <div style={{ position: 'relative' }}>
+                  <div 
+                    onClick={() => setIsLimitDropdownOpen(!isLimitDropdownOpen)}
+                    style={{
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '4px',
+                      border: '1px solid var(--border, #e5e5e5)',
+                      backgroundColor: 'white',
+                      color: 'var(--text, #0f172a)',
+                      cursor: 'pointer',
+                      fontSize: '0.875rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.25rem',
+                      minWidth: '60px',
+                      justifyContent: 'space-between'
+                    }}
+                  >
+                    {limit} 
+                    <span style={{ fontSize: '0.6rem', transform: isLimitDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▲</span>
+                  </div>
+                  {isLimitDropdownOpen && (
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '100%',
+                      left: 0,
+                      marginBottom: '0.25rem',
+                      backgroundColor: 'white',
+                      border: '1px solid var(--border, #e5e5e5)',
+                      borderRadius: '4px',
+                      boxShadow: '0 -4px 10px rgba(0, 0, 0, 0.1)',
+                      zIndex: 50,
+                      minWidth: '100%',
+                      overflow: 'hidden'
+                    }}>
+                      {[10, 20, 50, 100].map(val => (
+                        <div 
+                          key={val}
+                          onClick={() => {
+                            onLimitChange(val);
+                            setIsLimitDropdownOpen(false);
+                          }}
+                          style={{
+                            padding: '0.35rem 0.75rem',
+                            cursor: 'pointer',
+                            fontSize: '0.875rem',
+                            backgroundColor: val === limit ? '#f8fafc' : 'transparent',
+                            color: 'var(--text, #0f172a)',
+                            transition: 'background-color 0.1s'
+                          }}
+                          onMouseOver={(e) => { if (val !== limit) e.target.style.backgroundColor = '#f1f5f9'; }}
+                          onMouseOut={(e) => { if (val !== limit) e.target.style.backgroundColor = 'transparent'; }}
+                        >
+                          {val}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button
+                  onClick={() => onPageChange(page - 1)}
+                  disabled={page <= 1}
+                  style={{
+                    padding: '0.25rem 0.75rem',
+                    border: '1px solid var(--border, #e5e5e5)',
+                    borderRadius: '4px',
+                    background: page <= 1 ? '#f8fafc' : 'white',
+                    color: page <= 1 ? '#94a3b8' : 'var(--text, #0f172a)',
+                    cursor: page <= 1 ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  Prev
+                </button>
+                <span style={{ fontSize: '0.875rem', color: 'var(--text, #0f172a)' }}>
+                  Page {page} of {Math.max(1, Math.ceil(total / limit))}
+                </span>
+                <button
+                  onClick={() => onPageChange(page + 1)}
+                  disabled={page >= Math.ceil(total / limit)}
+                  style={{
+                    padding: '0.25rem 0.75rem',
+                    border: '1px solid var(--border, #e5e5e5)',
+                    borderRadius: '4px',
+                    background: page >= Math.ceil(total / limit) ? '#f8fafc' : 'white',
+                    color: page >= Math.ceil(total / limit) ? '#94a3b8' : 'var(--text, #0f172a)',
+                    cursor: page >= Math.ceil(total / limit) ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

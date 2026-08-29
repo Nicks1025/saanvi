@@ -10,7 +10,9 @@ export const CreateGameView = ({ onNavigate, onCreateRoom, openRules }) => {
   const [wildDrawFour, setWildDrawFour] = useState(WILD_FOUR_RULES.ALWAYS_ALLOWED);
   const [turnTimer, setTurnTimer] = useState(30);
 
-  const handleSubmit = (e) => {
+  const [isCreating, setIsCreating] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!gameName.trim()) {
       toast.error('Please enter a room name');
@@ -27,7 +29,14 @@ export const CreateGameView = ({ onNavigate, onCreateRoom, openRules }) => {
       },
     };
 
-    onCreateRoom(newRoom);
+    setIsCreating(true);
+    try {
+      await onCreateRoom(newRoom);
+    } catch (err) {
+      // Allow retry if creation fails
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   return (
@@ -237,8 +246,8 @@ export const CreateGameView = ({ onNavigate, onCreateRoom, openRules }) => {
 
           {/* Create Button */}
           <div className="form-submit-actions">
-            <button type="submit" className="s-button btn-primary btn-create-submit">
-              <span>Create Game Room</span>
+            <button type="submit" className="s-button btn-primary btn-create-submit" disabled={isCreating}>
+              <span>{isCreating ? 'Creating Room...' : 'Create Game Room'}</span>
             </button>
           </div>
         </form>
