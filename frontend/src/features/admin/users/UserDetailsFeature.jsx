@@ -105,7 +105,7 @@ const UserDetailsFeature = () => {
   if (!user) return <div style={{ padding: '2rem' }}>User not found</div>;
 
   return (
-    <div className="admin-users-container">
+    <div className="admin-users-container page-container">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
         <div>
           <button 

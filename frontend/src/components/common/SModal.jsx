@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import './smodal.css';
 
-const SModal = ({ isOpen, title, children, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel' }) => {
+const SModal = ({ isOpen, title, children, onConfirm, onCancel, confirmText = 'Confirm', cancelText = 'Cancel', isProcessing = false }) => {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -24,12 +24,12 @@ const SModal = ({ isOpen, title, children, onConfirm, onCancel, confirmText = 'C
         </div>
         <div className="s-modal-actions">
           {onCancel && (
-            <button className="s-button" onClick={onCancel}>
+            <button className="s-button" onClick={onCancel} disabled={isProcessing}>
               {cancelText}
             </button>
           )}
           {onConfirm && (
-            <button className="s-button btn-primary" onClick={onConfirm}>
+            <button className="s-button btn-primary" onClick={onConfirm} disabled={isProcessing}>
               {confirmText}
             </button>
           )}

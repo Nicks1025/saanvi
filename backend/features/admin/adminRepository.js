@@ -1,26 +1,47 @@
 const BaseRepository = require('../../base/baseRepository');
 
 class AdminRepository extends BaseRepository {
-  async getAllUsers(searchQuery) {
-    const builder = this.queryHelper
-      .from('users', 'u')
-      .field('u.uuid')
-      .field('u.email')
-      .field('u.status')
-      .field('u.created_at')
-      .leftJoin('user_details', 'ud', 'u.uuid = ud.user_uuid')
-      .field('ud.first_name')
-      .field('ud.last_name')
-      .where('u.archived_at', 'is', null);
+  async getAllUsers(searchQuery, showArchived = false, page = 1, limit = 10) {
+    const buildBaseQuery = (isCount = false) => {
+      const builder = this.queryHelper.from('users', 'u');
+      
+      if (isCount) {
+        builder.countDistinct('u.uuid', 'total');
+      } else {
+        builder
+          .field('u.uuid')
+          .field('u.email')
+          .field('u.status')
+          .field('u.created_at')
+          .field('ud.first_name')
+          .field('ud.last_name');
+      }
 
-    if (searchQuery) {
-      builder.whereRaw(
-        `(u.email ILIKE ? OR ud.first_name ILIKE ? OR ud.last_name ILIKE ?)`,
-        [`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`]
-      );
-    }
+      builder.leftJoin('user_details', 'ud', 'u.uuid = ud.user_uuid');
 
-    const users = await builder.execute();
+      if (showArchived) {
+        builder.where('u.archived_at', 'not_is', null);
+      } else {
+        builder.where('u.archived_at', 'is', null);
+      }
+
+      if (searchQuery) {
+        builder.where(
+          `(u.email ILIKE ? OR ud.first_name ILIKE ? OR ud.last_name ILIKE ?)`,
+          [`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`]
+        );
+      }
+      return builder;
+    };
+
+    const countResult = await buildBaseQuery(true).execute();
+    const total = countResult && countResult.length > 0 ? parseInt(countResult[0].total || 0, 10) : 0;
+
+    const dataBuilder = buildBaseQuery(false);
+    dataBuilder.limit(limit);
+    dataBuilder.offset((page - 1) * limit);
+
+    const users = await dataBuilder.execute();
       
     // Because we could potentially have multiple rows if there were multiple joined records,
     // we want to ensure uniqueness by UUID.
@@ -38,7 +59,10 @@ class AdminRepository extends BaseRepository {
       }
     }
     
-    return Object.values(uniqueUsersMap);
+    return {
+      data: Object.values(uniqueUsersMap),
+      total
+    };
   }
 
   async getAllPermissions() {
@@ -50,8 +74,8 @@ class AdminRepository extends BaseRepository {
       .execute();
   }
 
-  async getUserByUuid(userUuid) {
-    const data = await this.queryHelper
+  async getUserByUuid(userUuid, includeArchived = false) {
+    const builder = this.queryHelper
       .from('users', 'u')
       .field('u.uuid')
       .field('u.email')
@@ -60,9 +84,13 @@ class AdminRepository extends BaseRepository {
       .leftJoin('user_details', 'ud', 'u.uuid = ud.user_uuid')
       .field('ud.first_name')
       .field('ud.last_name')
-      .where('u.uuid', 'eq', userUuid)
-      .where('u.archived_at', 'is', null)
-      .execute();
+      .where('u.uuid', 'eq', userUuid);
+      
+    if (!includeArchived) {
+      builder.where('u.archived_at', 'is', null);
+    }
+    
+    const data = await builder.execute();
       
     if (data && data.length > 0) {
       const row = data[0];
@@ -113,6 +141,41 @@ class AdminRepository extends BaseRepository {
     }
   }
 
+  async archiveUser(uuid) {
+    return await this.queryHelper
+      .from('users')
+      .update({
+        status: 'inactive',
+        archived_at: new Date().toISOString()
+      })
+      .where('uuid', 'eq', uuid)
+      .execute();
+  }
+
+  async restoreUser(uuid) {
+    return await this.queryHelper
+      .from('users')
+      .update({
+        status: 'active',
+        archived_at: null
+      })
+      .where('uuid', 'eq', uuid)
+      .execute();
+  }
+
+  async deleteUser(uuid) {
+    return await this.queryHelper.transaction(async (trx) => {
+      // 1. Delete from user_roles
+      await trx('user_roles').where('user_uuid', uuid).del();
+      
+      // 2. Delete from user_details
+      await trx('user_details').where('user_uuid', uuid).del();
+      
+      // 3. Delete from users
+      await trx('users').where('uuid', uuid).del();
+    });
+  }
+
   async getAllRoles(searchQuery) {
     const builder = this.queryHelper
       .from('roles')
@@ -120,7 +183,7 @@ class AdminRepository extends BaseRepository {
       .where('archived_at', 'is', null);
 
     if (searchQuery) {
-      builder.whereRaw(
+      builder.where(
         `(name ILIKE ? OR description ILIKE ?)`,
         [`%${searchQuery}%`, `%${searchQuery}%`]
       );

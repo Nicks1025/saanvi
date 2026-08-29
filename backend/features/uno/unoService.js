@@ -71,6 +71,9 @@ class UnoService extends BaseService {
     // Add to user's active rooms set
     await RedisHelper.setAdd(`uno:user_rooms:${creator.uuid}`, roomCode);
     
+    // Set the player's active room lock
+    await RedisHelper.set(`uno:player_active_room:${creator.uuid}`, roomCode, 60 * 60 * 24);
+    
     return roomCode;
   }
 
@@ -108,6 +111,10 @@ class UnoService extends BaseService {
   async deleteRoom(roomCode, userId) {
     const roomState = await RedisHelper.get(`uno:room:${roomCode}`);
     if (roomState && roomState.hostId === userId) {
+      const io = getIo();
+      if (io) {
+        io.to(`uno:${roomCode}`).emit('ROOM_DELETED', { roomCode });
+      }
       await RedisHelper.delete(`uno:room:${roomCode}`);
       await RedisHelper.setRemove(`uno:user_rooms:${userId}`, roomCode);
       return true;
@@ -120,6 +127,10 @@ class UnoService extends BaseService {
     
     if (!roomState) {
       throw new Error('ROOM_NOT_FOUND');
+    }
+
+    if (roomState.status === 'GAME_OVER') {
+      throw new Error('This game has already concluded.');
     }
 
     // Check if player already in room
@@ -167,6 +178,9 @@ class UnoService extends BaseService {
     await RedisHelper.set(`uno:room:${roomCode}`, roomState, 60 * 60 * 24);
       
     // Only the creator tracks this in their user_rooms set, so we do not add it for joining players.
+
+    // Lock the player's active room
+    await RedisHelper.set(`uno:player_active_room:${user.uuid}`, roomCode, 60 * 60 * 24);
 
     // Strip hands before returning for privacy
     const safePlayers = roomState.players.map(p => {

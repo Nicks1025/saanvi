@@ -8,8 +8,9 @@ const DashboardFeature = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="dashboard-container">
-      <h1 className="dashboard-header">
+    <>
+      <div className="dashboard-container page-container">
+        <h1 className="dashboard-header">
         {t('dashboard.welcome', { name: user?.firstName || user?.displayName || user?.email?.split('@')[0] || 'User' })}
       </h1>
       <p className="dashboard-description">
@@ -26,6 +27,7 @@ const DashboardFeature = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

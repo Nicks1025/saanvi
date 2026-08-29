@@ -4,7 +4,7 @@ import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
 import InlineWallpaperCropper from './InlineWallpaperCropper';
 import SButton from '../../../components/common/SButton';
-import { Users, MoreVertical, MessageSquare } from 'lucide-react';
+import { Users, MoreVertical, MessageSquare, ArrowLeft } from 'lucide-react';
 import { chatService } from '../chat.service';
 import { toast } from 'react-hot-toast';
 import { CHAT_THEMES } from '../chatThemes';
@@ -165,6 +165,9 @@ const ChatWindow = ({ chatRealtime }) => {
   return (
     <div className="chat-window">
       <div className="chat-window-header">
+         <button className="chat-mobile-back-btn" onClick={() => chatRealtime.setActiveConversation(null)}>
+           <ArrowLeft size={20} />
+         </button>
          <div className="chat-list-item-avatar chat-list-item-avatar--no-margin">
             {conv.profile_image_url ? <img src={conv.profile_image_url} alt="avatar" /> : (conv.is_group ? <Users /> : (title ? title.charAt(0).toUpperCase() : '?'))}
          </div>

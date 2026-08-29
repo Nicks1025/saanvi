@@ -187,7 +187,7 @@ const SettingsFeature = () => {
   ];
 
   return (
-    <div className="settings-container">
+    <div className="settings-container page-container">
       <h1 className="settings-header">
         {t('settings.title')}
       </h1>

@@ -131,20 +131,22 @@ export const useCardsGame = () => {
     }
   };
 
-  const handleLeaveRoom = useCallback(() => {
+  const executeLeaveRoom = useCallback(() => {
     if (room) {
       socketService.emit('uno:leave', { roomCode: room.code });
     }
-    // Strip URL params via React Router first
-    navigate('/games/uno', { replace: true });
-    
     // Defer state clearing to next tick to avoid triggering Auto-Join race condition
     setTimeout(() => {
       setCurrentScreen(GAME_SCREENS.LOBBY);
       setRoom(null);
       setPlayers([]);
     }, 10);
-  }, [navigate, room]);
+  }, [room]);
+
+  const handleLeaveRoom = useCallback(() => {
+    // Navigating away triggers the router's useBlocker modal if in an active game.
+    navigate('/games/uno', { replace: true });
+  }, [navigate]);
 
   const handleJoinRoom = async (roomCode) => {
     try {
@@ -154,7 +156,10 @@ export const useCardsGame = () => {
       };
       const roomData = await joinUnoRoom(roomCode, userData);
       setRoom(roomData);
-      setPlayers(roomData.players.map(p => ({ ...p, isLocal: p.id === user?.uuid })));
+      setPlayers(prev => roomData.players.map(p => {
+        const existing = prev.find(ep => ep.id === p.id);
+        return { ...p, hand: p.hand !== undefined ? p.hand : (existing?.hand || []), isLocal: p.id === user?.uuid };
+      }));
       setCurrentScreen(GAME_SCREENS.WAITING_ROOM);
       
       // Update URL to match room
@@ -164,6 +169,7 @@ export const useCardsGame = () => {
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to join room', { id: 'join-room' });
       console.error(err);
+      throw err;
     }
   };
 
@@ -175,15 +181,27 @@ export const useCardsGame = () => {
   // -------------------------------------------------------------
   // Socket Listeners (Real-time synchronization)
   // -------------------------------------------------------------
+
+  const currentScreenRef = useRef(currentScreen);
+  useEffect(() => {
+    currentScreenRef.current = currentScreen;
+  }, [currentScreen]);
+
   useEffect(() => {
     const handleRoomUpdated = (roomData) => {
       setRoom(roomData);
-      setPlayers(roomData.players.map(p => ({ ...p, isLocal: p.id === user?.uuid })));
+      setPlayers(prev => roomData.players.map(p => {
+        const existing = prev.find(ep => ep.id === p.id);
+        return { ...p, hand: p.hand !== undefined ? p.hand : (existing?.hand || []), isLocal: p.id === user?.uuid };
+      }));
     };
 
     const handleGameStateUpdated = (roomData) => {
       setRoom(roomData);
-      setPlayers(roomData.players.map(p => ({ ...p, isLocal: p.id === user?.uuid })));
+      setPlayers(prev => roomData.players.map(p => {
+        const existing = prev.find(ep => ep.id === p.id);
+        return { ...p, hand: p.hand !== undefined ? p.hand : (existing?.hand || []), isLocal: p.id === user?.uuid };
+      }));
       setActiveColor(roomData.activeColor);
       setTurnDirection(roomData.turnDirection);
       setCurrentTurnIndex(roomData.currentTurnIndex);
@@ -191,7 +209,7 @@ export const useCardsGame = () => {
       setDiscardPile(roomData.discardPile.slice(-4));
       setDeckCount(roomData.deck.length);
 
-      if (roomData.status === 'PLAYING' && currentScreen !== GAME_SCREENS.GAME_TABLE) {
+      if (roomData.status === 'PLAYING' && currentScreenRef.current !== GAME_SCREENS.GAME_TABLE) {
         setCurrentScreen(GAME_SCREENS.GAME_TABLE);
       } else if (roomData.status === 'GAME_OVER') {
         setCurrentScreen(GAME_SCREENS.RESULT);
@@ -199,25 +217,18 @@ export const useCardsGame = () => {
     };
 
     const handleCardPlayed = ({ playerId, card, eventId }) => {
-      setDrawAnimation({
-        active: true,
-        type: 'PLAY_CARD',
-        sourceId: playerId,
-        targetId: 'discard-pile',
-        count: 1,
-        card: card,
-        timestamp: eventId || Date.now()
+      setCardPlayEvent({
+        id: eventId || `play-${Date.now()}`,
+        playerId,
+        card
       });
     };
 
     const handleCardDrawn = ({ playerId, count, eventId }) => {
       setDrawAnimation({
-        active: true,
-        type: 'DRAW_CARDS',
-        sourceId: 'draw-pile',
-        targetId: playerId,
-        count: count,
-        timestamp: eventId || Date.now()
+        id: eventId || `draw-${Date.now()}`,
+        playerId,
+        count
       });
     };
 
@@ -226,9 +237,20 @@ export const useCardsGame = () => {
       setCurrentScreen(GAME_SCREENS.GAME_TABLE);
     };
 
-    const handleGameOver = ({ winnerId }) => {
+    const handleGameOver = ({ winnerId, roomId }) => {
       setGameResult({ winnerId, summary: 'Game finished', duration: 'Unknown' });
       setCurrentScreen(GAME_SCREENS.RESULT);
+      navigate('/games/uno?result=true', { replace: true, state: { forced: true } });
+    };
+
+    const handleRoomDeleted = ({ roomId }) => {
+      toast.error('The host has deleted the room.');
+      navigate('/games/uno', { replace: true, state: { forced: true } });
+      setTimeout(() => {
+        setCurrentScreen(GAME_SCREENS.LOBBY);
+        setRoom(null);
+        setPlayers([]);
+      }, 10);
     };
 
     socketService.on('ROOM_UPDATED', handleRoomUpdated);
@@ -237,6 +259,7 @@ export const useCardsGame = () => {
     socketService.on('CARD_DRAWN', handleCardDrawn);
     socketService.on('GAME_STARTED', handleGameStarted);
     socketService.on('GAME_OVER', handleGameOver);
+    socketService.on('ROOM_DELETED', handleRoomDeleted);
 
     return () => {
       socketService.off('ROOM_UPDATED', handleRoomUpdated);
@@ -245,8 +268,9 @@ export const useCardsGame = () => {
       socketService.off('CARD_DRAWN', handleCardDrawn);
       socketService.off('GAME_STARTED', handleGameStarted);
       socketService.off('GAME_OVER', handleGameOver);
+      socketService.off('ROOM_DELETED', handleRoomDeleted);
     };
-  }, [currentScreen, user]);
+  }, [user, navigate]);
 
   // -------------------------------------------------------------
   // Core Actions
@@ -422,6 +446,7 @@ export const useCardsGame = () => {
     handleCreateRoom,
     handleJoinRoom,
     handleLeaveRoom,
+    executeLeaveRoom,
   };
 };
 

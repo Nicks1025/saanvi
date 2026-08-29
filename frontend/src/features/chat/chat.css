@@ -1,11 +1,6 @@
 .chat-container {
   display: flex;
-  height: calc(100vh - 64px - 5.8rem);
-    /* 64px header + 2rem padding + 1.4rem margin (.content-container) + ~2.4rem footer */
-  background-color: var(--surface-color, #ffffff);
-  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
 .chat-sidebar {
@@ -890,4 +885,52 @@
   background: rgba(255, 255, 255, 0.3);
   margin: 0 4px;
   align-self: stretch;
+}
+
+/* ====================================================
+   Mobile & Tablet Responsiveness
+   ==================================================== */
+
+.chat-mobile-back-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-primary, #111827);
+  padding: 8px;
+  margin-right: 8px;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.chat-mobile-back-btn:hover {
+  background-color: var(--hover-color, #f3f4f6);
+}
+
+@media (max-width: 768px) {
+  /* Default state: Sidebar visible, Window hidden */
+  .chat-sidebar {
+    width: 100%;
+    border-right: none;
+    display: flex; /* Ensure it's flex */
+  }
+
+  .chat-window {
+    display: none;
+  }
+
+  /* Chat Open state: Sidebar hidden, Window visible */
+  .mobile-chat-open .chat-sidebar {
+    display: none;
+  }
+
+  .mobile-chat-open .chat-window {
+    display: flex;
+    width: 100%;
+  }
+
+  .chat-mobile-back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }

@@ -6,7 +6,7 @@ import UnoGameContainer from '../../../features/games/cards/UnoGameContainer';
 const UnoGamePage = () => {
   return (
     <ProtectedRoute>
-      <AppLayout noContentContainer={true}>
+      <AppLayout>
         <UnoGameContainer />
       </AppLayout>
     </ProtectedRoute>
