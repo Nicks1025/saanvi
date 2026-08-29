@@ -21,6 +21,7 @@ import UserDetailsPage from './pages/admin/users/details';
 import RolesPage from './pages/admin/roles';
 import RoleDetailsPage from './pages/admin/roles/details';
 import SystemHealthPage from './pages/admin/health';
+import SqlEditorPage from './pages/admin/sql-editor';
 import ChatPage from './pages/chat';
 
 const AppRoot = () => {
@@ -53,6 +54,7 @@ const router = createBrowserRouter([
       { path: "admin/roles", element: <RolesPage /> },
       { path: "admin/roles/:uuid", element: <RoleDetailsPage /> },
       { path: "admin/health", element: <SystemHealthPage /> },
+      { path: "admin/sql-editor", element: <SqlEditorPage /> },
       { path: "games/word-search", element: <WordSearchPage /> },
       { path: "games/word-search/play", element: <WordSearchPlayPage /> },
       { path: "games/uno", element: <UnoGamePage /> },

@@ -5,11 +5,16 @@ const QueryHelper = require('../../database/queryHelper');
 const AdminRepository = require('./adminRepository');
 const AdminService = require('./adminService');
 const AdminController = require('./adminController');
+const SqlService = require('./sqlService');
+const SqlController = require('./sqlController');
 
 const queryHelper = new QueryHelper();
 const adminRepository = new AdminRepository(queryHelper);
 const adminService = new AdminService(adminRepository);
 const adminController = new AdminController(adminService);
+
+const sqlService = new SqlService(queryHelper);
+const sqlController = new SqlController(sqlService);
 
 const getUsers = {
   path: '/users',
@@ -209,6 +214,20 @@ const deleteUser = {
   }
 };
 
+const executeSql = {
+  path: '/sql/execute',
+  verb: 'POST',
+  auditMessage: 'executing sql query',
+  handler: { controller: sqlController, method: 'executeSql' },
+  middleware: { requirePermission: ['admin.sql_editor'] },
+  request: {
+    body: Joi.object({
+      databaseId: Joi.string().required(),
+      query: Joi.string().required()
+    })
+  }
+};
+
 const AdminApi = {
   name: 'Admin',
   url: '/api/admin',
@@ -227,7 +246,8 @@ const AdminApi = {
     updateRole,
     getRolePermissions,
     updateRolePermissions,
-    getPermissions
+    getPermissions,
+    executeSql
   ]
 };
 
