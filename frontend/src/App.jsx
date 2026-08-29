@@ -57,6 +57,7 @@ const router = createBrowserRouter([
       { path: "games/word-search/play", element: <WordSearchPlayPage /> },
       { path: "games/uno", element: <UnoGamePage /> },
       { path: "games/uno/:roomId", element: <UnoGamePage /> },
+      { path: "games/uno/:roomId/winner", element: <UnoGamePage /> },
       { path: "chat", element: <ChatPage /> },
       { path: "*", element: <NotFoundPage /> }
     ]

@@ -6,7 +6,7 @@ const SButton = ({ size = 'm', color = 'primary', text, label, children, icon, c
 
   return (
     <button className={`s-button ${sizeClass} ${colorClass} ${className}`.trim()} aria-label={label || text || 'button'} {...props}>
-      {icon && <span style={{ display: 'inline-flex', alignItems: 'center', marginRight: (children || text || label) ? '0.5rem' : '0' }}>{icon}</span>}
+      {icon && <span className="s-button-icon" style={{ display: 'inline-flex', alignItems: 'center', marginRight: (children || text || label) ? '0.5rem' : '0' }}>{icon}</span>}
       {children || text || label}
     </button>
   );

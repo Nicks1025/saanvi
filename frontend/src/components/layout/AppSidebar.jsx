@@ -6,7 +6,7 @@ import { useAuth } from '../../store/AuthContext';
 import SButton from '../common/SButton';
 import './layout.css';
 
-const AppSidebar = ({ isOpen, setSidebarOpen }) => {
+const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const { user, logout } = useAuth();
@@ -42,15 +42,15 @@ const AppSidebar = ({ isOpen, setSidebarOpen }) => {
   };
 
   return (
-    <aside className={`app-sidebar ${isOpen ? 'open' : 'closed'}`}>
+    <aside className={`app-sidebar ${isOpen ? 'open' : 'closed'}${isMobile ? ' sidebar-mobile' : ''}`}>
       <nav className="sidebar-nav">
-        <NavLink to="/dashboard" className={getNavLinkClass} title={t('navigation.dashboard')}>
+        <NavLink to="/dashboard" className={getNavLinkClass} title={t('navigation.dashboard')} onClick={onNavClick}>
           <LayoutDashboard size={20} style={{ flexShrink: 0 }} />
           <span className="sidebar-link-text">{t('navigation.dashboard')}</span>
         </NavLink>
 
         {userPermissions.includes('chat.access') && (
-          <NavLink to="/chat" className={getNavLinkClass} title={t('navigation.chat', 'Chat')}>
+          <NavLink to="/chat" className={getNavLinkClass} title={t('navigation.chat', 'Chat')} onClick={onNavClick}>
             <MessageSquare size={20} style={{ flexShrink: 0 }} />
             <span className="sidebar-link-text">{t('navigation.chat', 'Chat')}</span>
           </NavLink>
@@ -75,17 +75,17 @@ const AppSidebar = ({ isOpen, setSidebarOpen }) => {
             {isAdminOpen && (
               <div className="sidebar-sub-menu">
                 {userPermissions.includes('admin.users') && (
-                  <NavLink to="/admin/users" className={getSubNavLinkClass} title={t('navigation.users', 'Users')}>
+                  <NavLink to="/admin/users" className={getSubNavLinkClass} title={t('navigation.users', 'Users')} onClick={onNavClick}>
                     <span className="sidebar-link-text">{t('navigation.users', 'Users')}</span>
                   </NavLink>
                 )}
                 {userPermissions.includes('admin.roles') && (
-                  <NavLink to="/admin/roles" className={getSubNavLinkClass} title={t('navigation.roles', 'Roles')}>
+                  <NavLink to="/admin/roles" className={getSubNavLinkClass} title={t('navigation.roles', 'Roles')} onClick={onNavClick}>
                     <span className="sidebar-link-text">{t('navigation.roles', 'Roles')}</span>
                   </NavLink>
                 )}
                 {userPermissions.includes('admin.system.health') && (
-                  <NavLink to="/admin/health" className={getSubNavLinkClass} title={t('navigation.system_health', 'System Health')}>
+                  <NavLink to="/admin/health" className={getSubNavLinkClass} title={t('navigation.system_health', 'System Health')} onClick={onNavClick}>
                     <span className="sidebar-link-text">{t('navigation.system_health', 'System Health')}</span>
                   </NavLink>
                 )}
@@ -94,36 +94,39 @@ const AppSidebar = ({ isOpen, setSidebarOpen }) => {
           </div>
         )}
 
-        <div className="sidebar-group">
-          <button 
-            className={`sidebar-link sidebar-group-btn ${location.pathname.startsWith('/games') ? 'active-parent' : ''}`} 
-            onClick={handleGamesClick}
-            title={t('navigation.games', 'Games')}
-          >
-            <Gamepad2 size={20} style={{ flexShrink: 0 }} />
-            <span className="sidebar-link-text">{t('navigation.games', 'Games')}</span>
-            {isOpen && (
-              <span className="sidebar-group-toggle" style={{ marginLeft: 'auto' }}>
-                {isGamesOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-              </span>
-            )}
-          </button>
-          
-          {isGamesOpen && (
-            <div className="sidebar-sub-menu">
-              <NavLink to="/games/uno" className={getSubNavLinkClass} title="UNO">
-                <span className="sidebar-link-text">UNO</span>
-              </NavLink>
+        {(userPermissions.includes('games.uno') || userPermissions.includes('games.words.wordsearch')) && (
+          <div className="sidebar-group">
+            <button 
+              className={`sidebar-link sidebar-group-btn ${location.pathname.startsWith('/games') ? 'active-parent' : ''}`} 
+              onClick={handleGamesClick}
+              title={t('navigation.games', 'Games')}
+            >
+              <Gamepad2 size={20} style={{ flexShrink: 0 }} />
+              <span className="sidebar-link-text">{t('navigation.games', 'Games')}</span>
+              {isOpen && (
+                <span className="sidebar-group-toggle" style={{ marginLeft: 'auto' }}>
+                  {isGamesOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                </span>
+              )}
+            </button>
+            
+            {isGamesOpen && (
+              <div className="sidebar-sub-menu">
+                {userPermissions.includes('games.uno') && (
+                  <NavLink to="/games/uno" className={getSubNavLinkClass} title="UNO" onClick={onNavClick}>
+                    <span className="sidebar-link-text">UNO</span>
+                  </NavLink>
+                )}
               {userPermissions.includes('games.words.wordsearch') && (
-                <NavLink to="/games/word-search" className={getSubNavLinkClass} title={t('navigation.word_search', 'Word Search')}>
+                <NavLink to="/games/word-search" className={getSubNavLinkClass} title={t('navigation.word_search', 'Word Search')} onClick={onNavClick}>
                   <span className="sidebar-link-text">{t('navigation.word_search', 'Word Search')}</span>
                 </NavLink>
               )}
-            </div>
-          )}
-        </div>
-        
-        <NavLink to="/settings" className={getNavLinkClass} title={t('navigation.settings')}>
+              </div>
+            )}
+          </div>
+        )}
+        <NavLink to="/settings" className={getNavLinkClass} title={t('navigation.settings')} onClick={onNavClick}>
           <Settings size={20} style={{ flexShrink: 0 }} />
           <span className="sidebar-link-text">{t('navigation.settings')}</span>
         </NavLink>

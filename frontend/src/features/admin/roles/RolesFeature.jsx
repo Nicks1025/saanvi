@@ -3,6 +3,7 @@ import { Pencil, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import SDataTable from '../../../components/common/SDataTable';
+import SButton from '../../../components/common/SButton';
 import * as rolesService from './rolesService';
 import '../users/users.css';
 
@@ -75,9 +76,13 @@ const RolesFeature = () => {
         searchPlaceholder={t('admin.searchRoles', 'Search roles...')}
         loading={loading}
         headerActions={
-          <button onClick={handleCreate} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', background: 'var(--accent)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-            <Plus size={16} /> {t('admin.addRole', 'Add Role')}
-          </button>
+          <SButton 
+            onClick={handleCreate} 
+            icon={<Plus size={16} />}
+            style={{ flexShrink: 0 }}
+          >
+            <span className="sdt-action-text">{t('admin.addRole', 'Add Role')}</span>
+          </SButton>
         }
       />
     </div>

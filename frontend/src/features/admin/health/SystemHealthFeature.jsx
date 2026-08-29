@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { RefreshCw } from 'lucide-react';
 import SButton from '../../../components/common/SButton';
 import './SystemHealthFeature.css';
 import { toast } from 'react-hot-toast';
@@ -75,21 +76,23 @@ const SystemHealthFeature = () => {
 
   return (
     <div className="system-health-container page-container">
-      <div className="health-header">
-        <div>
-          <h2>System Health</h2>
-          {healthData && (
-            <p className="health-subtitle">
-              Overall Status: {getStatusBadge(healthData.status)}
-              <span className="health-time">
-                Last checked: {new Date(healthData.timestamp).toLocaleTimeString()}
-              </span>
-            </p>
-          )}
+      <div className="health-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+          <h2 style={{ margin: 0 }}>System Health</h2>
+          <SButton size="m" color="primary" onClick={fetchHealth} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <RefreshCw size={16} className={loading ? 'spinning-icon' : ''} />
+            <span className="health-refresh-text">{loading ? 'Refreshing...' : 'Refresh'}</span>
+          </SButton>
         </div>
-        <SButton color="primary" onClick={fetchHealth} disabled={loading}>
-          {loading ? 'Refreshing...' : 'Refresh'}
-        </SButton>
+
+        {healthData && (
+          <p className="health-subtitle">
+            Overall Status: {getStatusBadge(healthData.status)}
+            <span className="health-time">
+              Last checked: {new Date(healthData.timestamp).toLocaleTimeString()}
+            </span>
+          </p>
+        )}
       </div>
 
       {loading && !healthData ? (

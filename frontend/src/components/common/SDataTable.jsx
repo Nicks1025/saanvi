@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import STextField from './STextField';
+import './SDataTable.css';
 
 const SDataTable = ({
   columns = [],
@@ -13,11 +14,36 @@ const SDataTable = ({
   headerActions = null,
   topTabs = null
 }) => {
-  const { page = 1, limit = 10, total = 0, onPageChange, onLimitChange } = pagination;
+  const { page: propPage, limit: propLimit, total: propTotal, onPageChange, onLimitChange } = pagination;
+  const isExternalPagination = Boolean(onPageChange && onLimitChange);
+
   const [internalSearch, setInternalSearch] = useState('');
   const [filteredData, setFilteredData] = useState(data);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [isLimitDropdownOpen, setIsLimitDropdownOpen] = useState(false);
+  const [internalPage, setInternalPage] = useState(1);
+  const [internalLimit, setInternalLimit] = useState(10);
+  
+  const activePage = isExternalPagination ? (propPage || 1) : internalPage;
+  const activeLimit = isExternalPagination ? (propLimit || 10) : internalLimit;
+  const activeTotal = isExternalPagination ? (propTotal || 0) : filteredData.length;
+
+  const handlePageChange = (newPage) => {
+    if (isExternalPagination) {
+      onPageChange(newPage);
+    } else {
+      setInternalPage(newPage);
+    }
+  };
+
+  const handleLimitChange = (newLimit) => {
+    if (isExternalPagination) {
+      onLimitChange(newLimit);
+    } else {
+      setInternalLimit(newLimit);
+      setInternalPage(1); // Reset to page 1 on limit change
+    }
+  };
 
   // Sync internal data when props change (for server-side or initial load)
   useEffect(() => {
@@ -70,6 +96,12 @@ const SDataTable = ({
     return sortableItems;
   }, [filteredData, sortConfig]);
 
+  const displayedData = React.useMemo(() => {
+    if (isExternalPagination) return sortedData;
+    const startIndex = (activePage - 1) * activeLimit;
+    return sortedData.slice(startIndex, startIndex + activeLimit);
+  }, [sortedData, isExternalPagination, activePage, activeLimit]);
+
   const handleSort = (key) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -80,31 +112,6 @@ const SDataTable = ({
 
   return (
     <div className="s-data-table page-container" style={{ position: 'relative' }}>
-      <style>{`
-        @keyframes sdt-indeterminate {
-          0% { left: -30%; width: 30%; }
-          50% { left: 30%; width: 70%; }
-          100% { left: 100%; width: 30%; }
-        }
-        .sdt-progress-bar {
-          position: absolute;
-          top: 0;
-          left: 0;
-          height: 3px;
-          background-color: var(--primary, #007bff);
-          animation: sdt-indeterminate 1.5s infinite linear;
-        }
-        .sdt-progress-container {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 3px;
-          background-color: rgba(0, 0, 0, 0.05);
-          overflow: hidden;
-          z-index: 10;
-        }
-      `}</style>
       
       {topTabs && (
         <div style={{ padding: '1rem 1rem 0 1rem' }}>
@@ -112,13 +119,12 @@ const SDataTable = ({
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem' }}>
+      <div className="sdt-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', gap: '1rem' }}>
         <div>
           {title && <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600, color: 'var(--text)' }}>{title}</h2>}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          {headerActions}
-          <div style={{ width: '300px' }}>
+        <div className="sdt-controls-row" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div className="sdt-search-wrapper" style={{ width: '300px' }}>
             <STextField
               placeholder={searchPlaceholder}
               text={internalSearch}
@@ -126,15 +132,16 @@ const SDataTable = ({
               marginBottom="0"
             />
           </div>
+          {headerActions}
         </div>
       </div>
-      <div style={{ position: 'relative', width: '100%' }}>
+      <div style={{ position: 'relative', width: '100%', overflowX: 'auto' }}>
         {loading && (
           <div className="sdt-progress-container">
             <div className="sdt-progress-bar"></div>
           </div>
         )}
-        <table style={{ width: '100%', borderCollapse: 'collapse', borderTop: '1px solid var(--border, #e5e5e5)', borderBottom: '1px solid var(--border, #e5e5e5)' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', borderTop: '1px solid var(--border, #e5e5e5)', borderBottom: '1px solid var(--border, #e5e5e5)', minWidth: '480px' }}>
         <thead>
           <tr>
               {columns.map((col, index) => {
@@ -169,7 +176,7 @@ const SDataTable = ({
           </tr>
         </thead>
         <tbody>
-            {sortedData.map((row, rowIndex) => (
+            {displayedData.map((row, rowIndex) => (
             <tr key={rowIndex}>
               {columns.map((col, colIndex) => {
                 const isObject = typeof col === 'object';
@@ -186,10 +193,10 @@ const SDataTable = ({
           ))}
         </tbody>
         </table>
+      </div>
         
         {/* Pagination Footer */}
-        {onPageChange && onLimitChange && (
-          <div style={{
+        <div className="sdt-pagination-container" style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
@@ -198,12 +205,12 @@ const SDataTable = ({
             backgroundColor: '#ffffff'
           }}>
             <div style={{ color: 'var(--text-secondary, #64748b)', fontSize: '0.875rem' }}>
-              Total Records: {total}
+            {activeTotal} Records
             </div>
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ color: 'var(--text-secondary, #64748b)', fontSize: '0.875rem' }}>Rows per page:</span>
+          <div className="sdt-pagination-controls" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div className="sdt-hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ color: 'var(--text-secondary, #64748b)', fontSize: '0.875rem' }}>Rows per page:</span>
                 <div style={{ position: 'relative' }}>
                   <div 
                     onClick={() => setIsLimitDropdownOpen(!isLimitDropdownOpen)}
@@ -222,7 +229,7 @@ const SDataTable = ({
                       justifyContent: 'space-between'
                     }}
                   >
-                    {limit} 
+                    {activeLimit} 
                     <span style={{ fontSize: '0.6rem', transform: isLimitDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▲</span>
                   </div>
                   {isLimitDropdownOpen && (
@@ -243,19 +250,19 @@ const SDataTable = ({
                         <div 
                           key={val}
                           onClick={() => {
-                            onLimitChange(val);
+                            handleLimitChange(val);
                             setIsLimitDropdownOpen(false);
                           }}
                           style={{
                             padding: '0.35rem 0.75rem',
                             cursor: 'pointer',
                             fontSize: '0.875rem',
-                            backgroundColor: val === limit ? '#f8fafc' : 'transparent',
+                            backgroundColor: val === activeLimit ? '#f8fafc' : 'transparent',
                             color: 'var(--text, #0f172a)',
                             transition: 'background-color 0.1s'
                           }}
-                          onMouseOver={(e) => { if (val !== limit) e.target.style.backgroundColor = '#f1f5f9'; }}
-                          onMouseOut={(e) => { if (val !== limit) e.target.style.backgroundColor = 'transparent'; }}
+                          onMouseOver={(e) => { if (val !== activeLimit) e.target.style.backgroundColor = '#f1f5f9'; }}
+                          onMouseOut={(e) => { if (val !== activeLimit) e.target.style.backgroundColor = 'transparent'; }}
                         >
                           {val}
                         </div>
@@ -267,41 +274,43 @@ const SDataTable = ({
               
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <button
-                  onClick={() => onPageChange(page - 1)}
-                  disabled={page <= 1}
+                  onClick={() => handlePageChange(activePage - 1)}
+                  disabled={activePage <= 1}
                   style={{
                     padding: '0.25rem 0.75rem',
                     border: '1px solid var(--border, #e5e5e5)',
                     borderRadius: '4px',
-                    background: page <= 1 ? '#f8fafc' : 'white',
-                    color: page <= 1 ? '#94a3b8' : 'var(--text, #0f172a)',
-                    cursor: page <= 1 ? 'not-allowed' : 'pointer'
+                    background: activePage <= 1 ? '#f8fafc' : 'white',
+                    color: activePage <= 1 ? '#94a3b8' : 'var(--text, #0f172a)',
+                    cursor: activePage <= 1 ? 'not-allowed' : 'pointer'
                   }}
                 >
-                  Prev
+                  <span className="sdt-hide-mobile">Prev</span>
+                  <span className="sdt-show-mobile">&lt;</span>
                 </button>
                 <span style={{ fontSize: '0.875rem', color: 'var(--text, #0f172a)' }}>
-                  Page {page} of {Math.max(1, Math.ceil(total / limit))}
+                  <span className="sdt-hide-mobile">Page </span>
+                  {activePage}
+                  <span className="sdt-hide-mobile"> of {Math.max(1, Math.ceil(activeTotal / activeLimit))}</span>
                 </span>
                 <button
-                  onClick={() => onPageChange(page + 1)}
-                  disabled={page >= Math.ceil(total / limit)}
+                  onClick={() => handlePageChange(activePage + 1)}
+                  disabled={activePage >= Math.ceil(activeTotal / activeLimit)}
                   style={{
                     padding: '0.25rem 0.75rem',
                     border: '1px solid var(--border, #e5e5e5)',
                     borderRadius: '4px',
-                    background: page >= Math.ceil(total / limit) ? '#f8fafc' : 'white',
-                    color: page >= Math.ceil(total / limit) ? '#94a3b8' : 'var(--text, #0f172a)',
-                    cursor: page >= Math.ceil(total / limit) ? 'not-allowed' : 'pointer'
-                  }}
+                    background: activePage >= Math.ceil(activeTotal / activeLimit) ? '#f8fafc' : 'white',
+                    color: activePage >= Math.ceil(activeTotal / activeLimit) ? '#94a3b8' : 'var(--text, #0f172a)',
+                    cursor: activePage >= Math.ceil(activeTotal / activeLimit) ? 'not-allowed' : 'pointer'
+                }}
                 >
-                  Next
+                  <span className="sdt-hide-mobile">Next</span>
+                  <span className="sdt-show-mobile">&gt;</span>
                 </button>
               </div>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 };

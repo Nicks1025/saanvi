@@ -316,6 +316,25 @@ code {
   justify-content: center;
 }
 
+.s-button.btn-xs {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+}
+
+.s-button.btn-s {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+.s-button.btn-m {
+  padding: 9px 15px;
+  font-size: 1rem;
+}
+
+.s-button.btn-xl {
+  padding: 12px 20px;
+  font-size: 1.15rem;
+}
 .s-button:hover {
   border-color: var(--accent-border);
 }

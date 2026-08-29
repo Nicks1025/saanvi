@@ -51,6 +51,11 @@ export const UnoGameContainer = () => {
       return;
     }
 
+    if (location.pathname.endsWith('/winner')) {
+      setIsJoiningUrl(false);
+      return;
+    }
+
     if (roomId && game.handleJoinRoom && room?.code !== roomId.toUpperCase() && joinAttemptRef.current !== roomId) {
       joinAttemptRef.current = roomId;
       setIsJoiningUrl(true);
@@ -123,6 +128,17 @@ export const UnoGameContainer = () => {
         <CardsLobbyView
           onNavigate={setCurrentScreen}
           openRules={openRules}
+        />
+      );
+    }
+    
+    if (location.pathname.endsWith('/winner')) {
+      return (
+        <GameResultView
+          gameResult={gameResult}
+          onLeaveGame={() => {
+            navigate('/games/uno', { replace: true, state: { forced: true } });
+          }}
         />
       );
     }

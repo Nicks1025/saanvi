@@ -150,27 +150,6 @@ export const CircularTable = ({
           );
         })}
 
-        {/* Local Player Floating Indicator at bottom table rim */}
-        {localPlayer && (
-          <div
-            className="table-seat-slot local-table-slot"
-            style={{
-              position: 'absolute',
-              bottom: '2%',
-              left: '50%',
-              transform: 'translate(-50%, 0)',
-              zIndex: 15,
-            }}
-          >
-            <PlayerSeat
-              player={localPlayer}
-              isCurrentTurn={currentTurnPlayerId === localPlayer.id}
-              turnTimeLeft={currentTurnPlayerId === localPlayer.id ? turnTimeLeft : null}
-              onToggleMute={onToggleMute}
-              position="bottom"
-            />
-          </div>
-        )}
       </div>
     </div>
   );
