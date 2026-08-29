@@ -295,6 +295,23 @@ class QueryHelper {
   get db() {
     return this._db;
   }
+
+  /**
+   * Executes raw SQL specifically for the Admin SQL Editor.
+   * This is strictly for verified/parsed queries originating from authorized admins.
+   * Do not use this for general application queries.
+   */
+  async executeRawAdminSql(sqlString) {
+    if (!this._db) throw new Error('Database not initialized');
+    
+    try {
+      // Execute with a 15-second timeout to protect connection resources
+      return await this._db.raw(sqlString).timeout(15000, { cancel: true });
+    } catch (error) {
+      console.error(`[Database Raw Error] Code: ${error.code} | Message: ${error.message}`);
+      throw error;
+    }
+  }
 }
 
 module.exports = QueryHelper;

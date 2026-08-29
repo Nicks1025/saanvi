@@ -56,7 +56,7 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
           </NavLink>
         )}
 
-        {(userPermissions.includes('admin.users') || userPermissions.includes('admin.roles') || userPermissions.includes('admin.system.health')) && (
+        {(userPermissions.includes('admin.users') || userPermissions.includes('admin.roles') || userPermissions.includes('admin.system.health') || userPermissions.includes('admin.sql_editor')) && (
           <div className="sidebar-group">
             <button 
               className={`sidebar-link sidebar-group-btn ${location.pathname.startsWith('/admin') ? 'active-parent' : ''}`} 
@@ -87,6 +87,11 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
                 {userPermissions.includes('admin.system.health') && (
                   <NavLink to="/admin/health" className={getSubNavLinkClass} title={t('navigation.system_health', 'System Health')} onClick={onNavClick}>
                     <span className="sidebar-link-text">{t('navigation.system_health', 'System Health')}</span>
+                  </NavLink>
+                )}
+                {userPermissions.includes('admin.sql_editor') && (
+                  <NavLink to="/admin/sql-editor" className={getSubNavLinkClass} title="SQL Editor" onClick={onNavClick}>
+                    <span className="sidebar-link-text">SQL Editor</span>
                   </NavLink>
                 )}
               </div>
