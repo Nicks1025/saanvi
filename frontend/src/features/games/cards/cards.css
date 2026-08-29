@@ -601,8 +601,8 @@
 
 .discard-stacked-card {
   position: absolute;
-  right: 6px;
-  bottom: 6px;
+  left: 50%;
+    top: 25%;
   width: 84px;
   height: 124px;
   will-change: transform, opacity;
@@ -620,8 +620,8 @@
 
 .empty-discard-slot {
   position: absolute;
-  right: 6px;
-  bottom: 6px;
+  inset: 0;
+    margin: auto;
   width: 84px;
   height: 124px;
   border-radius: 12px;
@@ -3336,4 +3336,145 @@
   .card-size-table .corner-val { font-size: 11px; }
   .card-size-table .symbol-draw-two .symbol-text { font-size: 16px; }
   .card-size-table .symbol-wild-gem, .card-size-table .symbol-wild-four { width: 26px; height: 26px; }
+}
+
+/* ============================================================
+   MOBILE: UNO LOBBY & GAME CONTAINER OVERFLOW FIX
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .uno-game-container {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .cards-lobby-view {
+    overflow-x: hidden;
+  }
+
+  .lobby-hero-card {
+    padding: 24px 20px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+  }
+
+  .lobby-hero-title {
+    font-size: clamp(2.5rem, 10vw, 4rem);
+  }
+
+  .lobby-highlights-grid,
+  .rooms-preset-grid,
+  .rooms-active-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .waiting-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* UNO game table arena full width on mobile */
+  .game-table-view {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  .table-stage-arena {
+    padding: 4px;
+    overflow: hidden;
+  }
+
+  /* Table bar layout stacking */
+  .table-bar {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 48px;
+    padding: 0.5rem 0.75rem;
+    gap: 0.5rem;
+  }
+
+  /* Player hand scrolls horizontally on very small screens */
+  .player-hand-row {
+    overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .player-hand-row::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Landscape: UNO table view should fill full height without scrollbar */
+@media (max-width: 1024px) and (orientation: landscape) {
+  .game-table-view {
+    height: 100vh;
+  }
+}
+
+/* ============================================================
+   MOBILE LANDSCAPE: SHRINK PLAYER HAND CARDS
+   Uses max-width and orientation to reliably target landscape phones
+   ============================================================ */
+@media (max-width: 1024px) and (orientation: landscape) {
+
+  /* Slightly larger hand cards for better readability while still preserving table space */
+  .card-size-hand {
+    width: 48px !important;
+    height: 72px !important;
+  }
+
+  .card-size-hand .card-outer-frame {
+    padding: 2px;
+    border-width: 1.5px;
+    border-radius: 7px;
+  }
+
+  .card-size-hand .corner-val {
+    font-size: 9px;
+  }
+
+  .card-size-hand .corner-pip {
+    width: 4px;
+    height: 4px;
+  }
+
+  .card-size-hand .symbol-number-text {
+    font-size: 18px;
+  }
+
+  .card-size-hand .symbol-action svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .card-size-hand .symbol-draw-two .symbol-text {
+    font-size: 13px;
+  }
+
+  .card-size-hand .symbol-wild-gem,
+  .card-size-hand .symbol-wild-four {
+    width: 18px;
+    height: 18px;
+  }
+
+  .card-size-hand .wild-four-text {
+    font-size: 9px;
+  }
+
+  .card-size-hand .wild-center-star {
+    font-size: 9px;
+  }
+
+  /* Also shrink the discard/table cards slightly */
+  .card-size-table {
+    width: 48px !important;
+    height: 70px !important;
+  }
+
+  /* Tighten player hand horizontal spacing */
+  .player-hand-inner {
+    gap: 2px !important;
+  }
 }

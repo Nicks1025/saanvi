@@ -2,17 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Home, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import HomeNavbar from '../../features/home/components/HomeNavbar';
+import { useAuth } from '../../store/AuthContext';
 
 const NotFoundPage = () => {
   const [countdown, setCountdown] = useState(8);
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
+  
+  const targetPath = isAuthenticated ? '/dashboard' : '/';
+  const targetLabel = isAuthenticated ? 'Dashboard' : 'Home';
 
   useEffect(() => {
     document.title = "Page Not Found — Saanvi";
     if (countdown === 0) {
-      navigate('/', { replace: true });
+      navigate(targetPath, { replace: true });
       return;
     }
 
@@ -21,11 +25,10 @@ const NotFoundPage = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [countdown, navigate]);
+  }, [countdown, navigate, targetPath]);
 
   return (
     <div className="saanvi-public-page" style={{ justifyContent: 'center', alignItems: 'center' }}>
-      <HomeNavbar />
       <div style={{ 
         display: 'flex', 
         flexDirection: 'column', 
@@ -59,11 +62,11 @@ const NotFoundPage = () => {
           boxSizing: 'border-box'
         }}>
           <p style={{ margin: 0, fontSize: '0.9rem', color: '#cbd5e1' }}>
-            {t('not_found.redirecting', 'Redirecting to Home in')} <strong style={{ color: '#818cf8', fontSize: '1.1rem' }}>{countdown}</strong> {t('not_found.seconds', 'seconds')}...
+            {t('not_found.redirecting', `Redirecting to ${targetLabel} in`)} <strong style={{ color: '#818cf8', fontSize: '1.1rem' }}>{countdown}</strong> {t('not_found.seconds', 'seconds')}...
           </p>
         </div>
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate(targetPath)}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -79,7 +82,7 @@ const NotFoundPage = () => {
             cursor: 'pointer'
           }}
         >
-          <Home size={16} /> Return to Home
+          <Home size={16} /> Return to {targetLabel}
         </button>
       </div>
     </div>

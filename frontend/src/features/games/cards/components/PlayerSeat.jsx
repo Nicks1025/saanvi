@@ -25,6 +25,7 @@ export const PlayerSeat = ({
     connectionStatus = 'connected',
     hasCalledUno = false,
     missedUno = false,
+    missedTurns = 0,
   } = player;
 
   const showCatchUnoButton = !isLocal && cardCount === 1 && !hasCalledUno && !missedUno;
@@ -116,9 +117,13 @@ export const PlayerSeat = ({
           <span className="card-count-number">{cardCount} {cardCount === 1 ? 'card' : 'cards'}</span>
         </div>
 
-
-
-        {/* Catch UNO Action Button for opponents */}
+        {/* Inactivity Strikes Badge */}
+        {(missedTurns || 0) > 0 && (
+          <div className="seat-strikes-badge" title={`${missedTurns}/3 strikes. 3 strikes = kicked.`} style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px', fontSize: '10px', color: '#ef4444', background: 'rgba(239, 68, 68, 0.1)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+            <AlertTriangle size={10} />
+            <span>{missedTurns}/3 Strikes</span>
+          </div>
+        )}        {/* Catch UNO Action Button for opponents */}
         {showCatchUnoButton && onCatchUno && (
           <button
             className="catch-uno-action-btn animate-pulse"

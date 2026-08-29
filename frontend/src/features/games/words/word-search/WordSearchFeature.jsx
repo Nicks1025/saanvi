@@ -188,9 +188,9 @@ const WordSearchFeature = () => {
 
       {(status === 'ready' || status === 'playing' || status === 'paused') && puzzle && (
         <div className="ws-game">
-          <div className="ws-game-header-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="ws-game-header-container">
             <h2 style={{ margin: 0 }}>{t('games.word_search.title')}</h2>
-            <div className="ws-action-buttons" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+            <div className="ws-action-buttons">
               {status !== 'ready' && (
                 <div className="ws-timer" style={{ fontSize: '1.25rem', fontWeight: 600, fontFamily: 'var(--mono)' }}>
                   {Math.floor(timeElapsed / 60).toString().padStart(2, '0')}:{(timeElapsed % 60).toString().padStart(2, '0')}

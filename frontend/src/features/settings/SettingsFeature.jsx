@@ -252,7 +252,7 @@ const SettingsFeature = () => {
               {t('settings.profileInfo')}
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="settings-form-grid">
                 <STextField 
                   label={t('settings.firstName', 'First Name')} 
                   text={profileForm.firstName} 
@@ -268,7 +268,7 @@ const SettingsFeature = () => {
                   validate={(v) => validateRequired(v, 'Last name')}
                 />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="settings-form-grid">
                 <STextField 
                   label={t('settings.displayName', 'Display Name')} 
                   text={profileForm.displayName} 
@@ -284,7 +284,7 @@ const SettingsFeature = () => {
                   validate={validatePhone}
                 />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="settings-form-grid">
                 <STextField 
                   label={t('settings.dateOfBirth', 'Date of Birth')} 
                   type="date"
