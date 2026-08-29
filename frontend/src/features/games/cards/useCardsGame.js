@@ -208,6 +208,10 @@ export const useCardsGame = () => {
       setDrawStack(roomData.drawStack || 0);
       setDiscardPile(roomData.discardPile.slice(-4));
       setDeckCount(roomData.deck.length);
+      
+      if (roomData.turnExpiresAt) {
+        setTurnExpiresAt(roomData.turnExpiresAt);
+      }
 
       if (roomData.status === 'PLAYING' && currentScreenRef.current !== GAME_SCREENS.GAME_TABLE) {
         setCurrentScreen(GAME_SCREENS.GAME_TABLE);
@@ -237,13 +241,27 @@ export const useCardsGame = () => {
       setCurrentScreen(GAME_SCREENS.GAME_TABLE);
     };
 
-    const handleGameOver = ({ winnerId, roomId }) => {
-      setGameResult({ winnerId, summary: 'Game finished', duration: 'Unknown' });
+    const handleGameOver = ({ winnerId, roomId, scores = [] }) => {
+      const enrichedScores = scores.map(s => ({
+        ...s,
+        isLocal: s.id === user?.uuid
+      }));
+      setGameResult({ 
+        winnerId, 
+        isLocalWinner: winnerId === user?.uuid,
+        winner: enrichedScores.find(s => s.id === winnerId),
+        scores: enrichedScores, 
+        summary: 'Game finished', 
+        duration: 'Unknown' 
+      });
       setCurrentScreen(GAME_SCREENS.RESULT);
-      navigate('/games/uno?result=true', { replace: true, state: { forced: true } });
+      navigate(`/games/uno/${roomId}/winner`, { replace: true, state: { forced: true } });
     };
 
     const handleRoomDeleted = ({ roomId }) => {
+      if (currentScreenRef.current === GAME_SCREENS.RESULT || window.location.pathname.endsWith('/winner')) {
+        return;
+      }
       toast.error('The host has deleted the room.');
       navigate('/games/uno', { replace: true, state: { forced: true } });
       setTimeout(() => {
@@ -253,6 +271,20 @@ export const useCardsGame = () => {
       }, 10);
     };
 
+    const handlePlayerKicked = ({ playerId, reason }) => {
+      if (playerId === user?.uuid) {
+        toast.error("You were removed from the game due to inactivity.");
+        navigate('/games/uno', { replace: true, state: { forced: true } });
+        setTimeout(() => {
+          setCurrentScreen(GAME_SCREENS.LOBBY);
+          setRoom(null);
+          setPlayers([]);
+        }, 10);
+      } else {
+        toast.error(`A player was removed due to inactivity.`, { icon: '🚪' });
+      }
+    };
+
     socketService.on('ROOM_UPDATED', handleRoomUpdated);
     socketService.on('GAME_STATE_UPDATED', handleGameStateUpdated);
     socketService.on('CARD_PLAYED', handleCardPlayed);
@@ -260,6 +292,7 @@ export const useCardsGame = () => {
     socketService.on('GAME_STARTED', handleGameStarted);
     socketService.on('GAME_OVER', handleGameOver);
     socketService.on('ROOM_DELETED', handleRoomDeleted);
+    socketService.on('PLAYER_KICKED', handlePlayerKicked);
 
     return () => {
       socketService.off('ROOM_UPDATED', handleRoomUpdated);
@@ -269,8 +302,24 @@ export const useCardsGame = () => {
       socketService.off('GAME_STARTED', handleGameStarted);
       socketService.off('GAME_OVER', handleGameOver);
       socketService.off('ROOM_DELETED', handleRoomDeleted);
+      socketService.off('PLAYER_KICKED', handlePlayerKicked);
     };
   }, [user, navigate]);
+
+  // Tick Timer Down visually
+  useEffect(() => {
+    if (currentScreen !== GAME_SCREENS.GAME_TABLE) return;
+
+    const tick = () => {
+      const now = Date.now();
+      const left = Math.max(0, Math.floor((turnExpiresAt - now) / 1000));
+      setTurnTimeLeft(left);
+    };
+
+    tick(); // Initial call
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [turnExpiresAt, currentScreen]);
 
   // -------------------------------------------------------------
   // Core Actions

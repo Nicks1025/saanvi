@@ -30,6 +30,22 @@
   box-sizing: border-box;
 }
 
+/* Game header row: title + action buttons */
+.ws-game-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.ws-action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 /* Header */
 .ws-header {
   display: flex;
@@ -269,4 +285,43 @@
   user-select: none;
   opacity: 0.7;
   transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+/* ============================================================
+   MOBILE RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 600px) {
+  .ws-game-header-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ws-action-buttons {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .ws-main {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .ws-grid-container {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .ws-word-list-container {
+    width: 100%;
+  }
+
+  .ws-menu, .ws-loading, .ws-error, .ws-result {
+    padding: 1.5rem 1rem;
+  }
+
+  .ws-result-stats {
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
 }

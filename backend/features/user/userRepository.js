@@ -5,6 +5,7 @@ class UserRepository extends BaseRepository {
    * Retrieves safe user profile data by UUID.
    */
   async getUserByUuid(uuid) {
+    // 1. Fetch base user and user_details using left joins
     const usersData = await this.queryHelper
       .from('users', 'u')
       .field('u.uuid')
@@ -23,52 +24,61 @@ class UserRepository extends BaseRepository {
       .field('ud.date_of_birth')
       .field('ud.gender')
       .field('ud.profile_image_url')
-      .join('user_roles', 'ur', 'u.uuid = ur.user_uuid')
-      .join('roles', 'r', 'ur.role_uuid = r.uuid')
-      .join('role_permissions', 'rp', 'r.uuid = rp.role_uuid')
-      .join('permissions', 'p', 'rp.permission_uuid = p.uuid')
-      .field('p.permission')
-      .field('p.is_active')
-      .field('p.archived_at')
+      .leftJoin('user_roles', 'ur', 'u.uuid = ur.user_uuid')
+      .leftJoin('roles', 'r', 'ur.role_uuid = r.uuid')
       .field('r.name as role_name')
-      .field('r.is_active as role_is_active')
-      .field('r.archived_at as role_archived_at')
       .where('u.uuid', 'eq', uuid)
       .where('u.archived_at', 'is', null)
-      .where('p.is_active', 'eq', true)
-      .where('p.archived_at', 'is', null)
-      .where('r.is_active', 'eq', true)
-      .where('r.archived_at', 'is', null)
       .execute();
 
-    if (usersData && usersData.length > 0) {
-      // With raw SQL joins, we get flat rows. We need to grab the user details from the first row,
-      // and extract all unique permissions from all rows.
-      const user = usersData[0];
-      
-      const permissions = [...new Set(usersData.map(row => row.permission).filter(Boolean))];
-
-      return {
-        uuid: user.uuid,
-        email: user.email,
-        isMfaEnabled: user.is_mfa_enabled,
-        isEmailVerified: user.is_email_verified,
-        status: user.status,
-        firstName: user.first_name || null,
-        lastName: user.last_name || null,
-        displayName: user.display_name || null,
-        phoneNumber: user.phone_number || null,
-        dateOfBirth: user.date_of_birth ? new Date(user.date_of_birth).toISOString().split('T')[0] : null,
-        gender: user.gender || null,
-        profileImageUrl: user.profile_image_url || null,
-        language: user.language || 'en',
-        theme: user.theme || 'system',
-        font: user.font || 'sans',
-        permissions,
-        roles: user.role_name
-      };
+    if (!usersData || usersData.length === 0) {
+      return null;
     }
-    return null;
+
+    const user = usersData[0];
+    
+    // 2. Fetch permissions in a separate query to handle 0-permission safely
+    let permissions = [];
+    try {
+      const permsData = await this.queryHelper
+        .from('user_roles', 'ur')
+        .join('roles', 'r', 'ur.role_uuid = r.uuid')
+        .join('role_permissions', 'rp', 'r.uuid = rp.role_uuid')
+        .join('permissions', 'p', 'rp.permission_uuid = p.uuid')
+        .field('p.permission')
+        .where('ur.user_uuid', 'eq', user.uuid)
+        .where('r.is_active', 'eq', true)
+        .where('r.archived_at', 'is', null)
+        .where('p.is_active', 'eq', true)
+        .where('p.archived_at', 'is', null)
+        .execute();
+        
+      if (permsData) {
+        permissions = [...new Set(permsData.map(row => row.permission).filter(Boolean))];
+      }
+    } catch (err) {
+      console.error('Failed to fetch permissions in getUserByUuid:', err);
+    }
+
+    return {
+      uuid: user.uuid,
+      email: user.email,
+      isMfaEnabled: user.is_mfa_enabled,
+      isEmailVerified: user.is_email_verified,
+      status: user.status,
+      firstName: user.first_name || null,
+      lastName: user.last_name || null,
+      displayName: user.display_name || null,
+      phoneNumber: user.phone_number || null,
+      dateOfBirth: user.date_of_birth ? new Date(user.date_of_birth).toISOString().split('T')[0] : null,
+      gender: user.gender || null,
+      profileImageUrl: user.profile_image_url || null,
+      language: user.language || 'en',
+      theme: user.theme || 'system',
+      font: user.font || 'sans',
+      permissions,
+      roles: user.role_name
+    };
   }
 
   /**

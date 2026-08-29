@@ -224,3 +224,63 @@
   display: block;
   background: var(--bg-secondary, #f0f0f0);
 }
+
+/* Responsive grid for profile form fields */
+.settings-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* ============================================================
+   MOBILE RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .settings-layout {
+    flex-direction: column;
+  }
+
+  .settings-profile-col {
+    width: 100%;
+    align-items: center;
+  }
+
+  .settings-avatar-container {
+    width: 160px;
+    height: 160px;
+  }
+
+  .settings-profile-avatar {
+    width: 160px;
+    height: 160px;
+  }
+
+  .settings-header {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .settings-info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .settings-info-label {
+    width: 100%;
+  }
+
+  .settings-info-value {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .settings-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-section {
+    padding: 1rem;
+  }
+}

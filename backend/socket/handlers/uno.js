@@ -1,6 +1,113 @@
 const RedisHelper = require('../../redis/redisHelper');
 const UnoEngine = require('../../features/uno/unoEngine');
 
+const roomTimers = new Map();
+
+function clearTurnTimer(roomCode) {
+  if (roomTimers.has(roomCode)) {
+    clearTimeout(roomTimers.get(roomCode));
+    roomTimers.delete(roomCode);
+  }
+}
+
+function startTurnTimer(roomCode, io) {
+  clearTurnTimer(roomCode);
+  
+  const timer = setTimeout(async () => {
+    await handleTurnTimeout(roomCode, io);
+  }, 30000);
+  
+  roomTimers.set(roomCode, timer);
+}
+
+async function handleTurnTimeout(roomCode, io) {
+  let roomState = await RedisHelper.get(`uno:room:${roomCode}`);
+  if (!roomState || roomState.status !== 'PLAYING') {
+    clearTurnTimer(roomCode);
+    return;
+  }
+
+  const currentPlayer = roomState.players[roomState.currentTurnIndex];
+  if (!currentPlayer) return;
+  
+  currentPlayer.missedTurns = (currentPlayer.missedTurns || 0) + 1;
+  
+  if (currentPlayer.missedTurns >= 3) {
+    // Kick player
+    roomState.kickedPlayers = [...(roomState.kickedPlayers || []), currentPlayer];
+    roomState.players.splice(roomState.currentTurnIndex, 1);
+    await RedisHelper.delete(`uno:player_active_room:${currentPlayer.id}`);
+    
+    if (roomState.players.length === 1) {
+       roomState.status = 'GAME_OVER';
+       
+       const allPlayers = [...roomState.players, ...(roomState.kickedPlayers || [])];
+       const scores = allPlayers.map(p => ({
+         id: p.id,
+         name: p.name,
+         avatar: p.avatar,
+         cardsLeft: p.cardCount || 0,
+         score: (p.id === roomState.players[0].id) ? 100 : 0,
+         isKicked: !!roomState.kickedPlayers.find(k => k.id === p.id)
+       }));
+
+       io.to(`uno:${roomCode}`).emit('GAME_OVER', { winnerId: roomState.players[0].id, roomId: roomCode, scores });
+       await RedisHelper.delete(`uno:room:${roomCode}`);
+       await RedisHelper.setRemove(`uno:user_rooms:${roomState.hostId}`, roomCode);
+       clearTurnTimer(roomCode);
+       return;
+    } else {
+       io.to(`uno:${roomCode}`).emit('PLAYER_KICKED', { playerId: currentPlayer.id, reason: 'inactivity' });
+       // Adjust turn index
+       roomState.currentTurnIndex = roomState.currentTurnIndex % roomState.players.length;
+    }
+  } else {
+    // Force draw a card and skip
+    let drawCount = 1;
+    if (roomState.drawStack > 0) {
+      drawCount = roomState.drawStack;
+      roomState.drawStack = 0;
+    }
+    
+    if (roomState.deck.length < drawCount) {
+      const topDiscard = roomState.discardPile.pop();
+      roomState.deck = UnoEngine.shuffle([...roomState.deck, ...roomState.discardPile]);
+      roomState.discardPile = [topDiscard];
+    }
+    
+    const drawnCards = roomState.deck.splice(0, drawCount);
+    currentPlayer.hand.push(...drawnCards);
+    currentPlayer.cardCount = currentPlayer.hand.length;
+    
+    roomState.currentTurnIndex = UnoEngine.getNextTurnIndex(roomState.currentTurnIndex, roomState.turnDirection, roomState.players.length, 1);
+    
+    io.to(`uno:${roomCode}`).emit('CARD_DRAWN', {
+      roomId: roomCode,
+      playerId: currentPlayer.id,
+      count: drawCount,
+      eventId: Date.now().toString(),
+      timeout: true
+    });
+  }
+  
+  roomState.turnExpiresAt = Date.now() + 30000;
+  await RedisHelper.set(`uno:room:${roomCode}`, roomState, 60 * 60 * 24);
+  
+  // Broadcast state
+  roomState.players.forEach(p => {
+    io.to(`user:${p.id}`).emit('GAME_STATE_UPDATED', {
+      ...roomState,
+      players: roomState.players.map(op => {
+        if (op.id === p.id) return op;
+        const { hand, ...safeOp } = op;
+        return safeOp;
+      })
+    });
+  });
+  
+  startTurnTimer(roomCode, io);
+}
+
 module.exports = (io, socket) => {
   const userUuid = socket.user.uuid;
 
@@ -46,7 +153,10 @@ module.exports = (io, socket) => {
       if (!roomState.players.every(p => p.isReady)) return;
 
       roomState = UnoEngine.startGameState(roomState);
+      roomState.turnExpiresAt = Date.now() + 30000;
       await RedisHelper.set(`uno:room:${roomCode}`, roomState, 60 * 60 * 24);
+      
+      startTurnTimer(roomCode, io);
 
       // Send GAME_STARTED to all
       io.to(`uno:${roomCode}`).emit('GAME_STARTED');
@@ -78,7 +188,22 @@ module.exports = (io, socket) => {
           if (roomState.players.length === 1) {
             // Only one player left - declare winner and end game
             roomState.status = 'GAME_OVER';
-            io.to(`uno:${roomCode}`).emit('GAME_OVER', { winnerId: roomState.players[0].id, roomId: roomCode });
+            
+            const allPlayers = [...roomState.players, ...(roomState.kickedPlayers || [])];
+            const scores = allPlayers.map(p => ({
+              id: p.id,
+              name: p.name,
+              avatar: p.avatar,
+              cardsLeft: p.cardCount || 0,
+              score: (p.id === roomState.players[0].id) ? 100 : 0,
+              isKicked: !!roomState.kickedPlayers?.find(k => k.id === p.id)
+            }));
+            
+            io.to(`uno:${roomCode}`).emit('GAME_OVER', { winnerId: roomState.players[0].id, roomId: roomCode, scores });
+            await RedisHelper.delete(`uno:room:${roomCode}`);
+            await RedisHelper.setRemove(`uno:user_rooms:${roomState.hostId}`, roomCode);
+            clearTurnTimer(roomCode);
+            return;
           } else if (roomState.players.length > 1) {
             // Adjust turn index
             if (roomState.currentTurnIndex === pIndex) {
@@ -98,8 +223,16 @@ module.exports = (io, socket) => {
         await RedisHelper.delete(`uno:room:${roomCode}`);
         await RedisHelper.setRemove(`uno:user_rooms:${roomState.hostId}`, roomCode);
         io.to(`uno:${roomCode}`).emit('ROOM_DELETED', { roomId: roomCode });
+        clearTurnTimer(roomCode);
       } else {
+        if (roomState.status === 'PLAYING') {
+          roomState.turnExpiresAt = Date.now() + 30000;
+        }
         await RedisHelper.set(`uno:room:${roomCode}`, roomState, 60 * 60 * 24);
+        
+        if (roomState.status === 'PLAYING') {
+          startTurnTimer(roomCode, io);
+        }
         
         const safePlayers = roomState.players.map(p => {
           const { hand, ...safePlayer } = p;
@@ -171,10 +304,32 @@ module.exports = (io, socket) => {
       // Check win
       if (currentPlayer.cardCount === 0) {
         roomState.status = 'GAME_OVER';
-        io.to(`uno:${roomCode}`).emit('GAME_OVER', { winnerId: currentPlayer.id, roomId: roomCode });
+        
+        const allPlayers = [...roomState.players, ...(roomState.kickedPlayers || [])];
+        const scores = allPlayers.map(p => ({
+          id: p.id,
+          name: p.name,
+          avatar: p.avatar,
+          cardsLeft: p.cardCount || 0,
+          score: (p.id === currentPlayer.id) ? 100 : 0,
+          isKicked: !!roomState.kickedPlayers?.find(k => k.id === p.id)
+        }));
+        
+        io.to(`uno:${roomCode}`).emit('GAME_OVER', { winnerId: currentPlayer.id, roomId: roomCode, scores });
+        await RedisHelper.delete(`uno:room:${roomCode}`);
+        await RedisHelper.setRemove(`uno:user_rooms:${roomState.hostId}`, roomCode);
+        clearTurnTimer(roomCode);
+        return;
+      } else {
+        currentPlayer.missedTurns = 0;
+        roomState.turnExpiresAt = Date.now() + 30000;
       }
 
       await RedisHelper.set(`uno:room:${roomCode}`, roomState, 60 * 60 * 24);
+      
+      if (roomState.status === 'PLAYING') {
+        startTurnTimer(roomCode, io);
+      }
 
       // Emit CARD_PLAYED event for animation
       io.to(`uno:${roomCode}`).emit('CARD_PLAYED', {
@@ -224,8 +379,13 @@ module.exports = (io, socket) => {
 
     // Advance turn
     roomState.currentTurnIndex = UnoEngine.getNextTurnIndex(roomState.currentTurnIndex, roomState.turnDirection, roomState.players.length, 1);
+    
+    currentPlayer.missedTurns = 0;
+    roomState.turnExpiresAt = Date.now() + 30000;
 
     await RedisHelper.set(`uno:room:${roomCode}`, roomState, 60 * 60 * 24);
+    
+    startTurnTimer(roomCode, io);
 
     io.to(`uno:${roomCode}`).emit('CARD_DRAWN', {
       roomId: roomCode,
