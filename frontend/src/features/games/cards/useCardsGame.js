@@ -15,8 +15,10 @@ import socketService from '../../../services/socket.client';
 import { useAuth } from '../../../store/AuthContext';
 import { useUnoVoice } from './useUnoVoice';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export const useCardsGame = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   
@@ -115,18 +117,18 @@ export const useCardsGame = () => {
   // Handle real API room creation
   const handleCreateRoom = async (roomConfig) => {
     try {
-      toast.loading('Creating room...', { id: 'create-room' });
+      toast.loading(t('games.uno.creating_room', 'Creating room...'), { id: 'create-room' });
       const userData = {
         name: user?.name || user?.firstName || user?.username || 'Player',
         avatar: user?.avatar || user?.display_picture
       };
       
       const { roomCode } = await createUnoRoom(roomConfig, userData);
-      toast.success('Room created!', { id: 'create-room' });
+      toast.success(t('games.uno.room_created', 'Room created!'), { id: 'create-room' });
       
       await handleJoinRoom(roomCode);
     } catch (err) {
-      toast.error('Failed to create room', { id: 'create-room' });
+      toast.error(t('games.uno.create_failed', 'Failed to create room'), { id: 'create-room' });
       console.error(err);
     }
   };
@@ -167,7 +169,7 @@ export const useCardsGame = () => {
 
       socketService.emit('uno:join', { roomCode: roomData.code });
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to join room', { id: 'join-room' });
+      toast.error(err.response?.data?.error || t('games.uno.join_failed', 'Failed to join room'), { id: 'join-room' });
       console.error(err);
       throw err;
     }
@@ -176,6 +178,14 @@ export const useCardsGame = () => {
   const handleToggleReady = (isReady) => {
     if (!room) return;
     socketService.emit('uno:toggle_ready', { roomCode: room.code, isReady });
+  };
+
+  // --- Update Room Rules ---
+  const handleUpdateRules = (newRules) => {
+    if (room?.hostId === user?.uuid && room) {
+      socketService.emit('uno:update_rules', { roomCode: room.code, rules: newRules });
+      toast.success(t('games.uno.rules_updated', 'Room rules updated!'));
+    }
   };
 
   // -------------------------------------------------------------
@@ -237,7 +247,7 @@ export const useCardsGame = () => {
     };
 
     const handleGameStarted = () => {
-      toast.success('Game is starting!');
+      toast.success(t('games.uno.game_started', 'Game is starting!'));
       setCurrentScreen(GAME_SCREENS.GAME_TABLE);
     };
 
@@ -258,30 +268,23 @@ export const useCardsGame = () => {
       navigate(`/games/uno/${roomId}/winner`, { replace: true, state: { forced: true } });
     };
 
-    const handleRoomDeleted = ({ roomId }) => {
-      if (currentScreenRef.current === GAME_SCREENS.RESULT || window.location.pathname.endsWith('/winner')) {
-        return;
-      }
-      toast.error('The host has deleted the room.');
-      navigate('/games/uno', { replace: true, state: { forced: true } });
-      setTimeout(() => {
-        setCurrentScreen(GAME_SCREENS.LOBBY);
-        setRoom(null);
-        setPlayers([]);
-      }, 10);
+    const handleRoomDeleted = () => {
+      setRoom(null);
+      setPlayers([]);
+      setCurrentScreen(GAME_SCREENS.LOBBY);
+      toast.error(t('games.uno.host_deleted_room', 'The host has deleted the room.'));
     };
 
-    const handlePlayerKicked = ({ playerId, reason }) => {
+    const handlePlayerRemoved = ({ playerId, reason }) => {
       if (playerId === user?.uuid) {
-        toast.error("You were removed from the game due to inactivity.");
-        navigate('/games/uno', { replace: true, state: { forced: true } });
-        setTimeout(() => {
-          setCurrentScreen(GAME_SCREENS.LOBBY);
-          setRoom(null);
-          setPlayers([]);
-        }, 10);
+        toast.error(t('games.uno.removed_inactivity', 'You were removed from the game due to inactivity.'));
+        executeLeaveRoom();
+        navigate('/games/uno');
       } else {
-        toast.error(`A player was removed due to inactivity.`, { icon: '🚪' });
+        setPlayers(prev => prev.filter(p => p.id !== playerId));
+        if (reason === 'timeout') {
+          toast.error(t('games.uno.player_removed_inactivity', 'A player was removed due to inactivity.'), { icon: '🚪' });
+        }
       }
     };
 
@@ -292,7 +295,7 @@ export const useCardsGame = () => {
     socketService.on('GAME_STARTED', handleGameStarted);
     socketService.on('GAME_OVER', handleGameOver);
     socketService.on('ROOM_DELETED', handleRoomDeleted);
-    socketService.on('PLAYER_KICKED', handlePlayerKicked);
+    socketService.on('PLAYER_KICKED', handlePlayerRemoved);
 
     return () => {
       socketService.off('ROOM_UPDATED', handleRoomUpdated);
@@ -302,9 +305,9 @@ export const useCardsGame = () => {
       socketService.off('GAME_STARTED', handleGameStarted);
       socketService.off('GAME_OVER', handleGameOver);
       socketService.off('ROOM_DELETED', handleRoomDeleted);
-      socketService.off('PLAYER_KICKED', handlePlayerKicked);
+      socketService.off('PLAYER_KICKED', handlePlayerRemoved);
     };
-  }, [user, navigate]);
+  }, [user, navigate, executeLeaveRoom]);
 
   // Tick Timer Down visually
   useEffect(() => {
@@ -329,28 +332,31 @@ export const useCardsGame = () => {
     // In real multiplayer, this is handled server-side.
   };
 
-  const playLocalCard = (cardOrId, overrideColor = null) => {
-    const cardId = typeof cardOrId === 'object' ? cardOrId.id : cardOrId;
-    if (!cardId || !room) return;
-    
-    // Ensure overrideColor is a valid string, not a boolean from click events
-    const validColor = typeof overrideColor === 'string' ? overrideColor : null;
-    
-    // Find the full card object from local hand if necessary
-    const cardObj = typeof cardOrId === 'object' ? cardOrId : players.find(p => p.isLocal)?.hand?.find(c => c.id === cardId);
+  const playLocalCard = async (cardId, chosenColor = null) => {
+    const isMyTurn = players[currentTurnIndex]?.id === user?.uuid;
+    if (!isMyTurn) {
+      toast.error(t('games.uno.not_your_turn', 'Not your turn!'));
+      return;
+    }
 
+    const cardObj = players.find(p => p.isLocal)?.hand?.find(c => c.id === cardId);
+    
     // If it's a wild card and color isn't picked yet, open the color picker modal!
-    if (cardObj && (cardObj.type === 'wild' || cardObj.type === 'wild_draw_four') && !validColor) {
+    if (cardObj && (cardObj.type === 'wild' || cardObj.type === 'wild_draw_four') && !chosenColor) {
       setPendingWildCard(cardObj);
       setIsColorPickerOpen(true);
       return;
     }
     
-    socketService.emit('uno:play_card', {
-      roomCode: room.code,
-      cardId: cardId,
-      selectedColor: validColor
-    });
+    try {
+      await socketService.emit('uno:play_card', {
+        roomCode: room.code,
+        cardId: cardId,
+        selectedColor: chosenColor
+      });
+    } catch (err) {
+      console.error("Failed to play card:", err);
+    }
     
     setSelectedCardId(null);
   };

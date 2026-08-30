@@ -53,6 +53,18 @@ class AdminController extends BaseController {
     }
   }
 
+  async createUser(req, res) {
+    try {
+      const result = await this.adminService.createUser(req.body);
+      return this.sendSuccess(res, result, 'User created successfully', 201);
+    } catch (error) {
+      if (error.message.includes('already exists') || error.message.includes('not found')) {
+        return this.sendError(res, error.message, 400);
+      }
+      return this.sendError(res, error.message, 500);
+    }
+  }
+
   async archiveUser(req, res) {
     try {
       const { uuid } = req.params;
@@ -87,8 +99,8 @@ class AdminController extends BaseController {
     } catch (error) {
       if (error.message.includes('not found')) {
         return this.sendError(res, error.message, 404);
-      } else if (error.message.includes('constraint') || error.code === '23503') {
-        return this.sendError(res, 'Cannot delete user because they have associated records (e.g., chat history) that would be corrupted. Please use Archive instead.', 400);
+      } else if (error.message.includes('constraint') || error.message.includes('associated records') || error.code === '23503') {
+        return this.sendError(res, error.message, 400);
       }
       return this.sendError(res, error.message, 500);
     }
@@ -137,6 +149,19 @@ class AdminController extends BaseController {
     } catch (error) {
       if (error.message.includes('required') || error.message.includes('exists') || error.message.includes('not found')) {
         return this.sendError(res, error.message, 400);
+      }
+      return this.sendError(res, error.message, 500);
+    }
+  }
+
+  async deleteRole(req, res) {
+    try {
+      const { uuid } = req.params;
+      const result = await this.adminService.deleteRole(uuid);
+      return this.sendSuccess(res, result, 'Role deleted successfully');
+    } catch (error) {
+      if (error.message.includes('not found')) {
+        return this.sendError(res, error.message, 404);
       }
       return this.sendError(res, error.message, 500);
     }

@@ -3,10 +3,12 @@ import { PlusCircle, LogIn, BookOpen, Users, Sparkles, Trophy, Flame, Radio, Pla
 import { GAME_SCREENS } from '../types';
 import SButton from '../../../../components/common/SButton';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 
 export const CardsLobbyView = ({ onNavigate, openRules }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleCreateClick = () => {
     onNavigate(GAME_SCREENS.CREATE);
@@ -19,11 +21,11 @@ export const CardsLobbyView = ({ onNavigate, openRules }) => {
         <div className="lobby-hero-left">
           <div className="brand-pill">
             <Sparkles size={14} className="text-purple-400" />
-            <span>MULTIPLAYER TABLETOP</span>
+            <span>{t('games.uno.multiplayer_tabletop', 'MULTIPLAYER TABLETOP')}</span>
           </div>
-          <h1 className="lobby-hero-title">UNO</h1>
+          <h1 className="lobby-hero-title">{t('games.uno.title', 'UNO')}</h1>
           <p className="lobby-hero-tagline">
-            Play together. Think fast. Own the table.
+            {t('games.uno.tagline', 'Play together. Think fast. Own the table.')}
           </p>
 
           {/* Primary Action Buttons */}
@@ -33,7 +35,7 @@ export const CardsLobbyView = ({ onNavigate, openRules }) => {
               onClick={handleCreateClick}
             >
               <PlusCircle size={18} />
-              <span>Create Game</span>
+              <span>{t('games.uno.create_game', 'Create Game')}</span>
             </button>
 
             <button
@@ -41,7 +43,7 @@ export const CardsLobbyView = ({ onNavigate, openRules }) => {
               onClick={() => onNavigate(GAME_SCREENS.JOIN)}
             >
               <LogIn size={18} />
-              <span>Join Game</span>
+              <span>{t('games.uno.join_game', 'Join Game')}</span>
             </button>
 
           </div>
@@ -76,32 +78,32 @@ export const CardsLobbyView = ({ onNavigate, openRules }) => {
           <div className="highlight-icon-wrap bg-purple-500/10 text-purple-400">
             <Users size={22} />
           </div>
-          <h3>2 to 8 Players</h3>
-          <p>Adaptive circular tabletop dynamically scaling from 1v1 duels to 8-player arena matches.</p>
+          <h3>{t('games.uno.features.players_title', '2 to 8 Players')}</h3>
+          <p>{t('games.uno.features.players_desc', 'Adaptive circular tabletop dynamically scaling from 1v1 duels to 8-player arena matches.')}</p>
         </div>
 
         <div className="highlight-box">
           <div className="highlight-icon-wrap bg-amber-500/10 text-amber-400">
             <Flame size={22} />
           </div>
-          <h3>Draw Card Stacking</h3>
-          <p>Chain +2 on +2, +4 on +2, and +4 on +4 to redirect draw penalties across the circle.</p>
+          <h3>{t('games.uno.features.stacking_title', 'Draw Card Stacking')}</h3>
+          <p>{t('games.uno.features.stacking_desc', 'Chain +2 on +2, +4 on +2, and +4 on +4 to redirect draw penalties across the circle.')}</p>
         </div>
 
         <div className="highlight-box">
           <div className="highlight-icon-wrap bg-emerald-500/10 text-emerald-400">
             <Radio size={22} />
           </div>
-          <h3>Integrated Voice Chat</h3>
-          <p>Crystal-clear live audio indicator with individual mute, speaker controls, and speaking ring visualizer.</p>
+          <h3>{t('games.uno.features.voice_title', 'Integrated Voice Chat')}</h3>
+          <p>{t('games.uno.features.voice_desc', 'Crystal-clear live audio indicator with individual mute, speaker controls, and speaking ring visualizer.')}</p>
         </div>
 
         <div className="highlight-box cursor-pointer" onClick={() => openRules('basics')}>
           <div className="highlight-icon-wrap bg-blue-500/10 text-blue-400">
             <BookOpen size={22} />
           </div>
-          <h3>Rules & Card Guide</h3>
-          <p>Learn matching mechanics, Wild selections, and the crucial UNO call & catch penalties.</p>
+          <h3>{t('games.uno.rules_guide', 'Rules & Card Guide')}</h3>
+          <p>{t('games.uno.features.rules_desc', 'Learn matching mechanics, Wild selections, and the crucial UNO call & catch penalties.')}</p>
         </div>
       </div>
 

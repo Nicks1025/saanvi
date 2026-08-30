@@ -37,7 +37,7 @@ const requirePermission = (permission) => {
       }
       
       if (!permissions.includes(permission)) {
-        return res.status(403).json({ success: false, error: `Forbidden: Missing required permission '${permission}'` });
+        return res.status(403).json({ success: false, error: 'You are not authorized to perform this action' });
       }
       
       // Update req.user.permissions for downstream use just in case

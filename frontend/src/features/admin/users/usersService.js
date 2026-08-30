@@ -45,3 +45,9 @@ export const deleteUser = async (uuid) => {
   const response = await axios.delete(`/api/admin/users/${uuid}`);
   return response.data;
 };
+
+export const createUser = async (payload) => {
+  const response = await axios.post('/api/admin/users', payload);
+  return response.data;
+};
+

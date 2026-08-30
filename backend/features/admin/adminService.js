@@ -1,5 +1,8 @@
 const BaseService = require('../../base/baseService');
 const RbacService = require('../rbac/rbacService');
+const crypto = require('crypto');
+const SignupRepository = require('../signup/signupRepository');
+const SignupService = require('../signup/signupService');
 
 class AdminService extends BaseService {
   constructor(adminRepository) {
@@ -65,6 +68,21 @@ class AdminService extends BaseService {
     return true;
   }
 
+  async createUser(userData) {
+    // Simple 12-char random password (letters + digits).
+    // argon2.hash() in SignupService adds a unique random salt automatically.
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    const bytes = crypto.randomBytes(12);
+    const temporaryPassword = Array.from(bytes, b => chars[b % chars.length]).join('');
+
+    // Delegate entirely to SignupService — zero duplication.
+    const signupRepo = new SignupRepository(this.repository.queryHelper);
+    const signupService = new SignupService(signupRepo);
+    await signupService.processSignup({ ...userData, password: temporaryPassword });
+
+    return { message: 'User created successfully.', temporaryPassword };
+  }
+
   async getAllRoles(searchQuery) {
     return await this.repository.getAllRoles(searchQuery);
   }
@@ -105,6 +123,15 @@ class AdminService extends BaseService {
     await this.repository.updateRole(uuid, payload);
     await this.rbacService.invalidateRoleCache(uuid);
     return { ...role, ...payload };
+  }
+
+  async deleteRole(uuid) {
+    const role = await this.repository.getRoleByUuid(uuid);
+    if (!role) throw new Error('Role not found.');
+    
+    await this.repository.deleteRole(uuid);
+    await this.rbacService.invalidateRoleCache(uuid);
+    return { uuid };
   }
 
   async getRolePermissions(roleUuid) {

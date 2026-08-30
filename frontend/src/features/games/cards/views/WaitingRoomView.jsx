@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { GAME_SCREENS, STACKING_RULES, WILD_FOUR_RULES } from '../types';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 export const WaitingRoomView = ({
   room,
@@ -29,6 +30,7 @@ export const WaitingRoomView = ({
   onToggleReady,
   onToggleHost,
 }) => {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   
   const localPlayer = players.find(p => p.isLocal);
@@ -77,11 +79,11 @@ export const WaitingRoomView = ({
       <div className="waiting-top-bar">
         <button className="back-nav-btn" onClick={onLeaveRoom}>
           <ArrowLeft size={18} />
-          <span>Leave Room</span>
+          <span>{t('games.uno.leave_room', 'Leave Room')}</span>
         </button>
 
         <div className="waiting-room-code-badge">
-          <span className="code-label">ROOM:</span>
+          <span className="code-label">{t('games.uno.room_code_label', 'ROOM:')}</span>
           <span className="code-value">{roomCode}</span>
           <button
             className="copy-code-btn"
@@ -89,13 +91,13 @@ export const WaitingRoomView = ({
             title="Copy room invite link"
           >
             {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
-            <span>{copied ? 'Copied!' : 'Copy Link'}</span>
+            <span>{copied ? t('common.copied', 'Copied!') : t('common.copy_link', 'Copy Link')}</span>
           </button>
         </div>
 
         <button className="rules-helper-btn" onClick={() => openRules('basics')}>
           <BookOpen size={16} />
-          <span>View Rules</span>
+          <span>{t('games.uno.view_rules', 'View Rules')}</span>
         </button>
       </div>
 
@@ -106,10 +108,10 @@ export const WaitingRoomView = ({
           <div className="roster-header">
             <div className="roster-title-group">
               <Users size={20} className="text-purple-400" />
-              <h3>Table Players ({players.length}/{playerLimit})</h3>
+              <h3>{t('games.uno.table_players', 'Table Players')} ({players.length}/{playerLimit})</h3>
             </div>
             <span className="ready-summary-tag">
-              {players.filter((p) => p.isReady).length} Ready
+              {players.filter((p) => p.isReady).length} {t('games.uno.ready', 'Ready')}
             </span>
           </div>
 
@@ -147,12 +149,12 @@ export const WaitingRoomView = ({
                         {player.isReady ? (
                           <>
                             <CheckCircle2 size={12} />
-                            <span>Ready</span>
+                            <span>{t('games.uno.ready', 'Ready')}</span>
                           </>
                         ) : (
                           <>
                             <Hourglass size={12} />
-                            <span>Waiting...</span>
+                            <span>{t('games.uno.waiting_ellipsis', 'Waiting...')}</span>
                           </>
                         )}
                       </span>
@@ -167,8 +169,8 @@ export const WaitingRoomView = ({
                     <span className="empty-plus">+</span>
                   </div>
                   <div className="slot-meta">
-                    <span className="empty-label">Empty Seat</span>
-                    <span className="empty-sub">Waiting for player...</span>
+                    <span className="empty-label">{t('games.uno.empty_seat', 'Empty Seat')}</span>
+                    <span className="empty-sub">{t('games.uno.waiting_for_player', 'Waiting for player...')}</span>
                   </div>
                 </div>
               );

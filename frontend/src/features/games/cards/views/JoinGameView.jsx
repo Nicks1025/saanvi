@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { ArrowLeft, KeyRound, Link as LinkIcon, Users, Loader2, AlertCircle, Sparkles, CheckCircle2 } from 'lucide-react';
 import { GAME_SCREENS } from '../types';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 export const JoinGameView = ({ onNavigate, onJoinRoom }) => {
+  const { t } = useTranslation();
   const [roomInput, setRoomInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -11,7 +13,7 @@ export const JoinGameView = ({ onNavigate, onJoinRoom }) => {
   const handleJoin = (codeToJoin) => {
     const raw = (codeToJoin || roomInput).trim().toUpperCase();
     if (!raw) {
-      setErrorMessage('Please enter a room code or invite link.');
+      setErrorMessage(t('games.uno.enter_room_error', 'Please enter a room code or invite link.'));
       return;
     }
 
@@ -36,18 +38,18 @@ export const JoinGameView = ({ onNavigate, onJoinRoom }) => {
         <button
           className="back-nav-btn"
           onClick={() => onNavigate(GAME_SCREENS.LOBBY)}
-          aria-label="Back to lobby"
+          aria-label={t('games.uno.back_to_lobby', 'Back to Lobby')}
         >
           <ArrowLeft size={18} />
-          <span>Back to Lobby</span>
+          <span>{t('games.uno.back_to_lobby', 'Back to Lobby')}</span>
         </button>
       </div>
 
       <div className="join-form-card">
         <div className="form-card-header">
-          <div className="header-badge">ENTER MULTIPLAYER</div>
-          <h2>Join a Game Table</h2>
-          <p>Enter the 5-character room code or paste the game invite link.</p>
+          <div className="header-badge">{t('games.uno.enter_multiplayer', 'ENTER MULTIPLAYER')}</div>
+          <h2>{t('games.uno.join_table', 'Join a Game Table')}</h2>
+          <p>{t('games.uno.join_table_desc', 'Enter the 5-character room code or paste the game invite link.')}</p>
         </div>
 
         <div className="join-input-section">
@@ -94,12 +96,12 @@ export const JoinGameView = ({ onNavigate, onJoinRoom }) => {
             {isLoading ? (
               <>
                 <Loader2 size={18} className="spin-cw" />
-                <span>Connecting to Room...</span>
+                <span>{t('games.uno.connecting_room', 'Connecting to Room...')}</span>
               </>
             ) : (
               <>
                 <CheckCircle2 size={18} />
-                <span>Join Game</span>
+                <span>{t('games.uno.join_game', 'Join Game')}</span>
               </>
             )}
           </button>

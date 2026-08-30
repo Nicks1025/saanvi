@@ -172,7 +172,7 @@ const ChatWindow = ({ chatRealtime }) => {
             {conv.profile_image_url ? <img src={conv.profile_image_url} alt="avatar" /> : (conv.is_group ? <Users /> : (title ? title.charAt(0).toUpperCase() : '?'))}
          </div>
          <div className="chat-window-header-info">
-            <div className="chat-window-header-name">{title || 'Unnamed'}</div>
+            <div className="chat-window-header-name">{title || t('chat.unnamed', 'Unnamed')}</div>
             <div className="chat-window-header-status">{subtitle}</div>
          </div>
          
@@ -182,8 +182,8 @@ const ChatWindow = ({ chatRealtime }) => {
               size="s"
               icon={<MoreVertical size={20} />}
               onClick={() => setShowMenu(!showMenu)}
-              label="More options"
-              title="More options"
+              label={t('chat.moreOptions', 'More options')}
+              title={t('chat.moreOptions', 'More options')}
               className="chat-header-more-btn"
             />
             

@@ -13,8 +13,10 @@ import { RulesModal } from '../components/RulesModal';
 import { ConnectionBanner } from '../components/ConnectionBanner';
 import { ArrowLeft, HelpCircle, Users, Clock, AlertTriangle } from 'lucide-react';
 import SModal from '../../../../components/common/SModal';
+import { useTranslation } from 'react-i18next';
 
 export const GameTableView = ({ game, onLeaveGame }) => {
+  const { t } = useTranslation();
   const [tableScale, setTableScale] = useState(0.85);
   const [tableConfig, setTableConfig] = useState({ w: 960, h: 520 });
   const arenaRef = useRef(null);
@@ -121,16 +123,16 @@ export const GameTableView = ({ game, onLeaveGame }) => {
           <button
             className="table-bar-btn btn-exit"
             onClick={() => onLeaveGame()}
-            title="Exit game"
+            title={t('games.uno.exit_game', 'Exit game')}
           >
             <ArrowLeft size={16} />
-            <span className="btn-text">Exit</span>
+            <span className="btn-text">{t('games.uno.exit', 'Exit')}</span>
           </button>
         </div>
 
         {/* Right: Turn Timer & Rules Button */}
         <div className="table-bar-right">
-          <div className={`table-timer-chip ${turnTimeLeft <= 5 ? 'timer-warning' : ''}`} title="Turn Timer">
+          <div className={`table-timer-chip ${turnTimeLeft <= 5 ? 'timer-warning' : ''}`} title={t('games.uno.turn_timer', 'Turn Timer')}>
             <Clock size={14} className="timer-icon" />
             <span className="timer-digits">{formattedTimer}</span>
           </div>
@@ -138,7 +140,7 @@ export const GameTableView = ({ game, onLeaveGame }) => {
           <button
             className="table-bar-btn btn-rules"
             onClick={() => openRules('basics')}
-            title="Open game rules"
+            title={t('games.uno.open_game_rules', 'Open game rules')}
             style={{ padding: '0.5rem' }}
           >
             <HelpCircle size={18} />

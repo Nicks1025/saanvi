@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Pencil, Eye, Archive, Trash2, RefreshCw } from 'lucide-react';
+import { Pencil, Eye, Archive, Trash2, RefreshCw, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-hot-toast';
+import { useAuth } from '../../../store/AuthContext';
 import SDataTable from '../../../components/common/SDataTable';
 import SModal from '../../../components/common/SModal';
+import SButton from '../../../components/common/SButton';
 import * as usersService from './usersService';
 import './users.css';
 
@@ -19,6 +22,8 @@ const UsersFeature = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const userPermissions = user?.permissions || [];
 
   const isFetched = React.useRef(false);
 
@@ -76,10 +81,11 @@ const UsersFeature = () => {
         await usersService.deleteUser(user.uuid);
       }
       setModalState({ isOpen: false, type: null, user: null });
+      toast.success(t(`admin.${type}UserSuccess`, `User ${type}d successfully`));
       fetchUsers(searchQuery, showArchived, page, limit);
     } catch (err) {
       console.error(`Failed to ${type} user`, err);
-      alert(err.response?.data?.message || `Failed to ${type} user. They may have associated records preventing deletion.`);
+      toast.error(err.response?.data?.error || err.response?.data?.message || `Failed to ${type} user.`);
     } finally {
       setIsProcessing(false);
     }
@@ -95,23 +101,27 @@ const UsersFeature = () => {
       label: t('admin.actions'),
       render: (item) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <button 
-            className="manage-btn" 
-            onClick={() => handleView(item)}
-            title={t('admin.viewUser', 'View User')}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer' }}
-          >
-            <Eye size={18} />
-          </button>
-          <button 
-            className="manage-btn" 
-            onClick={() => handleEdit(item)}
-            title={t('admin.editUser', 'Edit User')}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer' }}
-          >
-            <Pencil size={18} />
-          </button>
-          {!showArchived ? (
+          {userPermissions.includes('admin.users.view') && (
+            <button
+              className="manage-btn"
+              onClick={() => handleView(item)}
+              title={t('admin.viewUser', 'View User')}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer' }}
+            >
+              <Eye size={18} />
+            </button>
+          )}
+          {userPermissions.includes('admin.users.edit') && (
+            <button
+              className="manage-btn"
+              onClick={() => handleEdit(item)}
+              title={t('admin.editUser', 'Edit User')}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer' }}
+            >
+              <Pencil size={18} />
+            </button>
+          )}
+          {!showArchived && userPermissions.includes('admin.users.archive') && (
             <button 
               className="manage-btn" 
               onClick={() => handleArchive(item)}
@@ -120,7 +130,8 @@ const UsersFeature = () => {
             >
               <Archive size={18} />
             </button>
-          ) : (
+          )}
+          {showArchived && userPermissions.includes('admin.users.restore') && (
             <button 
               className="manage-btn" 
               onClick={() => handleRestore(item)}
@@ -130,14 +141,16 @@ const UsersFeature = () => {
               <RefreshCw size={18} />
             </button>
           )}
-          <button 
-            className="manage-btn" 
-            onClick={() => handleDelete(item)}
-            title={t('admin.deleteUser', 'Delete User')}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444' }}
-          >
-            <Trash2 size={18} />
-          </button>
+          {userPermissions.includes('admin.users.delete') && (
+            <button
+              className="manage-btn"
+              onClick={() => handleDelete(item)}
+              title={t('admin.deleteUser', 'Delete User')}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444' }}
+            >
+              <Trash2 size={18} />
+            </button>
+          )}
         </div>
       )
     }
@@ -183,6 +196,16 @@ const UsersFeature = () => {
         searchPlaceholder={t('admin.searchUsers')}
         loading={loading}
         topTabs={tabs}
+        headerActions={
+          userPermissions?.includes('admin.users.create') ? (
+            <SButton
+              text={t('admin.addUser', 'Add User')}
+              icon={<UserPlus size={16} />}
+              onClick={() => navigate('/admin/users/add')}
+              style={{ background: 'var(--accent)', color: 'white', whiteSpace: 'nowrap' }}
+            />
+          ) : null
+        }
         pagination={{
           page,
           limit,
@@ -202,24 +225,26 @@ const UsersFeature = () => {
       <SModal
         isOpen={modalState.isOpen}
         title={
-          modalState.type === 'archive' ? 'Archive User' :
-          modalState.type === 'restore' ? 'Restore User' :
-          'Delete User'
+          modalState.type === 'archive' ? t('admin.archiveUser', 'Archive User') :
+          modalState.type === 'restore' ? t('admin.restoreUser', 'Restore User') :
+          t('admin.deleteUser', 'Delete User')
         }
         onConfirm={confirmAction}
         onCancel={() => setModalState({ isOpen: false, type: null, user: null })}
         isProcessing={isProcessing}
         confirmText={
-          modalState.type === 'archive' ? 'Archive' :
-          modalState.type === 'restore' ? 'Restore' :
-          'Delete'
+          modalState.type === 'archive' ? t('common.archive', 'Archive') :
+          modalState.type === 'restore' ? t('common.restore', 'Restore') :
+          t('common.delete', 'Delete')
         }
       >
         <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
           {modalState.type === 'delete' && modalState.user ? (
-            `Are you sure you want to PERMANENTLY delete user ${modalState.user.email}? This cannot be undone.`
-          ) : modalState.user ? (
-            `Are you sure you want to ${modalState.type} user ${modalState.user.email}?`
+            t('admin.deleteUserConfirm', 'Are you sure you want to PERMANENTLY delete user {{email}}? This cannot be undone.', { email: modalState.user.email })
+          ) : modalState.type === 'archive' && modalState.user ? (
+            t('admin.archiveUserConfirm', 'Are you sure you want to archive user {{email}}?', { email: modalState.user.email })
+          ) : modalState.type === 'restore' && modalState.user ? (
+            t('admin.restoreUserConfirm', 'Are you sure you want to restore user {{email}}?', { email: modalState.user.email })
           ) : ''}
         </p>
       </SModal>

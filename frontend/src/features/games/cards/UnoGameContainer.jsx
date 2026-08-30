@@ -11,8 +11,10 @@ import GameResultView from './views/GameResultView';
 import RulesModal from './components/RulesModal';
 import SModal from '../../../components/common/SModal';
 import './cards.css';
+import { useTranslation } from 'react-i18next';
 
 export const UnoGameContainer = () => {
+  const { t } = useTranslation();
   const game = useCardsGame();
   const location = useLocation();
   const navigate = useNavigate();
@@ -147,7 +149,7 @@ export const UnoGameContainer = () => {
       return (
         <div className="flex flex-col items-center justify-center w-full h-full min-h-[400px] text-white">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mb-4"></div>
-          <p className="text-gray-400">Rejoining table...</p>
+          <p className="text-gray-400">{t('games.uno.rejoining', 'Rejoining table...')}</p>
         </div>
       );
     }
@@ -233,10 +235,10 @@ export const UnoGameContainer = () => {
       <SModal
         isOpen={blocker.state === 'blocked'}
         onCancel={() => blocker.reset && blocker.reset()}
-        title="Leave Active Game?"
+        title={t('games.uno.leave_active_game', 'Leave Active Game?')}
         icon="Flame"
-        confirmText="Leave Game"
-        cancelText="Stay"
+        confirmText={t('games.uno.leave_game_btn', 'Leave Game')}
+        cancelText={t('common.stay', 'Stay')}
         onConfirm={() => {
           game.executeLeaveRoom();
           blocker.proceed && blocker.proceed();
@@ -244,7 +246,7 @@ export const UnoGameContainer = () => {
         variant="danger"
       >
         <p style={{ margin: 0, color: 'var(--text-b)' }}>
-          Are you sure you want to leave the active game? You will forfeit your spot and the game will continue without you.
+          {t('games.uno.leave_game_confirm', 'Are you sure you want to leave the active game? You will forfeit your spot and the game will continue without you.')}
         </p>
       </SModal>
     </div>
