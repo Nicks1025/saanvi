@@ -7,11 +7,15 @@ import * as usersService from './usersService';
 import * as rolesService from '../roles/rolesService';
 import SButton from '../../../components/common/SButton';
 
+import { useAuth } from '../../../store/AuthContext';
+
 const UserDetailsFeature = () => {
   const { uuid } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
+  const { user: authUser } = useAuth();
+  const userPermissions = authUser?.permissions || [];
   
   const queryParams = new URLSearchParams(location.search);
   const initialMode = queryParams.get('mode');
@@ -22,12 +26,14 @@ const UserDetailsFeature = () => {
   const [selectedRoles, setSelectedRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(initialMode === 'edit');
+  const [isEditMode, setIsEditMode] = useState(
+    initialMode === 'edit' && userPermissions.includes('admin.users.edit')
+  );
 
   useEffect(() => {
     const mode = new URLSearchParams(location.search).get('mode');
-    setIsEditMode(mode === 'edit');
-  }, [location.search]);
+    setIsEditMode(mode === 'edit' && userPermissions.includes('admin.users.edit'));
+  }, [location.search, userPermissions]);
 
   const updateModeInUrl = (mode) => {
     const params = new URLSearchParams(location.search);
@@ -59,7 +65,7 @@ const UserDetailsFeature = () => {
       const userRolesData = await usersService.getUserRoles(uuid);
       setSelectedRoles(userRolesData || []);
     } catch (err) {
-      toast.error('Failed to load user details');
+      toast.error(t('admin.failedLoadUser', 'Failed to load user details'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -80,7 +86,7 @@ const UserDetailsFeature = () => {
       // Save roles
       await usersService.updateUserRoles(uuid, selectedRoles);
       
-      toast.success('User updated successfully');
+      toast.success(t('admin.userUpdated', 'User updated successfully'));
       
       // Update local view state
       setUser(prev => ({
@@ -90,7 +96,7 @@ const UserDetailsFeature = () => {
       
       navigate('/admin/users');
     } catch (err) {
-      toast.error(err?.response?.data?.error || 'Failed to update user');
+      toast.error(err?.response?.data?.error || t('admin.updateUserFailed', 'Failed to update user'));
       console.error(err);
     } finally {
       setSaving(false);
@@ -101,8 +107,8 @@ const UserDetailsFeature = () => {
     navigate('/admin/users');
   };
 
-  if (loading) return <div style={{ padding: '2rem' }}>Loading...</div>;
-  if (!user) return <div style={{ padding: '2rem' }}>User not found</div>;
+  if (loading) return <div style={{ padding: '2rem' }}>{t('common.loading', 'Loading...')}</div>;
+  if (!user) return <div style={{ padding: '2rem' }}>{t('admin.userNotFound', 'User not found')}</div>;
 
   return (
     <div className="admin-users-container page-container">
@@ -125,7 +131,7 @@ const UserDetailsFeature = () => {
         <h3 style={{ marginTop: 0, marginBottom: '1.5rem' }}>{t('admin.profileInformation', 'Profile Information')}</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2rem' }}>
           <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text)' }}>First Name</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text)' }}>{t('admin.firstName', 'First Name')}</label>
             <input 
               type="text" 
               readOnly 
@@ -136,7 +142,7 @@ const UserDetailsFeature = () => {
           </div>
           
           <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text)' }}>Last Name</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text)' }}>{t('admin.lastName', 'Last Name')}</label>
             <input 
               type="text" 
               readOnly 
@@ -165,8 +171,8 @@ const UserDetailsFeature = () => {
                 onChange={(e) => setEditForm(prev => ({...prev, status: e.target.value}))}
                 style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--border)', outline: 'none', background: 'transparent', color: 'var(--text)' }}
               >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
+                <option value="Active">{t('admin.statusActive', 'Active')}</option>
+                <option value="Inactive">{t('admin.statusInactive', 'Inactive')}</option>
               </select>
             ) : (
               <input 
@@ -187,7 +193,7 @@ const UserDetailsFeature = () => {
                 onChange={(e) => setSelectedRoles(e.target.value ? [e.target.value] : [])}
                 style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--border)', outline: 'none', background: 'transparent', color: 'var(--text)' }}
               >
-                <option value="">Select a role...</option>
+                <option value="">{t('admin.selectRolePlaceholder', 'Select a role...')}</option>
                 {allRoles.map(role => (
                   <option key={role.uuid} value={role.uuid}>{role.name}</option>
                 ))}
@@ -211,14 +217,14 @@ const UserDetailsFeature = () => {
             <SButton 
               onClick={cancelEdit}
               icon={<X size={16} />}
-              text="Cancel"
+              text={t('common.cancel', 'Cancel')}
               style={{ background: '#ffebee', color: '#d32f2f', border: 'none', fontWeight: 600 }}
             />
             <SButton 
               onClick={handleSave}
               disabled={saving}
               icon={<Save size={16} />}
-              text={saving ? 'Saving...' : 'Save Changes'}
+              text={saving ? t('common.saving', 'Saving...') : t('admin.saveChanges', 'Save Changes')}
               style={{ background: 'var(--accent)', color: 'white', border: 'none', fontWeight: 600 }}
             />
           </>
@@ -226,7 +232,7 @@ const UserDetailsFeature = () => {
           <SButton 
             onClick={() => navigate('/admin/users')}
             icon={<X size={16} />}
-            text="Close"
+            text={t('common.close', 'Close')}
             style={{ background: '#ffebee', color: '#d32f2f', border: 'none', fontWeight: 600 }}
           />
         )}

@@ -36,3 +36,8 @@ export const getAllPermissions = async () => {
   const response = await axios.get(`${API_BASE}/permissions`);
   return response.data || [];
 };
+
+export const deleteRole = async (uuid) => {
+  const response = await axios.delete(`${API_BASE}/roles/${uuid}`);
+  return response.data;
+};

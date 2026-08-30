@@ -56,12 +56,12 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
           </NavLink>
         )}
 
-        {(userPermissions.includes('admin.users') || userPermissions.includes('admin.roles') || userPermissions.includes('admin.system.health') || userPermissions.includes('admin.sql_editor')) && (
+        {(userPermissions.includes('admin.users.view') || userPermissions.includes('admin.roles.view') || userPermissions.includes('admin.system.health') || userPermissions.includes('admin.sql_editor')) && (
           <div className="sidebar-group">
             <button 
               className={`sidebar-link sidebar-group-btn ${location.pathname.startsWith('/admin') ? 'active-parent' : ''}`} 
               onClick={handleAdminClick}
-              title="Admin"
+              title={t('navigation.admin', 'Admin')}
             >
               <Shield size={20} style={{ flexShrink: 0 }} />
               <span className="sidebar-link-text">{t('navigation.admin')}</span>
@@ -74,12 +74,12 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
             
             {isAdminOpen && (
               <div className="sidebar-sub-menu">
-                {userPermissions.includes('admin.users') && (
+                {userPermissions.includes('admin.users.view') && (
                   <NavLink to="/admin/users" className={getSubNavLinkClass} title={t('navigation.users', 'Users')} onClick={onNavClick}>
                     <span className="sidebar-link-text">{t('navigation.users', 'Users')}</span>
                   </NavLink>
                 )}
-                {userPermissions.includes('admin.roles') && (
+                {userPermissions.includes('admin.roles.view') && (
                   <NavLink to="/admin/roles" className={getSubNavLinkClass} title={t('navigation.roles', 'Roles')} onClick={onNavClick}>
                     <span className="sidebar-link-text">{t('navigation.roles', 'Roles')}</span>
                   </NavLink>
@@ -90,8 +90,8 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
                   </NavLink>
                 )}
                 {userPermissions.includes('admin.sql_editor') && (
-                  <NavLink to="/admin/sql-editor" className={getSubNavLinkClass} title="SQL Editor" onClick={onNavClick}>
-                    <span className="sidebar-link-text">SQL Editor</span>
+                  <NavLink to="/admin/sql-editor" className={getSubNavLinkClass} title={t('navigation.sql_editor', 'SQL Editor')} onClick={onNavClick}>
+                    <span className="sidebar-link-text">{t('navigation.sql_editor', 'SQL Editor')}</span>
                   </NavLink>
                 )}
               </div>
@@ -118,8 +118,8 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
             {isGamesOpen && (
               <div className="sidebar-sub-menu">
                 {userPermissions.includes('games.uno') && (
-                  <NavLink to="/games/uno" className={getSubNavLinkClass} title="UNO" onClick={onNavClick}>
-                    <span className="sidebar-link-text">UNO</span>
+                  <NavLink to="/games/uno" className={getSubNavLinkClass} title={t('navigation.uno', 'UNO')} onClick={onNavClick}>
+                    <span className="sidebar-link-text">{t('navigation.uno', 'UNO')}</span>
                   </NavLink>
                 )}
               {userPermissions.includes('games.words.wordsearch') && (

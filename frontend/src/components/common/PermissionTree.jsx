@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Search, ChevronDown, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import './PermissionTree.css';
 
 const TreeNode = ({ node, selectedUuids, onToggleNode, expandedNodes, toggleExpand }) => {
@@ -98,6 +99,7 @@ const TreeNode = ({ node, selectedUuids, onToggleNode, expandedNodes, toggleExpa
 };
 
 const PermissionTree = ({ permissions, selectedPermissions, onChange }) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedNodes, setExpandedNodes] = useState(new Set(['root'])); // By default root is expanded conceptually
 
@@ -198,9 +200,44 @@ const PermissionTree = ({ permissions, selectedPermissions, onChange }) => {
     if (isChecked) {
       uuids.forEach(u => {
         if (!nextSelected.includes(u)) nextSelected.push(u);
+        
+        // Auto-select view permission if an action permission is selected
+        const perm = permissions.find(p => p.uuid === u);
+        if (perm && perm.permission) {
+          const parts = perm.permission.split('.');
+          if (parts.length >= 2 && ['create', 'edit', 'archive', 'delete'].includes(parts[parts.length - 1])) {
+            const viewPermString = [...parts.slice(0, parts.length - 1), 'view'].join('.');
+            const viewPerm = permissions.find(p => p.permission === viewPermString);
+            if (viewPerm && !nextSelected.includes(viewPerm.uuid)) {
+              nextSelected.push(viewPerm.uuid);
+            }
+          }
+        }
       });
     } else {
-      nextSelected = nextSelected.filter(u => !uuids.includes(u));
+      let filteredNext = nextSelected.filter(u => !uuids.includes(u));
+      
+      // Prevent unselecting 'view' if any related action is still selected
+      uuids.forEach(u => {
+        const perm = permissions.find(p => p.uuid === u);
+        if (perm && perm.permission && perm.permission.endsWith('.view')) {
+          const prefix = perm.permission.substring(0, perm.permission.lastIndexOf('.view'));
+          const hasRelatedAction = filteredNext.some(selectedId => {
+            const selectedPerm = permissions.find(p => p.uuid === selectedId);
+            return selectedPerm && 
+                   selectedPerm.permission.startsWith(prefix + '.') && 
+                   selectedPerm.permission !== perm.permission;
+          });
+          
+          if (hasRelatedAction) {
+            // Keep the view permission if a related action is still selected
+            if (!filteredNext.includes(u)) {
+              filteredNext.push(u);
+            }
+          }
+        }
+      });
+      nextSelected = filteredNext;
     }
     onChange(nextSelected);
   };
@@ -211,7 +248,7 @@ const PermissionTree = ({ permissions, selectedPermissions, onChange }) => {
         <Search size={16} className="search-icon" />
         <input 
           type="text" 
-          placeholder="Search permissions..." 
+          placeholder={t('admin.searchPermissions', 'Search permissions...')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="search-input"
@@ -223,13 +260,13 @@ const PermissionTree = ({ permissions, selectedPermissions, onChange }) => {
           onClick={handleExpandAll}
           style={{ cursor: 'pointer', color: isAllExpanded ? 'var(--accent)' : 'var(--text)', transition: 'color 0.2s' }}
         >
-          Expand All
+          {t('admin.expandAll', 'Expand All')}
         </span>
         <span 
           onClick={handleCollapseAll}
           style={{ cursor: 'pointer', color: isAllCollapsed ? 'var(--accent)' : 'var(--text)', transition: 'color 0.2s' }}
         >
-          Collapse All
+          {t('admin.collapseAll', 'Collapse All')}
         </span>
       </div>
       

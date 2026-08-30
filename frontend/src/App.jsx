@@ -18,6 +18,7 @@ import UnoGamePage from './pages/games/cards';
 import NotFoundPage from './pages/not-found';
 import UsersPage from './pages/admin/users';
 import UserDetailsPage from './pages/admin/users/details';
+import AddUserPage from './pages/admin/users/add';
 import RolesPage from './pages/admin/roles';
 import RoleDetailsPage from './pages/admin/roles/details';
 import SystemHealthPage from './pages/admin/health';
@@ -50,6 +51,7 @@ const router = createBrowserRouter([
       { path: "dashboard", element: <DashboardPage /> },
       { path: "settings", element: <SettingsPage /> },
       { path: "admin/users", element: <UsersPage /> },
+      { path: "admin/users/add", element: <AddUserPage /> },
       { path: "admin/users/:uuid", element: <UserDetailsPage /> },
       { path: "admin/roles", element: <RolesPage /> },
       { path: "admin/roles/:uuid", element: <RoleDetailsPage /> },

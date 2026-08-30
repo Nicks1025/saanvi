@@ -5,7 +5,7 @@ import ProtectedRoute from '../../../components/common/ProtectedRoute';
 
 const UserDetailsPage = () => {
   return (
-    <ProtectedRoute requiredPermission="admin.users">
+    <ProtectedRoute requiredPermission="admin.users.view">
       <AppLayout>
         <UserDetailsFeature />
       </AppLayout>

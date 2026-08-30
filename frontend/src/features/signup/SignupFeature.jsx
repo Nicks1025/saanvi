@@ -15,6 +15,7 @@ import {
   getPasswordRequirements,
 } from '../../common/validations';
 import { Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import './signup.css';
 
 // ---------------------------------------------------------------------------
@@ -139,7 +140,7 @@ const DropdownField = ({ label, required, value, options, onChange, error }) => 
       options={options}
       onChange={onChange}
     />
-    {error && <div className="signup-field-error">{error}</div>}
+  
   </div>
 );
 
@@ -153,7 +154,6 @@ const SignupFeature = () => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
-  const [apiError, setApiError] = useState('');
   const [loading, setLoading] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
 
@@ -191,6 +191,12 @@ const SignupFeature = () => {
       return;
     }
 
+    if (field === 'email') {
+      const emailErr = validateEmail(value);
+      setErrors((prev) => ({ ...prev, email: emailErr || undefined }));
+      return;
+    }
+
     // Clear error when field has a value; re-run required if cleared
     if (errors[field]) {
       const requiredErr = validateRequired(value, field);
@@ -208,11 +214,11 @@ const SignupFeature = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setApiError('');
 
     const validationErrors = validateForm(form);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
+      toast.error(Object.values(validationErrors)[0]);
       return;
     }
 
@@ -231,11 +237,21 @@ const SignupFeature = () => {
       });
       navigate('/login?signup=success');
     } catch (err) {
-      const msg =
-        err.response?.data?.error ||
-        err.message ||
-        'Something went wrong. Please try again.';
-      setApiError(msg);
+      const data = err.response?.data;
+      let msg = 'Something went wrong. Please try again.';
+      
+      if (data) {
+        // If the backend returns Joi validation details array, use the first exact error message
+        if (data.details && Array.isArray(data.details) && data.details.length > 0) {
+          msg = data.details[0];
+        } else if (data.error) {
+          msg = data.error;
+        }
+      } else if (err.message) {
+        msg = err.message;
+      }
+
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -364,12 +380,6 @@ const SignupFeature = () => {
 
         <h2 className="signup-form-title">Create your account</h2>
         <p className="signup-form-subtitle">Join Saanvi and start your journey</p>
-
-        {apiError && (
-          <div className="signup-api-error" role="alert">
-            {apiError}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} noValidate autoComplete="off">
 

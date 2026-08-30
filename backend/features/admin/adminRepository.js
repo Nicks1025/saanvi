@@ -164,16 +164,29 @@ class AdminRepository extends BaseRepository {
   }
 
   async deleteUser(uuid) {
-    return await this.queryHelper.transaction(async (trx) => {
-      // 1. Delete from user_roles
-      await trx('user_roles').where('user_uuid', uuid).del();
-      
-      // 2. Delete from user_details
-      await trx('user_details').where('user_uuid', uuid).del();
-      
-      // 3. Delete from users
-      await trx('users').where('uuid', uuid).del();
-    });
+    try {
+      return await this.queryHelper.transaction(async (trx) => {
+        // 1. Delete from user_permissions
+        await trx('user_permissions').where('user_uuid', uuid).del();
+        
+        // 2. Delete from user_roles
+        await trx('user_roles').where('user_uuid', uuid).del();
+        
+        // 3. Delete from user_details
+        await trx('user_details').where('user_uuid', uuid).del();
+        
+        // 4. Delete from users
+        await trx('users').where('uuid', uuid).del();
+      });
+    } catch (err) {
+      if (err.message && err.message.includes('violates foreign key constraint')) {
+        // Extract the table name from the postgres error message if possible
+        const match = err.message.match(/on table "([^"]+)"/);
+        const tableName = match ? match[1] : 'another table';
+        throw new Error(`Cannot delete user because they have associated records in the '${tableName}' module (e.g., chat history, IPO applications, etc.). Please archive the user instead.`);
+      }
+      throw err;
+    }
   }
 
   async getAllRoles(searchQuery) {
@@ -226,6 +239,28 @@ class AdminRepository extends BaseRepository {
       .update(payload)
       .where('uuid', 'eq', uuid)
       .execute();
+  }
+
+  async deleteRole(uuid) {
+    try {
+      return await this.queryHelper.transaction(async (trx) => {
+        // 1. Delete from role_permissions
+        await trx('role_permissions').where('role_uuid', uuid).del();
+        
+        // 2. Delete from user_roles
+        await trx('user_roles').where('role_uuid', uuid).del();
+        
+        // 3. Delete from roles
+        await trx('roles').where('uuid', uuid).del();
+      });
+    } catch (err) {
+      if (err.message && err.message.includes('violates foreign key constraint')) {
+        const match = err.message.match(/on table "([^"]+)"/);
+        const tableName = match ? match[1] : 'another table';
+        throw new Error(`Cannot delete role because it is still referenced in '${tableName}'.`);
+      }
+      throw err;
+    }
   }
 
   async getRolePermissions(roleUuid) {

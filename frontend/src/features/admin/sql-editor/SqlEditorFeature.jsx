@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Trash2, Database, AlertTriangle, CheckCircle, Clock, Download } from 'lucide-react';
+import { Play, Database, Download } from 'lucide-react';
 import SButton from '../../../components/common/SButton';
 import SDataTable from '../../../components/common/SDataTable';
 import axios from '../../../services/axios.client';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 
 const SqlEditorFeature = () => {
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [databaseId, setDatabaseId] = useState('primary');
   const [isExecuting, setIsExecuting] = useState(false);
@@ -104,10 +106,10 @@ const SqlEditorFeature = () => {
     <div className="sql-editor-container page-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Database size={24} /> SQL Editor
+          <Database size={24} /> {t('admin.sql.title', 'SQL Editor')}
         </h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <label style={{ fontSize: '0.9rem', fontWeight: 500 }}>Target Database:</label>
+          <label style={{ fontSize: '0.9rem', fontWeight: 500 }}>{t('admin.sql.target_database', 'Target Database:')}</label>
           <select 
             value={databaseId} 
             onChange={(e) => setDatabaseId(e.target.value)}
@@ -130,7 +132,7 @@ const SqlEditorFeature = () => {
           overflow: 'hidden' 
         }}>
           <div style={{ padding: '0.75rem', borderBottom: '1px solid var(--border)', fontWeight: 600, background: 'rgba(0,0,0,0.02)' }}>
-            Tables ({tablesList.length})
+            {t('admin.sql.tables', 'Tables')} ({tablesList.length})
           </div>
           <div style={{ flex: 1, overflowY: 'auto', padding: '0.5rem' }}>
             {tablesList.map(table => (
@@ -157,7 +159,7 @@ const SqlEditorFeature = () => {
           <textarea
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Enter SQL statements here (e.g., SELECT * FROM users;)&#10;Note: DROP statements are strictly prohibited."
+            placeholder={t('admin.sql.placeholder', "Enter SQL statements here (e.g., SELECT * FROM users;)\nNote: DROP statements are strictly prohibited.")}
             style={{
               width: '100%',
               height: '200px',
@@ -175,15 +177,15 @@ const SqlEditorFeature = () => {
           />
           
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-            <SButton size="s" text={isExecuting ? 'Executing...' : 'Run Query'} icon={<Play size={16} />} onClick={handleRunClick} disabled={isExecuting} style={{ background: '#4f46e5', color: 'white' }} />
+            <SButton size="s" text={isExecuting ? t('admin.sql.executing', 'Executing...') : t('admin.sql.run_query', 'Run Query')} icon={<Play size={16} />} onClick={handleRunClick} disabled={isExecuting} style={{ background: '#4f46e5', color: 'white' }} />
           </div>
 
 
           {result && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1, minHeight: 0 }}>
           <div style={{ display: 'flex', gap: '1.5rem', padding: '0.5rem 0', fontSize: '0.85rem', color: 'var(--text-secondary, #64748b)' }}>
-            <span style={{ fontWeight: 500 }}>Affected Rows: {result.rowCount}</span>
-            <span style={{ fontWeight: 500 }}>Execution Time: {result.executionTimeMs}ms</span>
+            <span style={{ fontWeight: 500 }}>{t('admin.sql.affected_rows', 'Affected Rows:')} {result.rowCount}</span>
+            <span style={{ fontWeight: 500 }}>{t('admin.sql.execution_time', 'Execution Time:')} {result.executionTimeMs}ms</span>
           </div>
               
               {columns.length > 0 && result.rows.length > 0 ? (
@@ -197,14 +199,14 @@ const SqlEditorFeature = () => {
                         icon={<Download size={18} />} 
                         onClick={downloadJson} 
                         style={{ background: '#f3f4f6', color: '#4b5563', padding: '0.5rem', minWidth: 'auto', borderRadius: '6px' }} 
-                        title="Download JSON"
+                        title={t('admin.sql.download_json', 'Download JSON')}
                       />
                     }
                   />
                 </div>
               ) : (
                 <div style={{ padding: '2rem', textAlign: 'center', color: '#6b7280', background: 'var(--bg)', borderRadius: '8px', border: '1px solid var(--border)' }}>
-                  No result set returned (e.g. successful INSERT/UPDATE/DELETE).
+                  {t('admin.sql.no_result_set', 'No result set returned (e.g. successful INSERT/UPDATE/DELETE).')}
                 </div>
               )}
             </div>

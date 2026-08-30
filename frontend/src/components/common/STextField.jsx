@@ -70,11 +70,7 @@ const STextField = ({
           </button>
         )}
       </div>
-      {displayError && (
-        <div style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.25rem', fontWeight: 500 }}>
-          {displayError}
-        </div>
-      )}
+
     </div>
   );
 };
