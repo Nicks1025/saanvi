@@ -58,8 +58,9 @@ class ApiSchema {
     // 2. Joi Validation Middleware
     if (endpoint.request) {
       routeArguments.push((req, res, next) => {
+        const stripBody = endpoint.request.stripUnknown === false ? false : true;
         if (endpoint.request.body) {
-          const { error, value } = endpoint.request.body.validate(req.body, { abortEarly: false, stripUnknown: true });
+          const { error, value } = endpoint.request.body.validate(req.body, { abortEarly: false, stripUnknown: stripBody });
           if (error) {
             return res.status(400).json({ success: false, error: 'Validation Error', details: error.details.map(x => x.message) });
           }
@@ -70,14 +71,14 @@ class ApiSchema {
           if (error) {
             return res.status(400).json({ success: false, error: 'Validation Error', details: error.details.map(x => x.message) });
           }
-          req.query = value;
+          Object.defineProperty(req, 'query', { value, writable: true, enumerable: true, configurable: true });
         }
         if (endpoint.request.params) {
           const { error, value } = endpoint.request.params.validate(req.params, { abortEarly: false, stripUnknown: true });
           if (error) {
             return res.status(400).json({ success: false, error: 'Validation Error', details: error.details.map(x => x.message) });
           }
-          req.params = value;
+          Object.defineProperty(req, 'params', { value, writable: true, enumerable: true, configurable: true });
         }
         next();
       });

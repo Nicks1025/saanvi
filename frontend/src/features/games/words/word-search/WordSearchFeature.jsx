@@ -239,9 +239,9 @@ const WordSearchFeature = () => {
         cancelText={t('games.word_search.exit_modal_cancel')}
         onConfirm={handleConfirmExit}
         onCancel={handleCancelExit}
-      >
-        <p>{t('games.word_search.exit_modal_body')}</p>
-      </SModal>
+        confirmColor="danger"
+        text={t('games.word_search.exit_modal_body')}
+      />
     </div>
   );
 };

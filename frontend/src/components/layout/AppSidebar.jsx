@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Settings, Gamepad2, ChevronDown, ChevronRight, Shield, LogOut, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Settings, Gamepad2, ChevronDown, ChevronRight, Shield, LogOut, MessageSquare, Workflow } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../store/AuthContext';
 import SButton from '../common/SButton';
@@ -56,7 +56,7 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
           </NavLink>
         )}
 
-        {(userPermissions.includes('admin.users.view') || userPermissions.includes('admin.roles.view') || userPermissions.includes('admin.system.health') || userPermissions.includes('admin.sql_editor')) && (
+        {(userPermissions.includes('admin.users.view') || userPermissions.includes('admin.roles.view') || userPermissions.includes('admin.system.health') || userPermissions.includes('admin.sql_editor') || userPermissions.includes('admin.email_templates.view') || userPermissions.includes('admin.workflows.view')) && (
           <div className="sidebar-group">
             <button 
               className={`sidebar-link sidebar-group-btn ${location.pathname.startsWith('/admin') ? 'active-parent' : ''}`} 
@@ -92,6 +92,26 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
                 {userPermissions.includes('admin.sql_editor') && (
                   <NavLink to="/admin/sql-editor" className={getSubNavLinkClass} title={t('navigation.sql_editor', 'SQL Editor')} onClick={onNavClick}>
                     <span className="sidebar-link-text">{t('navigation.sql_editor', 'SQL Editor')}</span>
+                  </NavLink>
+                )}
+                {userPermissions.includes('admin.email_templates.view') && (
+                  <NavLink to="/admin/email-templates" className={getSubNavLinkClass} title={t('navigation.email_templates', 'Email Templates')} onClick={onNavClick}>
+                    <span className="sidebar-link-text">{t('navigation.email_templates', 'Email Templates')}</span>
+                  </NavLink>
+                )}
+                {userPermissions.includes('admin.dynamic_variables.view') && (
+                  <NavLink to="/admin/dynamic-variables" className={getSubNavLinkClass} title={t('navigation.dynamic_variables', 'Dynamic Variables')} onClick={onNavClick}>
+                    <span className="sidebar-link-text">{t('navigation.dynamic_variables', 'Dynamic Variables')}</span>
+                  </NavLink>
+                )}
+                {userPermissions.includes('admin.workflows.view') && (
+                  <NavLink to="/admin/workflows" className={getSubNavLinkClass} title={t('navigation.workflows', 'Workflows')} onClick={onNavClick}>
+                    <span className="sidebar-link-text">{t('navigation.workflows', 'Workflows')}</span>
+                  </NavLink>
+                )}
+                {userPermissions.includes('admin.workflows.view') && (
+                  <NavLink to="/admin/system-events" className={getSubNavLinkClass} title={t('navigation.system_events', 'System Events')} onClick={onNavClick}>
+                    <span className="sidebar-link-text">{t('navigation.system_events', 'System Events')}</span>
                   </NavLink>
                 )}
               </div>

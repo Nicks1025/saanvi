@@ -13,11 +13,16 @@ const setCookie = (name, value) => {
   document.cookie = `${name}=${value}; path=/`;
 };
 
+import NProgress from 'nprogress';
+import 'nprogress/nprogress.css';
+
+NProgress.configure({ showSpinner: false, speed: 400, minimum: 0.1 });
+
 // Mock loading indicator composable
 let pendingRequests = 0;
-const start = () => console.log('Loading started...');
-const finish = () => console.log('Loading finished.');
-const clear = () => console.log('Loading cleared.');
+const start = () => NProgress.start();
+const finish = () => NProgress.done();
+const clear = () => { NProgress.done(); NProgress.remove(); };
 const errorState = { _value: false };
 
 function handleNuxtLoadingProgress() {

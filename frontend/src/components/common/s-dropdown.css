@@ -17,6 +17,7 @@
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .s-dropdown-select {
@@ -29,14 +30,31 @@
   color: var(--text);
   font-family: inherit;
   font-size: 1rem;
-  appearance: none;
   cursor: pointer;
   outline: none;
   transition: border-color 0.2s;
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  user-select: none;
 }
 
-.s-dropdown-select:focus {
+.s-dropdown-select:focus, .s-dropdown-select-open {
   border-color: var(--accent);
+}
+
+.s-dropdown-select-disabled {
+  background-color: var(--bg-hover, #f4f4f5);
+  color: var(--text-muted, #a1a1aa);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.s-dropdown-selected-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
 }
 
 .s-dropdown-icon {
@@ -44,4 +62,80 @@
   right: 0.75rem;
   pointer-events: none;
   color: var(--text);
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s ease;
+}
+
+.s-dropdown-icon-open {
+  transform: rotate(180deg);
+}
+
+.s-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+  max-height: 250px;
+  display: flex;
+  flex-direction: column;
+}
+
+.s-dropdown-search-wrapper {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-alt);
+}
+
+.s-dropdown-search-icon {
+  color: var(--text-muted);
+  margin-right: 0.5rem;
+}
+
+.s-dropdown-search-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.s-dropdown-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  max-height: 200px;
+}
+
+.s-dropdown-list-item {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  color: var(--text);
+  transition: background-color 0.1s;
+}
+
+.s-dropdown-list-item:hover {
+  background-color: var(--bg-alt);
+}
+
+.s-dropdown-list-item-selected {
+  background-color: rgba(170, 59, 255, 0.1);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.s-dropdown-no-results {
+  padding: 0.75rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }

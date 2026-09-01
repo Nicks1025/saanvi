@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Pencil, Eye, Archive, Trash2, RefreshCw, UserPlus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../../store/AuthContext';
 import SDataTable from '../../../components/common/SDataTable';
 import SModal from '../../../components/common/SModal';
 import SButton from '../../../components/common/SButton';
+import SDropdown from '../../../components/common/SDropdown';
 import * as usersService from './usersService';
+import UserFieldsFeature from './UserFieldsFeature';
+import TriggersFeature from '../communication/TriggersFeature';
 import './users.css';
 
 const UsersFeature = () => {
@@ -20,7 +23,25 @@ const UsersFeature = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [modalState, setModalState] = useState({ isOpen: false, type: null, user: null });
   const [isProcessing, setIsProcessing] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTabState] = useState(searchParams.get('tab') || 'records'); // 'records', 'fields', 'triggers'
   const navigate = useNavigate();
+
+  const setActiveTab = (tab) => {
+    setActiveTabState(tab);
+    setSearchParams(prev => {
+      const params = new URLSearchParams(prev);
+      params.set('tab', tab);
+      return params;
+    });
+  };
+
+  useEffect(() => {
+    const tabInUrl = searchParams.get('tab');
+    if (tabInUrl && tabInUrl !== activeTab) {
+      setActiveTabState(tabInUrl);
+    }
+  }, [searchParams]);
   const { t } = useTranslation();
   const { user } = useAuth();
   const userPermissions = user?.permissions || [];
@@ -96,64 +117,6 @@ const UsersFeature = () => {
     { key: 'last_name', label: t('admin.lastName'), sortable: true },
     { key: 'email', label: t('admin.email'), sortable: true },
     { key: 'status', label: t('admin.status'), sortable: true },
-    { 
-      key: 'actions', 
-      label: t('admin.actions'),
-      render: (item) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          {userPermissions.includes('admin.users.view') && (
-            <button
-              className="manage-btn"
-              onClick={() => handleView(item)}
-              title={t('admin.viewUser', 'View User')}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer' }}
-            >
-              <Eye size={18} />
-            </button>
-          )}
-          {userPermissions.includes('admin.users.edit') && (
-            <button
-              className="manage-btn"
-              onClick={() => handleEdit(item)}
-              title={t('admin.editUser', 'Edit User')}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer' }}
-            >
-              <Pencil size={18} />
-            </button>
-          )}
-          {!showArchived && userPermissions.includes('admin.users.archive') && (
-            <button 
-              className="manage-btn" 
-              onClick={() => handleArchive(item)}
-              title={t('admin.archiveUser', 'Archive User')}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer', color: '#f59e0b' }}
-            >
-              <Archive size={18} />
-            </button>
-          )}
-          {showArchived && userPermissions.includes('admin.users.restore') && (
-            <button 
-              className="manage-btn" 
-              onClick={() => handleRestore(item)}
-              title={t('admin.restoreUser', 'Restore User')}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer', color: '#10b981' }}
-            >
-              <RefreshCw size={18} />
-            </button>
-          )}
-          {userPermissions.includes('admin.users.delete') && (
-            <button
-              className="manage-btn"
-              onClick={() => handleDelete(item)}
-              title={t('admin.deleteUser', 'Delete User')}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444' }}
-            >
-              <Trash2 size={18} />
-            </button>
-          )}
-        </div>
-      )
-    }
   ];
 
   const handleTabChange = (archived) => {
@@ -168,86 +131,144 @@ const UsersFeature = () => {
     fetchUsers(query, showArchived, 1, limit);
   };
 
+  const statusOptions = [
+    { label: t('admin.activeUsers', 'Active Users'), value: false },
+    { label: t('admin.archivedUsers', 'Archived Users'), value: true },
+    { label: t('admin.allUsers', 'All Users'), value: 'all' }
+  ];
+
+  const headerLeftActions = (
+    <div style={{ width: '200px' }} className="status-dropdown-wrapper">
+      <SDropdown
+        value={showArchived}
+        options={statusOptions}
+        onChange={(val) => {
+          const parsed = val === 'all' ? 'all' : val === 'true' || val === true;
+          handleTabChange(parsed);
+        }}
+      />
+    </div>
+  );
+
   const tabs = (
-    <div className="admin-users-tabs" style={{ margin: 0, borderBottom: 'none' }}>
+    <div className="admin-users-tabs" style={{ margin: 0, padding: '0 1rem', borderBottom: '1px solid var(--border)' }}>
       <button 
-        className={`admin-tab ${!showArchived ? 'active' : ''}`}
-        onClick={() => handleTabChange(false)}
+        className={`admin-tab ${activeTab === 'records' ? 'active' : ''}`}
+        onClick={() => setActiveTab('records')}
       >
-        {t('admin.active', 'Active')}
+        Records
       </button>
       <button 
-        className={`admin-tab ${showArchived ? 'active' : ''}`}
-        onClick={() => handleTabChange(true)}
+        className={`admin-tab ${activeTab === 'fields' ? 'active' : ''}`}
+        onClick={() => setActiveTab('fields')}
       >
-        {t('admin.archived', 'Archived')}
+        Fields
+      </button>
+      <button
+        className={`admin-tab ${activeTab === 'triggers' ? 'active' : ''}`}
+        onClick={() => setActiveTab('triggers')}
+      >
+        Triggers
       </button>
     </div>
   );
 
-  return (
-    <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
-      <SDataTable 
-        title={t('admin.users')}
-        data={users} 
-        columns={columns} 
-        serverSideSearch={true}
-        onSearch={handleSearch}
-        searchPlaceholder={t('admin.searchUsers')}
-        loading={loading}
-        topTabs={tabs}
-        headerActions={
-          userPermissions?.includes('admin.users.create') ? (
-            <SButton
-              text={t('admin.addUser', 'Add User')}
-              icon={<UserPlus size={16} />}
-              onClick={() => navigate('/admin/users/add')}
-              style={{ background: 'var(--accent)', color: 'white', whiteSpace: 'nowrap' }}
-            />
-          ) : null
-        }
-        pagination={{
-          page,
-          limit,
-          total,
-          onPageChange: (newPage) => {
-            setPage(newPage);
-            fetchUsers(searchQuery, showArchived, newPage, limit);
-          },
-          onLimitChange: (newLimit) => {
-            setLimit(newLimit);
-            setPage(1);
-            fetchUsers(searchQuery, showArchived, 1, newLimit);
+  const renderContent = () => {
+    if (activeTab === 'fields') {
+      return <UserFieldsFeature topTabs={tabs} />;
+    }
+
+    if (activeTab === 'triggers') {
+      return <TriggersFeature topTabs={tabs} />;
+    }
+
+    return (
+      <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+        <SDataTable 
+          title="Users"
+          data={users}
+          columns={columns}
+          serverSideSearch={true}
+          onSearch={handleSearch}
+          searchPlaceholder={t('admin.searchUsers')}
+          loading={loading}
+          actions={showArchived ? ['view', 'restore', 'delete'] : ['view', 'edit', 'archive', 'delete']}
+          onAction={(action, row) => {
+            if (action === 'view') handleView(row);
+            if (action === 'edit') handleEdit(row);
+            if (action === 'archive') handleArchive(row);
+            if (action === 'restore') handleRestore(row);
+            if (action === 'delete') handleDelete(row);
+          }}
+          canExecuteAction={(action) => {
+            if (action === 'view') return userPermissions.includes('admin.users.view');
+            if (action === 'edit') return userPermissions.includes('admin.users.edit');
+            if (action === 'archive') return userPermissions.includes('admin.users.archive');
+            if (action === 'restore') return userPermissions.includes('admin.users.restore');
+            if (action === 'delete') return userPermissions.includes('admin.users.delete');
+            return false;
+          }}
+          headerLeftActions={headerLeftActions}
+          topTabs={tabs}
+          headerActions={
+            userPermissions?.includes('admin.users.create') ? (
+              <SButton
+                text={t('admin.addUser', 'Add User')}
+                icon={<UserPlus size={16} />}
+                onClick={() => navigate('/admin/users/add')}
+                style={{ background: 'var(--accent)', color: 'white', whiteSpace: 'nowrap' }}
+              />
+            ) : null
           }
-        }}
-      />
-      
-      <SModal
-        isOpen={modalState.isOpen}
-        title={
-          modalState.type === 'archive' ? t('admin.archiveUser', 'Archive User') :
-          modalState.type === 'restore' ? t('admin.restoreUser', 'Restore User') :
-          t('admin.deleteUser', 'Delete User')
-        }
-        onConfirm={confirmAction}
-        onCancel={() => setModalState({ isOpen: false, type: null, user: null })}
-        isProcessing={isProcessing}
-        confirmText={
-          modalState.type === 'archive' ? t('common.archive', 'Archive') :
-          modalState.type === 'restore' ? t('common.restore', 'Restore') :
-          t('common.delete', 'Delete')
-        }
-      >
-        <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
-          {modalState.type === 'delete' && modalState.user ? (
-            t('admin.deleteUserConfirm', 'Are you sure you want to PERMANENTLY delete user {{email}}? This cannot be undone.', { email: modalState.user.email })
-          ) : modalState.type === 'archive' && modalState.user ? (
-            t('admin.archiveUserConfirm', 'Are you sure you want to archive user {{email}}?', { email: modalState.user.email })
-          ) : modalState.type === 'restore' && modalState.user ? (
-            t('admin.restoreUserConfirm', 'Are you sure you want to restore user {{email}}?', { email: modalState.user.email })
-          ) : ''}
-        </p>
-      </SModal>
+          pagination={{
+            page,
+            limit,
+            total,
+            onPageChange: (newPage) => {
+              setPage(newPage);
+              fetchUsers(searchQuery, showArchived, newPage, limit);
+            },
+            onLimitChange: (newLimit) => {
+              setLimit(newLimit);
+              setPage(1);
+              fetchUsers(searchQuery, showArchived, 1, newLimit);
+            }
+          }}
+        />
+
+        <SModal
+          isOpen={modalState.isOpen}
+          title={
+            modalState.type === 'archive' ? t('admin.archiveUser', 'Archive User') :
+              modalState.type === 'restore' ? t('admin.restoreUser', 'Restore User') :
+                t('admin.deleteUser', 'Delete User')
+          }
+          onConfirm={confirmAction}
+          onCancel={() => setModalState({ isOpen: false, type: null, user: null })}
+          isProcessing={isProcessing}
+          confirmText={
+            modalState.type === 'archive' ? t('common.archive', 'Archive') :
+              modalState.type === 'restore' ? t('common.restore', 'Restore') :
+                t('common.delete', 'Delete')
+          }
+          confirmColor={modalState.type === 'delete' || modalState.type === 'archive' ? 'danger' : 'primary'}
+          text={
+            modalState.type === 'delete' && modalState.user ? (
+              t('admin.deleteUserConfirm', 'Are you sure you want to PERMANENTLY delete user {{email}}? This cannot be undone.', { email: modalState.user.email })
+            ) : modalState.type === 'archive' && modalState.user ? (
+              t('admin.archiveUserConfirm', 'Are you sure you want to archive user {{email}}?', { email: modalState.user.email })
+            ) : modalState.type === 'restore' && modalState.user ? (
+              t('admin.restoreUserConfirm', 'Are you sure you want to restore user {{email}}?', { email: modalState.user.email })
+            ) : ''
+          }
+        />
+      </div>
+    );
+  };
+
+  return (
+    <div className="admin-users-container">
+      {renderContent()}
     </div>
   );
 };
