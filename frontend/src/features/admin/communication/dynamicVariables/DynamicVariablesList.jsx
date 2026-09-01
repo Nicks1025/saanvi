@@ -7,7 +7,7 @@ import axios from '../../../../services/axios.client';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { Eye, Edit, Trash2 } from 'lucide-react';
-import { useAuth } from '../../../../contexts/AuthContext';
+import { useAuth } from '../../../../store/AuthContext';
 
 const DynamicVariablesList = () => {
   const { t } = useTranslation();
