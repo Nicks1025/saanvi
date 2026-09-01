@@ -56,44 +56,28 @@ const EMPTY_FORM = {
 // Form-level validation (runs on submit)
 // ---------------------------------------------------------------------------
 
-function validateForm(form) {
+function validateForm(form, formConfig) {
   const e = {};
-
-  const firstNameErr =
-    validateRequired(form.firstName, 'First name') ||
-    validateMaxLength(form.firstName, 100, 'First name');
-  if (firstNameErr) e.firstName = firstNameErr;
-
-  const lastNameErr =
-    validateRequired(form.lastName, 'Last name') ||
-    validateMaxLength(form.lastName, 100, 'Last name');
-  if (lastNameErr) e.lastName = lastNameErr;
-
-  const displayNameErr =
-    validateRequired(form.displayName, 'Display name') ||
-    validateMaxLength(form.displayName, 200, 'Display name');
-  if (displayNameErr) e.displayName = displayNameErr;
 
   const emailErr = validateEmail(form.email);
   if (emailErr) e.email = emailErr;
 
-  const phoneErr = validatePhone(form.phoneNumber);
-  if (phoneErr) e.phoneNumber = phoneErr;
-
-  const dobErr = validateDate(form.dateOfBirth, 'Date of birth');
-  if (dobErr) e.dateOfBirth = dobErr;
-
-  if (!form.gender) e.gender = 'Please select a gender';
-
   const passwordErr = validatePassword(form.password, {
-    firstName: form.firstName,
-    lastName: form.lastName,
-    displayName: form.displayName,
+    firstName: form.first_name,
+    lastName: form.last_name,
+    displayName: form.display_name,
   });
   if (passwordErr) e.password = passwordErr;
 
   const confirmErr = validateConfirmPassword(form.password, form.confirmPassword);
   if (confirmErr) e.confirmPassword = confirmErr;
+
+  // Validate dynamic required fields
+  formConfig.forEach(field => {
+    if (field.is_required && (!form[field.field_name] || String(form[field.field_name]).trim() === '')) {
+      e[field.field_name] = `${field.label} is required`;
+    }
+  });
 
   return e;
 }
@@ -144,6 +128,9 @@ const DropdownField = ({ label, required, value, options, onChange, error }) => 
   </div>
 );
 
+import DynamicFormRenderer from '../../components/common/DynamicFormRenderer';
+import axios from '../../services/axios.client';
+
 // ---------------------------------------------------------------------------
 // Main feature
 // ---------------------------------------------------------------------------
@@ -151,11 +138,34 @@ const DropdownField = ({ label, required, value, options, onChange, error }) => 
 const SignupFeature = () => {
   const navigate = useNavigate();
 
-  const [form, setForm] = useState(EMPTY_FORM);
+  const [form, setForm] = useState({ email: '', password: '', confirmPassword: '' });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [loading, setLoading] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
+  const [formConfig, setFormConfig] = useState([]);
+  const [configLoading, setConfigLoading] = useState(true);
+
+  React.useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const response = await axios.get('/api/public/users/form-config?context=signup');
+        const config = response.data || [];
+        setFormConfig(config);
+        
+        const initialForm = { email: '', password: '', confirmPassword: '' };
+        config.forEach(f => {
+          initialForm[f.field_name] = '';
+        });
+        setForm(initialForm);
+      } catch (err) {
+        toast.error('Failed to load user fields configuration.');
+      } finally {
+        setConfigLoading(false);
+      }
+    };
+    fetchConfig();
+  }, []);
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -165,9 +175,9 @@ const SignupFeature = () => {
     if (field === 'password') {
       setPasswordTouched(true);
       const pwErr = validatePassword(value, {
-        firstName: form.firstName,
-        lastName: form.lastName,
-        displayName: form.displayName,
+        firstName: form.first_name,
+        lastName: form.last_name,
+        displayName: form.display_name,
       });
       setErrors((prev) => ({ ...prev, password: pwErr || undefined }));
 
@@ -215,26 +225,28 @@ const SignupFeature = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const validationErrors = validateForm(form);
+    const validationErrors = validateForm(form, formConfig);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-      toast.error(Object.values(validationErrors)[0]);
+      
+      const hasRequiredError = Object.values(validationErrors).some(msg => 
+        msg.toLowerCase().includes('required')
+      );
+      
+      if (hasRequiredError) {
+        toast.error('Please fill all required fields');
+      } else {
+        toast.error('Please provide valid values');
+      }
+      
       return;
     }
 
     setLoading(true);
     try {
-      await signupUser({
-        email: form.email.trim(),
-        password: form.password,
-        firstName: form.firstName.trim(),
-        lastName: form.lastName.trim(),
-        displayName: form.displayName.trim(),
-        phoneNumber: form.phoneNumber.trim(),
-        dateOfBirth: form.dateOfBirth,
-        gender: form.gender,
-        language: form.language || 'en',
-      });
+      const payload = { ...form, email: form.email.trim() };
+      delete payload.confirmPassword;
+      await signupUser(payload);
       navigate('/login?signup=success');
     } catch (err) {
       const data = err.response?.data;
@@ -259,7 +271,7 @@ const SignupFeature = () => {
 
   const showPwRequirements = passwordTouched || form.password.length > 0;
 
-  const isFormValid = Object.keys(validateForm(form)).length === 0;
+  const isFormValid = Object.keys(validateForm(form, formConfig)).length === 0;
 
   return (
     <div className="signup-content-area">
@@ -383,94 +395,19 @@ const SignupFeature = () => {
 
         <form onSubmit={handleSubmit} noValidate autoComplete="off">
 
-          {/* Row: First | Last */}
-          <div className="signup-field-row-2col">
-            <STextField
-              label="First Name"
-              text={form.firstName}
-              onChange={(e) => handleChange('firstName', e.target.value)}
-              placeholder="Jane"
-              required
-              error={errors.firstName}
-              autoComplete="given-name"
-              marginBottom="0"
+
+
+          {!configLoading && (
+            <DynamicFormRenderer 
+              fields={formConfig}
+              form={form}
+              errors={errors}
+              onChange={handleChange}
             />
-            <STextField
-              label="Last Name"
-              text={form.lastName}
-              onChange={(e) => handleChange('lastName', e.target.value)}
-              placeholder="Doe"
-              required
-              error={errors.lastName}
-              autoComplete="family-name"
-              marginBottom="0"
-            />
-          </div>
-
-          <STextField
-            label="Display Name"
-            text={form.displayName}
-            onChange={(e) => handleChange('displayName', e.target.value)}
-            placeholder="How others will see you"
-            required
-            error={errors.displayName}
-            autoComplete="nickname"
-          />
-
-          <STextField
-            label="Email"
-            type="email"
-            text={form.email}
-            onChange={(e) => handleChange('email', e.target.value)}
-            placeholder="you@example.com"
-            required
-            error={errors.email}
-            autoComplete="email"
-          />
-
-          <STextField
-            label="Phone Number"
-            type="tel"
-            text={form.phoneNumber}
-            onChange={handlePhoneChange}
-            placeholder="10-digit number"
-            required
-            error={errors.phoneNumber}
-            autoComplete="tel"
-          />
-
-          {/* Row: DOB | Gender */}
-          <div className="signup-field-row-2col">
-            <STextField
-              label="Date of Birth"
-              type="date"
-              text={form.dateOfBirth}
-              onChange={(e) => handleChange('dateOfBirth', e.target.value)}
-              required
-              error={errors.dateOfBirth}
-              autoComplete="bday"
-              marginBottom="0"
-            />
-            <DropdownField
-              label="Gender"
-              required
-              value={form.gender}
-              options={GENDER_OPTIONS}
-              onChange={(v) => handleChange('gender', v)}
-              error={errors.gender}
-            />
-          </div>
-
-          <DropdownField
-            label="Language"
-            value={form.language}
-            options={LANGUAGE_OPTIONS}
-            onChange={(v) => handleChange('language', v)}
-            error={errors.language}
-          />
+          )}
 
           {/* Password section — separated with a visual divider */}
-          <div className="signup-password-section">
+          <div className="signup-password-section" style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
             <STextField
               label="Password"
               type="password"
@@ -485,9 +422,9 @@ const SignupFeature = () => {
             {showPwRequirements && (
               <PasswordRequirements
                 password={form.password}
-                firstName={form.firstName}
-                lastName={form.lastName}
-                displayName={form.displayName}
+                firstName={form.first_name}
+                lastName={form.last_name}
+                displayName={form.display_name}
               />
             )}
 
@@ -507,7 +444,7 @@ const SignupFeature = () => {
             <SButton
               type="submit"
               color="primary"
-              disabled={loading || !isFormValid}
+              disabled={loading}
               label="Create account"
               icon={loading ? <Loader2 className="signup-spinner" size={18} /> : null}
             >

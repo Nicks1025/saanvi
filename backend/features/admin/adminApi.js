@@ -16,6 +16,22 @@ const adminController = new AdminController(adminService);
 const sqlService = new SqlService(queryHelper);
 const sqlController = new SqlController(sqlService);
 
+const EmailTemplateRepository = require('./emailTemplates/emailTemplateRepository');
+const EmailTemplateService = require('./emailTemplates/emailTemplateService');
+const EmailTemplateController = require('./emailTemplates/emailTemplateController');
+
+const emailTemplateRepository = new EmailTemplateRepository(queryHelper);
+const emailTemplateService = new EmailTemplateService(emailTemplateRepository);
+const emailTemplateController = new EmailTemplateController(emailTemplateService);
+
+const DynamicVariablesRepository = require('./dynamicVariables/dynamicVariablesRepository');
+const DynamicVariablesService = require('./dynamicVariables/dynamicVariablesService');
+const DynamicVariablesController = require('./dynamicVariables/dynamicVariablesController');
+
+const dynamicVariablesRepository = new DynamicVariablesRepository(queryHelper);
+const dynamicVariablesService = new DynamicVariablesService(dynamicVariablesRepository);
+const dynamicVariablesController = new DynamicVariablesController(dynamicVariablesService);
+
 // ─── Users ────────────────────────────────────────────────────────────────────
 
 const getUsers = {
@@ -35,14 +51,15 @@ const createUser = {
   request: {
     body: Joi.object({
       email: Joi.string().email().required(),
-      firstName: Joi.string().max(100).required(),
-      lastName: Joi.string().max(100).required(),
-      displayName: Joi.string().max(200).required(),
-      phoneNumber: Joi.string().optional().allow(null, ''),
-      dateOfBirth: Joi.string().optional().allow(null, ''),
-      gender: Joi.string().optional().allow(null, ''),
+      first_name: Joi.string().max(100).required(),
+      last_name: Joi.string().max(100).required(),
+      display_name: Joi.string().max(200).required(),
+      phone_number: Joi.string().required(),
+      date_of_birth: Joi.string().required(),
+      gender: Joi.string().required(),
       language: Joi.string().optional().default('en')
-    })
+    }).unknown(true),
+    stripUnknown: false
   }
 };
 
@@ -267,6 +284,326 @@ const executeSql = {
   }
 };
 
+// ─── Email Templates ──────────────────────────────────────────────────────────
+
+const getEmailTemplates = {
+  path: '/email-templates',
+  verb: 'GET',
+  auditMessage: 'getting email templates',
+  handler: { controller: emailTemplateController, method: 'getAllTemplates' },
+  middleware: { requirePermission: ['admin.email_templates.view'] }
+};
+
+const getEmailTemplate = {
+  path: '/email-templates/:uuid',
+  verb: 'GET',
+  auditMessage: 'getting email template',
+  handler: { controller: emailTemplateController, method: 'getTemplate' },
+  middleware: { requirePermission: ['admin.email_templates.view'] },
+  request: {
+    params: Joi.object({
+      uuid: Joi.string().uuid().required()
+    })
+  }
+};
+
+const createEmailTemplate = {
+  path: '/email-templates',
+  verb: 'POST',
+  auditMessage: 'creating email template',
+  handler: { controller: emailTemplateController, method: 'createTemplate' },
+  middleware: { requirePermission: ['admin.email_templates.create'] },
+  request: {
+    body: Joi.object({
+      template_key: Joi.string().required(),
+      name: Joi.string().required(),
+      description: Joi.string().optional().allow(null, ''),
+      subject: Joi.string().required(),
+      html_body: Joi.string().required(),
+      plain_text_body: Joi.string().optional().allow(null, ''),
+      status: Joi.string().valid('ACTIVE', 'INACTIVE').optional(),
+      available_variables: Joi.array().items(Joi.string()).optional(),
+      editor_mode: Joi.string().valid('VISUAL', 'HTML').optional(),
+      design_json: Joi.alternatives().try(Joi.object(), Joi.string()).optional().allow(null),
+      linked_table: Joi.string().max(100).optional().allow(null, ''),
+      linked_table_key: Joi.string().max(100).optional().allow(null, '')
+    })
+  }
+};
+
+const updateEmailTemplate = {
+  path: '/email-templates/:uuid',
+  verb: 'PUT',
+  auditMessage: 'updating email template',
+  handler: { controller: emailTemplateController, method: 'updateTemplate' },
+  middleware: { requirePermission: ['admin.email_templates.update'] },
+  request: {
+    params: Joi.object({
+      uuid: Joi.string().uuid().required()
+    }),
+    body: Joi.object({
+      name: Joi.string().optional(),
+      description: Joi.string().optional().allow(null, ''),
+      subject: Joi.string().optional(),
+      html_body: Joi.string().optional(),
+      plain_text_body: Joi.string().optional().allow(null, ''),
+      status: Joi.string().valid('ACTIVE', 'INACTIVE').optional(),
+      available_variables: Joi.array().items(Joi.string()).optional(),
+      editor_mode: Joi.string().valid('VISUAL', 'HTML').optional(),
+      design_json: Joi.alternatives().try(Joi.object(), Joi.string()).optional().allow(null),
+      linked_table: Joi.string().max(100).optional().allow(null, ''),
+      linked_table_key: Joi.string().max(100).optional().allow(null, '')
+    })
+  }
+};
+
+const deleteEmailTemplate = {
+  path: '/email-templates/:uuid',
+  verb: 'DELETE',
+  auditMessage: 'deleting email template',
+  handler: { controller: emailTemplateController, method: 'deleteTemplate' },
+  middleware: { requirePermission: ['admin.email_templates.update'] },
+  request: {
+    params: Joi.object({
+      uuid: Joi.string().uuid().required()
+    })
+  }
+};
+
+const previewEmailTemplate = {
+  path: '/email-templates/preview',
+  verb: 'POST',
+  auditMessage: 'previewing email template',
+  handler: { controller: emailTemplateController, method: 'previewTemplate' },
+  middleware: { requirePermission: ['admin.email_templates.view'] },
+  request: {
+    body: Joi.object({
+      subject: Joi.string().required(),
+      html_body: Joi.string().required(),
+      preview_variables: Joi.object().unknown(true).optional()
+    })
+  }
+};
+
+const testEmailTemplate = {
+  path: '/email-templates/:uuid/test',
+  verb: 'POST',
+  auditMessage: 'testing email template',
+  handler: { controller: emailTemplateController, method: 'testTemplate' },
+  middleware: { requirePermission: ['admin.email_templates.view'] },
+  request: {
+    params: Joi.object({
+      uuid: Joi.string().uuid().required()
+    }),
+    body: Joi.object({
+      recipient_email: Joi.string().email().required(),
+      test_variables: Joi.object().unknown(true).optional()
+    })
+  }
+};
+
+const getEmailLogs = {
+  path: '/email-logs',
+  verb: 'GET',
+  auditMessage: 'getting email logs',
+  handler: { controller: emailTemplateController, method: 'getEmailLogs' },
+  middleware: { requirePermission: ['admin.email_templates.view'] }
+};
+
+const getEmailTemplateTableColumns = {
+  path: '/email-templates/table-columns',
+  verb: 'GET',
+  auditMessage: 'getting table columns for email template',
+  handler: { controller: emailTemplateController, method: 'getTableColumns' },
+  middleware: { requirePermission: ['admin.email_templates.view'] },
+  request: {
+    query: Joi.object({
+      table: Joi.string().required()
+    })
+  }
+};
+
+const WorkflowController = require('./workflowController');
+const workflowController = new WorkflowController();
+
+const getWorkflows = {
+  path: '/workflows',
+  verb: 'GET',
+  auditMessage: 'getting workflows',
+  handler: { controller: workflowController, method: 'getWorkflows' },
+  middleware: { requirePermission: ['admin.workflows.view'] } // Reusing a standard admin permission pattern
+};
+
+const getWorkflowDetails = {
+  path: '/workflows/:id',
+  verb: 'GET',
+  auditMessage: 'getting workflow details',
+  handler: { controller: workflowController, method: 'getWorkflowDetails' },
+  middleware: { requirePermission: ['admin.workflows.view'] },
+  request: {
+    params: Joi.object({ id: Joi.string().uuid().required() })
+  }
+};
+
+const createWorkflow = {
+  path: '/workflows',
+  verb: 'POST',
+  auditMessage: 'creating workflow',
+  handler: { controller: workflowController, method: 'createWorkflow' },
+  middleware: { requirePermission: ['admin.workflows.edit'] },
+  request: {
+    body: Joi.object({
+      trigger_event_key: Joi.string().required(),
+      name: Joi.string().required(),
+      description: Joi.string().optional().allow(null, ''),
+      active: Joi.boolean().optional(),
+      conditions: Joi.array().optional(),
+      actions: Joi.array().optional()
+    })
+  }
+};
+
+const updateWorkflow = {
+  path: '/workflows/:id',
+  verb: 'PUT',
+  auditMessage: 'updating workflow',
+  handler: { controller: workflowController, method: 'updateWorkflow' },
+  middleware: { requirePermission: ['admin.workflows.edit'] },
+  request: {
+    params: Joi.object({ id: Joi.string().uuid().required() }),
+    body: Joi.object({
+      trigger_event_key: Joi.string().required(),
+      name: Joi.string().required(),
+      description: Joi.string().optional().allow(null, ''),
+      active: Joi.boolean().optional(),
+      conditions: Joi.array().optional(),
+      actions: Joi.array().optional()
+    })
+  }
+};
+
+const deleteWorkflow = {
+  path: '/workflows/:id',
+  verb: 'DELETE',
+  auditMessage: 'deleting workflow',
+  handler: { controller: workflowController, method: 'deleteWorkflow' },
+  middleware: { requirePermission: ['admin.workflows.edit'] },
+  request: {
+    params: Joi.object({ id: Joi.string().uuid().required() })
+  }
+};
+
+const getSystemEvents = {
+  path: '/system-events',
+  verb: 'GET',
+  auditMessage: 'getting system events',
+  handler: { controller: workflowController, method: 'getSystemEvents' },
+  middleware: { requirePermission: ['admin.workflows.view'] }
+};
+
+const createSystemEvent = {
+  path: '/system-events',
+  verb: 'POST',
+  auditMessage: 'creating system event',
+  handler: { controller: workflowController, method: 'createSystemEvent' },
+  middleware: { requirePermission: ['admin.workflows.edit'] },
+  request: {
+    body: Joi.object({
+      event_key: Joi.string().required(),
+      name: Joi.string().required(),
+      description: Joi.string().optional().allow(null, ''),
+      payload_schema: Joi.any().optional(),
+      active: Joi.boolean().optional()
+    })
+  }
+};
+
+const updateSystemEvent = {
+  path: '/system-events/:event_key',
+  verb: 'PUT',
+  auditMessage: 'updating system event',
+  handler: { controller: workflowController, method: 'updateSystemEvent' },
+  middleware: { requirePermission: ['admin.workflows.edit'] },
+  request: {
+    params: Joi.object({ event_key: Joi.string().required() }),
+    body: Joi.object({
+      name: Joi.string().required(),
+      description: Joi.string().optional().allow(null, ''),
+      payload_schema: Joi.any().optional(),
+      active: Joi.boolean().optional()
+    })
+  }
+};
+
+const deleteSystemEvent = {
+  path: '/system-events/:event_key',
+  verb: 'DELETE',
+  auditMessage: 'deleting system event',
+  handler: { controller: workflowController, method: 'deleteSystemEvent' },
+  middleware: { requirePermission: ['admin.workflows.edit'] },
+  request: {
+    params: Joi.object({ event_key: Joi.string().required() })
+  }
+};
+
+// ─── Dynamic Variables ────────────────────────────────────────────────────────
+
+const getDynamicVariables = {
+  path: '/dynamic-variables',
+  verb: 'GET',
+  auditMessage: 'getting dynamic variables',
+  handler: { controller: dynamicVariablesController, method: 'getAll' },
+  middleware: { requirePermission: ['admin.dynamic_variables.view'] }
+};
+
+const createDynamicVariable = {
+  path: '/dynamic-variables',
+  verb: 'POST',
+  auditMessage: 'creating dynamic variable',
+  handler: { controller: dynamicVariablesController, method: 'create' },
+  middleware: { requirePermission: ['admin.dynamic_variables.create'] },
+  request: {
+    body: Joi.object({
+      variable_name: Joi.string().required(),
+      label: Joi.string().required(),
+      description: Joi.string().optional().allow(null, ''),
+      value: Joi.string().optional().allow(null, '')
+    })
+  }
+};
+
+const updateDynamicVariable = {
+  path: '/dynamic-variables/:uuid',
+  verb: 'PUT',
+  auditMessage: 'updating dynamic variable',
+  handler: { controller: dynamicVariablesController, method: 'update' },
+  middleware: { requirePermission: ['admin.dynamic_variables.update'] },
+  request: {
+    params: Joi.object({
+      uuid: Joi.string().uuid().required()
+    }),
+    body: Joi.object({
+      variable_name: Joi.string().optional(),
+      label: Joi.string().optional(),
+      description: Joi.string().optional().allow(null, ''),
+      value: Joi.string().optional().allow(null, '')
+    })
+  }
+};
+
+const deleteDynamicVariable = {
+  path: '/dynamic-variables/:uuid',
+  verb: 'DELETE',
+  auditMessage: 'deleting dynamic variable',
+  handler: { controller: dynamicVariablesController, method: 'delete' },
+  middleware: { requirePermission: ['admin.dynamic_variables.delete'] },
+  request: {
+    params: Joi.object({
+      uuid: Joi.string().uuid().required()
+    })
+  }
+};
+
 const AdminApi = {
   name: 'Admin',
   url: '/api/admin',
@@ -288,7 +625,29 @@ const AdminApi = {
     getRolePermissions,
     updateRolePermissions,
     getPermissions,
-    executeSql
+    executeSql,
+    getEmailTemplates,
+    getEmailTemplateTableColumns,
+    getEmailTemplate,
+    createEmailTemplate,
+    updateEmailTemplate,
+    deleteEmailTemplate,
+    previewEmailTemplate,
+    testEmailTemplate,
+    getEmailLogs,
+    getWorkflows,
+    getWorkflowDetails,
+    createWorkflow,
+    updateWorkflow,
+    deleteWorkflow,
+    getSystemEvents,
+    createSystemEvent,
+    updateSystemEvent,
+    deleteSystemEvent,
+    getDynamicVariables,
+    createDynamicVariable,
+    updateDynamicVariable,
+    deleteDynamicVariable
   ]
 };
 

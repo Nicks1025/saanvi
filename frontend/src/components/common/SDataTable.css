@@ -56,3 +56,21 @@
     gap: 0.5rem !important;
   }
 }
+
+/* Action Icon Styling */
+.sdt-action-icon {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.sdt-action-icon:hover {
+  opacity: 0.7;
+}
+.sdt-action-view {
+  color: var(--text-muted, #888);
+}
+.sdt-action-edit {
+  color: var(--primary, #007bff);
+}
+.sdt-action-delete {
+  color: var(--danger, #dc3545);
+}

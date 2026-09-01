@@ -1,0 +1,7 @@
+node_modules/
+.env
+.DS_Store
+
+# .NET Core
+service/Saanvi.Worker/bin/
+service/Saanvi.Worker/obj/

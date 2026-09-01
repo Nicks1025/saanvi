@@ -3,6 +3,8 @@ const RbacService = require('../rbac/rbacService');
 const crypto = require('crypto');
 const SignupRepository = require('../signup/signupRepository');
 const SignupService = require('../signup/signupService');
+const { queueEmail } = require('../../services/emailService');
+const { encrypt } = require('../../services/cryptoService');
 
 class AdminService extends BaseService {
   constructor(adminRepository) {
@@ -80,7 +82,23 @@ class AdminService extends BaseService {
     const signupService = new SignupService(signupRepo);
     await signupService.processSignup({ ...userData, password: temporaryPassword });
 
-    return { message: 'User created successfully.', temporaryPassword };
+    // After successful DB commit, directly queue the welcome email via BullMQ.
+    // No variables are hardcoded here — all user data (first_name, email, etc.) 
+    // is resolved at send time from the linked table configured on the template.
+    // Only the temporary password is passed as an encrypted variable since it is not in any DB table.
+    try {
+      await queueEmail(
+        'USER_ACCOUNT_CREATED',
+        userData.email,
+        {},
+        { password: encrypt(temporaryPassword) }
+      );
+    } catch (emailErr) {
+      // Don't fail the whole request if email queueing fails — user is already created
+      console.error('[AdminService] Failed to queue welcome email:', emailErr.message);
+    }
+
+    return { message: 'User created successfully. A welcome email has been queued for delivery.' };
   }
 
   async getAllRoles(searchQuery) {

@@ -243,12 +243,9 @@ export const UnoGameContainer = () => {
           game.executeLeaveRoom();
           blocker.proceed && blocker.proceed();
         }}
-        variant="danger"
-      >
-        <p style={{ margin: 0, color: 'var(--text-b)' }}>
-          {t('games.uno.leave_game_confirm', 'Are you sure you want to leave the active game? You will forfeit your spot and the game will continue without you.')}
-        </p>
-      </SModal>
+        confirmColor="danger"
+        text={t('games.uno.leave_game_confirm', 'Are you sure you want to leave the active game? You will forfeit your spot and the game will continue without you.')}
+      />
     </div>
   );
 };

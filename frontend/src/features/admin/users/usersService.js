@@ -3,7 +3,8 @@ import axios from '../../../services/axios.client';
 export const getUsers = async (search = '', showArchived = false, page = 1, limit = 10) => {
   const queryParams = new URLSearchParams();
   if (search) queryParams.append('search', search);
-  if (showArchived) queryParams.append('archived', 'true');
+  if (showArchived === true || showArchived === 'true') queryParams.append('archived', 'true');
+  else if (showArchived === 'all') queryParams.append('archived', 'all');
   queryParams.append('page', page);
   queryParams.append('limit', limit);
   
@@ -48,6 +49,11 @@ export const deleteUser = async (uuid) => {
 
 export const createUser = async (payload) => {
   const response = await axios.post('/api/admin/users', payload);
+  return response.data;
+};
+
+export const getFormConfig = async (context = 'admin_create') => {
+  const response = await axios.get(`/api/public/users/form-config?context=${context}`);
   return response.data;
 };
 

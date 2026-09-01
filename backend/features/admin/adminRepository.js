@@ -19,8 +19,10 @@ class AdminRepository extends BaseRepository {
 
       builder.leftJoin('user_details', 'ud', 'u.uuid = ud.user_uuid');
 
-      if (showArchived) {
+      if (showArchived === 'true' || showArchived === true) {
         builder.where('u.archived_at', 'not_is', null);
+      } else if (showArchived === 'all') {
+        // show both active and archived
       } else {
         builder.where('u.archived_at', 'is', null);
       }
