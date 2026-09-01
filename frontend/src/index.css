@@ -357,6 +357,16 @@ code {
 .s-button.btn-primary:hover {
   opacity: 0.9;
 }
+
+.s-button.btn-danger {
+  background: var(--error, #ef4444);
+  color: white;
+  border-color: var(--error, #ef4444);
+}
+
+.s-button.btn-danger:hover {
+  opacity: 0.9;
+}
 input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;

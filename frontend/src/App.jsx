@@ -23,6 +23,17 @@ import RolesPage from './pages/admin/roles';
 import RoleDetailsPage from './pages/admin/roles/details';
 import SystemHealthPage from './pages/admin/health';
 import SqlEditorPage from './pages/admin/sql-editor';
+import EmailTemplatesPage from './pages/admin/email-templates';
+import CreateEmailTemplatePage from './pages/admin/email-templates/create';
+import ViewEmailTemplatePage from './pages/admin/email-templates/view';
+import EditEmailTemplatePage from './pages/admin/email-templates/edit';
+import DynamicVariablesPage from './pages/admin/dynamic-variables';
+import WorkflowsPage from './pages/admin/workflows';
+import WorkflowCreatePage from './pages/admin/workflows/create';
+import WorkflowEditPage from './pages/admin/workflows/edit';
+import WorkflowViewPage from './pages/admin/workflows/view';
+import SystemEventsPage from './pages/admin/system-events';
+
 import ChatPage from './pages/chat';
 
 const AppRoot = () => {
@@ -57,6 +68,17 @@ const router = createBrowserRouter([
       { path: "admin/roles/:uuid", element: <RoleDetailsPage /> },
       { path: "admin/health", element: <SystemHealthPage /> },
       { path: "admin/sql-editor", element: <SqlEditorPage /> },
+      { path: "admin/email-templates", element: <EmailTemplatesPage /> },
+      { path: "admin/email-templates/create", element: <CreateEmailTemplatePage /> },
+      { path: "admin/email-templates/:uuid/view", element: <ViewEmailTemplatePage /> },
+      { path: "admin/email-templates/:uuid/edit", element: <EditEmailTemplatePage /> },
+      { path: "admin/dynamic-variables", element: <DynamicVariablesPage /> },
+      { path: "admin/workflows", element: <WorkflowsPage /> },
+      { path: "admin/workflow/create", element: <WorkflowCreatePage /> },
+      { path: "admin/workflow/:id/edit", element: <WorkflowEditPage /> },
+      { path: "admin/workflow/:id/view", element: <WorkflowViewPage /> },
+      { path: "admin/system-events", element: <SystemEventsPage /> },
+
       { path: "games/word-search", element: <WordSearchPage /> },
       { path: "games/word-search/play", element: <WordSearchPlayPage /> },
       { path: "games/uno", element: <UnoGamePage /> },

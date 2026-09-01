@@ -75,6 +75,7 @@
       "start_game": "Start Game",
       "leave_room": "Leave Room",
       "leave_game": "Leave Game",
+      "leave_game_confirm": "Are you sure you want to leave the active game? You will forfeit your spot and the game will continue without you.",
       "game_over": "Game Over!",
       "winner": "Winner!",
       "play_again": "Play Again",
@@ -258,7 +259,18 @@
     "deleteUserConfirm": "Are you sure you want to PERMANENTLY delete user {{email}}? This cannot be undone.",
     "archiveUserConfirm": "Are you sure you want to archive user {{email}}?",
     "restoreUserConfirm": "Are you sure you want to restore user {{email}}?",
-    "deleteRoleConfirm": "Are you sure you want to PERMANENTLY delete role \"{{roleName}}\"? This cannot be undone."
+    "deleteRoleConfirm": "Are you sure you want to PERMANENTLY delete role \"{{roleName}}\"? This cannot be undone.",
+    "deleteEmailTemplateConfirm": "Are you sure you want to delete this email template? This action cannot be undone.",
+    "deleteDynamicVariableConfirm": "Are you sure you want to delete this dynamic variable? This action may fail if it is currently in use.",
+    "deleteWorkflowConfirm": "Are you sure you want to delete this workflow? This action cannot be undone.",
+    "deleteTriggerConfirm": "Are you sure you want to delete trigger {{triggerName}}? This action cannot be undone.",
+    "deleteUserFieldConfirm": "Are you sure you want to PERMANENTLY delete the {{fieldName}} field? This will irreversibly remove all stored values for this field across the entire database.",
+    "deleteUserFieldTitle": "Delete User Field",
+    "deleteUserFieldConfirmBtn": "Delete Field",
+    "confirmDeletionTitle": "Confirm Deletion",
+    "deleteEmailTemplateTitle": "Delete Email Template",
+    "deleteWorkflowTitle": "Delete Workflow",
+    "deleteTriggerTitle": "Delete Trigger"
   },
   "chat": {
     "unnamed": "Unnamed",
@@ -312,6 +324,7 @@
     "sendImages_plural": "Send {{count}} images"
   },
   "common": {
+    "confirm": "Confirm",
     "creating": "Creating...",
     "save": "Save",
     "loading": "Loading...",

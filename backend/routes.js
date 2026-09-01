@@ -2,6 +2,7 @@ const loginApi = require('./features/login/loginApi');
 const signupApi = require('./features/signup/signupApi');
 const userApi = require('./features/user/userApi');
 const adminApi = require('./features/admin/adminApi');
+const UserFieldsApi = require('./features/admin/userFieldsApi');
 const wordSearchApi = require('./features/wordSearch/wordSearchApi');
 const mfaApi = require('./features/mfa/mfaApi');
 const healthApi = require('./features/health/healthApi');
@@ -13,7 +14,7 @@ const unoApi = require('./features/uno/unoApi');
  * @param {import('express').Application} app 
  */
 module.exports = function(app) {
-  const apis = [loginApi, signupApi, userApi, adminApi, wordSearchApi, mfaApi, healthApi, chatApi, unoApi];
+  const apis = [loginApi, signupApi, userApi, UserFieldsApi, adminApi, wordSearchApi, mfaApi, healthApi, chatApi, unoApi];
 
   // Declarative ApiSchema Routes
   for (const api of apis) {

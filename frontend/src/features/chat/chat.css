@@ -1,3 +1,14 @@
+:root {
+  --background-color: var(--code-bg);
+  --surface-color: var(--bg);
+  --text-primary: var(--text-h);
+  --text-secondary: var(--text);
+  --border-color: var(--border);
+  --hover-color: var(--social-bg);
+  --primary-color: var(--accent);
+  --primary-hover: var(--accent);
+}
+
 .chat-container {
   display: flex;
   overflow: hidden;

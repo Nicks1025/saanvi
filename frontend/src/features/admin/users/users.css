@@ -68,3 +68,12 @@
   color: var(--accent);
   border-bottom-color: var(--accent);
 }
+
+.status-dropdown-wrapper .s-dropdown-container {
+  margin-bottom: 0 !important;
+}
+
+.status-dropdown-wrapper .s-dropdown-select {
+  padding-top: 0.6rem !important;
+  padding-bottom: 0.6rem !important;
+}

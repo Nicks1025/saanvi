@@ -78,34 +78,6 @@ const RolesFeature = () => {
       sortable: true,
       render: (item) => item.is_active ? 'Active' : 'Inactive'
     },
-    { 
-      key: 'actions', 
-      label: t('admin.actions', 'Actions'),
-      render: (item) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          {userPermissions.includes('admin.roles.edit') && (
-            <button 
-              className="manage-btn" 
-              onClick={() => handleEdit(item)}
-              title={t('admin.editRole', 'Edit Role')}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer' }}
-            >
-              <Pencil size={18} />
-            </button>
-          )}
-          {userPermissions.includes('admin.roles.delete') && (
-            <button 
-              className="manage-btn" 
-              onClick={() => handleDelete(item)}
-              title={t('admin.deleteRole', 'Delete Role')}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444' }}
-            >
-              <Trash2 size={18} />
-            </button>
-          )}
-        </div>
-      )
-    }
   ];
 
   return (
@@ -118,6 +90,16 @@ const RolesFeature = () => {
         onSearch={(query) => fetchRoles(query)}
         searchPlaceholder={t('admin.searchRoles', 'Search roles...')}
         loading={loading}
+        actions={['edit', 'delete']}
+        onAction={(action, row) => {
+          if (action === 'edit') handleEdit(row);
+          if (action === 'delete') handleDelete(row);
+        }}
+        canExecuteAction={(action) => {
+          if (action === 'edit') return userPermissions.includes('admin.roles.edit');
+          if (action === 'delete') return userPermissions.includes('admin.roles.delete');
+          return false;
+        }}
         headerActions={
           userPermissions.includes('admin.roles.create') ? (
             <SButton 
@@ -138,11 +120,9 @@ const RolesFeature = () => {
         onCancel={() => setModalState({ isOpen: false, role: null })}
         isProcessing={isProcessing}
         confirmText={t('common.delete', 'Delete')}
-      >
-        <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
-          {modalState.role && t('admin.deleteRoleConfirm', 'Are you sure you want to PERMANENTLY delete role "{{roleName}}"? This cannot be undone.', { roleName: modalState.role.name })}
-        </p>
-      </SModal>
+        confirmColor="danger"
+        text={modalState.role && t('admin.deleteRoleConfirm', 'Are you sure you want to PERMANENTLY delete role "{{roleName}}"? This cannot be undone.', { roleName: modalState.role.name })}
+      />
     </div>
   );
 };

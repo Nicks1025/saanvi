@@ -38,6 +38,14 @@ app.use('/api/locales', express.static(path.join(__dirname, 'language')));
 const { initRedis, shutdown } = require('./redis/redisClient');
 initRedis();
 
+// Initialize Queue and Worker
+const { initQueue } = require('./services/jobQueueService');
+const { initEmailWorker } = require('./workers/emailWorker');
+const { initOutboxRelay, stopOutboxRelay } = require('./workers/outboxRelay');
+initQueue();
+initEmailWorker();
+initOutboxRelay();
+
 // Health Check Route
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Backend Server is running with valid configuration.' });
@@ -56,6 +64,7 @@ const gracefulShutdown = async (signal) => {
   console.log(`\nReceived ${signal}. Starting graceful shutdown...`);
   
   await shutdown(); // Close Redis connection
+  stopOutboxRelay(); // Stop outbox relay
   
   server.close(() => {
     console.log('HTTP server closed.');

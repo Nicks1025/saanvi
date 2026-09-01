@@ -171,6 +171,7 @@ const MfaSetupFeature = () => {
         onConfirm={handleDisable}
         onCancel={() => setShowDisableModal(false)}
         confirmText="Disable MFA"
+        confirmColor="danger"
       >
         <div style={{ padding: '0 1rem 1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#ef4444', marginBottom: '1rem' }}>

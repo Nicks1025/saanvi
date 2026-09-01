@@ -9,7 +9,7 @@ class AdminController extends BaseController {
   async getUsers(req, res) {
     try {
       const { search, archived, page, limit } = req.query;
-      const isArchived = archived === 'true';
+      const isArchived = archived === 'all' ? 'all' : archived === 'true';
       const pageNum = parseInt(page) || 1;
       const limitNum = parseInt(limit) || 10;
       
@@ -56,7 +56,7 @@ class AdminController extends BaseController {
   async createUser(req, res) {
     try {
       const result = await this.adminService.createUser(req.body);
-      return this.sendSuccess(res, result, 'User created successfully', 201);
+      return this.sendSuccess(res, null, result.message || 'User created successfully', 201);
     } catch (error) {
       if (error.message.includes('already exists') || error.message.includes('not found')) {
         return this.sendError(res, error.message, 400);

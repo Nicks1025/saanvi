@@ -46,21 +46,18 @@ class SignupRepository extends BaseRepository {
    * Inserts a new row into the `user_details` table.
    * Accepts an optional Knex transaction object (trx) for atomic operations.
    */
-  async createUserDetails({ uuid, userUuid, firstName, lastName, displayName, phoneNumber, dateOfBirth, gender }, trx = null) {
+  async createUserDetails(detailsData, trx = null) {
     const db = trx || this.queryHelper.db;
+    
+    // Ensure essential tracking fields are set
+    const dataToInsert = {
+      ...detailsData,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
     await db('user_details')
-      .insert({
-        uuid,
-        user_uuid: userUuid,
-        first_name: firstName || null,
-        last_name: lastName || null,
-        display_name: displayName || null,
-        phone_number: phoneNumber || null,
-        date_of_birth: dateOfBirth || null,
-        gender: gender || null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
+      .insert(dataToInsert)
       .returning('*');
     return true;
   }
