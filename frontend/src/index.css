@@ -367,6 +367,17 @@ code {
 .s-button.btn-danger:hover {
   opacity: 0.9;
 }
+
+.s-button.btn-secondary {
+  background: var(--bg);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.s-button.btn-secondary:hover {
+  background: var(--code-bg);
+}
+
 input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;
@@ -409,4 +420,52 @@ input[type="checkbox"]:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   background-color: var(--code-bg);
+}
+
+/* --- Utility Classes --- */
+.flex-shrink-0 { flex-shrink: 0 !important; }
+.w-full { width: 100% !important; }
+.max-w-xs { max-width: 300px !important; }
+.mt-auto { margin-top: auto !important; }
+.flex-col { flex-direction: column !important; }
+.items-center { align-items: center !important; }
+.items-stretch { align-items: stretch !important; }
+.justify-center { justify-content: center !important; }
+.gap-1 { gap: 0.25rem !important; }
+.gap-2 { gap: 0.5rem !important; }
+.gap-3 { gap: 0.75rem !important; }
+.gap-4 { gap: 1rem !important; }
+.mt-4 { margin-top: 1rem !important; }
+.pt-4 { padding-top: 1rem !important; }
+.p-1 { padding: 0.25rem !important; }
+.p-2 { padding: 0.5rem !important; }
+.p-3 { padding: 0.75rem !important; }
+.min-w-0 { min-width: 0 !important; }
+.min-w-unset { min-width: unset !important; }
+.text-primary { color: var(--accent) !important; }
+.text-inherit { color: inherit !important; }
+
+/* Custom button additions for SButton colors */
+.s-button.btn-ghost {
+  background: transparent;
+  color: var(--text);
+  border-color: transparent;
+}
+.s-button.btn-ghost:hover {
+  background: var(--code-bg);
+}
+
+.s-button.btn-sidebar {
+  background: transparent;
+  color: var(--text-h);
+  border: none;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  justify-content: flex-start;
+  text-align: left;
+  width: 100%;
+  padding: 1rem 1.5rem;
+}
+.s-button.btn-sidebar:hover {
+  background: var(--code-bg);
 }

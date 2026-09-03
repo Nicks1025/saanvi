@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import socketService from '../../../services/socket.client';
+import socketService from '@/services/socket.client';
 import toast from 'react-hot-toast';
 
 const ICE_SERVERS = {

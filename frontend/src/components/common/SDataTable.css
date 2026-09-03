@@ -74,3 +74,17 @@
 .sdt-action-delete {
   color: var(--danger, #dc3545);
 }
+
+.manage-btn {
+  background-color: transparent;
+  color: var(--accent);
+  border: none;
+  padding: 0.5rem;
+  border-radius: var(--radius-sm, 4px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.manage-btn:hover {
+  background-color: var(--surface-hover, rgba(0, 0, 0, 0.05));
+}

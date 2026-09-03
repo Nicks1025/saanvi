@@ -12,7 +12,7 @@ i18n
     supportedLngs: ['en', 'hi'],
     load: 'languageOnly',
     backend: {
-      loadPath: `${import.meta.env.VITE_API_BASE_URL || ''}/api/locales/{{lng}}.json`,
+      loadPath: `${process.env.NEXT_PUBLIC_API_BASE_URL || ''}/api/locales/{{lng}}.json`,
     },
     interpolation: {
       escapeValue: false, // react already safes from xss

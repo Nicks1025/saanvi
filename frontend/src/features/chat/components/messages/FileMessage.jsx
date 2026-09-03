@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { FileText, Download, File, FileSpreadsheet, FileCode } from 'lucide-react';
 import { formatFileSize } from '../../attachmentTypes';
-import SButton from '../../../../components/common/SButton';
+import SButton from '@/components/common/SButton';
 import { downloadAttachment } from '../../attachmentUtils';
-import { useAttachment, ATTACHMENT_STATES } from '../../hooks/useAttachment';
+import { useAttachment, ATTACHMENT_STATES } from "../../hooks/useAttachment";
 import { CircularProgress } from '../common/CircularProgress';
 
 /** Pick an icon based on MIME type / extension */
@@ -62,7 +62,7 @@ const FileMessage = ({ messageUuid, attachment, isSender }) => {
                 aria-label={isDownloaded ? `Save ${displayName}` : `Download ${displayName}`}
                 color="ghost"
                 size="small"
-                style={{ padding: '4px', minWidth: 'unset', color: 'inherit' }}
+                className="p-1 min-w-unset text-inherit"
               >
                 {isDownloaded ? <FileText size={18} /> : <Download size={18} />}
               </SButton>

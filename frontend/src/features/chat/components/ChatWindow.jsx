@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../../../store/AuthContext';
+import { useAuth } from '@/store/AuthContext';
 import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
 import InlineWallpaperCropper from './InlineWallpaperCropper';
-import SButton from '../../../components/common/SButton';
+import SButton from '@/components/common/SButton';
 import { Users, MoreVertical, MessageSquare, ArrowLeft } from 'lucide-react';
 import { chatService } from '../chat.service';
 import { toast } from 'react-hot-toast';
@@ -180,7 +180,7 @@ const ChatWindow = ({ chatRealtime }) => {
             <SButton
               color="ghost"
               size="s"
-              icon={<MoreVertical size={20} />}
+              icon="more"
               onClick={() => setShowMenu(!showMenu)}
               label={t('chat.moreOptions', 'More options')}
               title={t('chat.moreOptions', 'More options')}

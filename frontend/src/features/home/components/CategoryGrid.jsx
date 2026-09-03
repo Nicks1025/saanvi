@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { 
   Gamepad2, 
   Calculator, 
@@ -142,7 +142,7 @@ const CategoryGrid = () => {
 
               <div className="cat-card-footer">
                 {cat.primaryAction.to ? (
-                  <Link to={cat.primaryAction.to} className="cat-action-btn">
+                  <Link href={cat.primaryAction.to} className="cat-action-btn">
                     <span>{cat.primaryAction.label}</span>
                     <ArrowRight size={16} />
                   </Link>

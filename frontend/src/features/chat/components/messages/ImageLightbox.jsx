@@ -1,9 +1,9 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { X, ChevronLeft, ChevronRight, Download } from 'lucide-react';
-import SButton from '../../../../components/common/SButton';
+import SButton from '@/components/common/SButton';
 import { downloadAttachment } from '../../attachmentUtils';
-import { useAttachment, ATTACHMENT_STATES } from '../../hooks/useAttachment';
+import { useAttachment, ATTACHMENT_STATES } from "../../hooks/useAttachment";
 import { CircularProgress } from '../common/CircularProgress';
 
 /**

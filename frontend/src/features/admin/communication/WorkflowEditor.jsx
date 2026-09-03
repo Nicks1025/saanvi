@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useRouter, useParams } from 'next/navigation';
 import { getSystemEvents, createWorkflow, getEmailTemplates, updateWorkflow, getWorkflowDetails } from './communicationService';
 import toast from 'react-hot-toast';
 import { Workflow, Save, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import SButton from '../../../components/common/SButton';
+import SButton from '@/components/common/SButton';
 
 const flattenSchema = (schema, prefix = '') => {
   let fields = [];
@@ -27,7 +27,7 @@ const flattenSchema = (schema, prefix = '') => {
 
 const WorkflowEditor = ({ mode = 'create' }) => { // modes: 'create', 'edit', 'view'
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const navigate = useRouter();
   const { id } = useParams();
 
   const isViewing = mode === 'view';
@@ -77,7 +77,7 @@ const WorkflowEditor = ({ mode = 'create' }) => { // modes: 'create', 'edit', 'v
         }
       } catch (err) {
         toast.error('Failed to load workflow configuration data');
-        navigate('/admin/workflows');
+        navigate.push('/admin/workflows');
       } finally {
         setLoading(false);
       }
@@ -95,7 +95,7 @@ const WorkflowEditor = ({ mode = 'create' }) => { // modes: 'create', 'edit', 'v
         await createWorkflow(newWorkflow);
         toast.success('Workflow created successfully');
       }
-      navigate('/admin/workflows');
+      navigate.push('/admin/workflows');
     } catch (err) {
       toast.error(err?.response?.data?.message || err?.message || (isEditing ? 'Failed to update workflow' : 'Failed to create workflow'));
     } finally {
@@ -104,7 +104,7 @@ const WorkflowEditor = ({ mode = 'create' }) => { // modes: 'create', 'edit', 'v
   };
 
   const handleCancel = () => {
-    navigate('/admin/workflows');
+    navigate.push('/admin/workflows');
   };
 
   const eventFields = useMemo(() => {
@@ -237,15 +237,15 @@ const WorkflowEditor = ({ mode = 'create' }) => { // modes: 'create', 'edit', 'v
         </div>
         
         {/* Actions Footer */}
-        <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)', display: 'flex', gap: '1rem', justifyContent: 'flex-start' }}>
+        <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)', display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+          <SButton onClick={handleCancel} size="m" color={isViewing ? "primary" : "danger"} icon={isViewing ? undefined : <X size={16} />}>
+            {isViewing ? 'Back' : 'Cancel'}
+          </SButton>
           {!isViewing && (
-            <SButton onClick={handleSave} size="m" icon={<Save size={16} />} loading={isSaving} disabled={isSaving}>
+            <SButton onClick={handleSave} size="m" icon="save" loading={isSaving} disabled={isSaving}>
               {isEditing ? 'Update Workflow' : 'Save Workflow'}
             </SButton>
           )}
-          <SButton onClick={handleCancel} size="m" color={isViewing ? "primary" : "secondary"} icon={isViewing ? undefined : <X size={16} />}>
-            {isViewing ? 'Back' : 'Cancel'}
-          </SButton>
         </div>
 
       </div>

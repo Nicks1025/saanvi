@@ -1,8 +1,8 @@
 import React, { useRef, useEffect } from 'react';
-import SButton from '../../../components/common/SButton';
+import SButton from '@/components/common/SButton';
 import { ATTACHMENT_CATEGORIES } from '../attachmentTypes';
 
-const MAX_IMAGES = parseInt(import.meta.env.VITE_CHAT_MAX_IMAGES, 10) || 5;
+const MAX_IMAGES = parseInt(process.env.NEXT_PUBLIC_CHAT_MAX_IMAGES, 10) || 5;
 
 /**
  * AttachmentPopover

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import SModal from '../../../../components/common/SModal';
-import STextField from '../../../../components/common/STextField';
-import SDropdown from '../../../../components/common/SDropdown';
-import SCheckbox from '../../../../components/common/SCheckbox';
-import SButton from '../../../../components/common/SButton';
-import axios from '../../../../services/axios.client';
+import SModal from '@/components/common/SModal';
+import STextField from '@/components/common/STextField';
+import SDropdown from '@/components/common/SDropdown';
+import SCheckbox from '@/components/common/SCheckbox';
+import SButton from '@/components/common/SButton';
+import axios from '@/services/axios.client';
 import toast from 'react-hot-toast';
 
 const DynamicVariableModal = ({ isOpen, onClose, variable, mode = 'add', onSuccess }) => {

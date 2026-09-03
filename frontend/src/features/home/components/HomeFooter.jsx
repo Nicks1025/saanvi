@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../../../store/AuthContext';
+import Link from 'next/link';
+import { useAuth } from '@/store/AuthContext';
 import { 
   Gamepad2, 
   Calculator, 
@@ -49,12 +49,12 @@ const HomeFooter = () => {
             </p>
           </div>
           <div className="callout-right">
-            <Link to="/games/uno" className="callout-btn-primary">
+            <Link href="/games/uno" className="callout-btn-primary">
               <Gamepad2 size={20} />
               <span>Launch UNO Room</span>
             </Link>
             {!isAuthenticated && (
-              <Link to="/signup" className="callout-btn-secondary">
+              <Link href="/signup" className="callout-btn-secondary">
                 <span>Create Free Account</span>
               </Link>
             )}
@@ -87,12 +87,12 @@ const HomeFooter = () => {
             </h4>
             <ul className="footer-links-list">
               <li>
-                <Link to="/games/uno" className="footer-link">
+                <Link href="/games/uno" className="footer-link">
                   Multiplayer UNO (Cards)
                 </Link>
               </li>
               <li>
-                <Link to="/games/word-search" className="footer-link">
+                <Link href="/games/word-search" className="footer-link">
                   Word Search Puzzles
                 </Link>
               </li>
@@ -164,12 +164,12 @@ const HomeFooter = () => {
               {isAuthenticated ? (
                 <>
                   <li>
-                    <Link to="/dashboard" className="footer-link">
+                    <Link href="/dashboard" className="footer-link">
                       User Dashboard
                     </Link>
                   </li>
                   <li>
-                    <Link to="/settings" className="footer-link">
+                    <Link href="/settings" className="footer-link">
                       Profile Settings
                     </Link>
                   </li>
@@ -177,12 +177,12 @@ const HomeFooter = () => {
               ) : (
                 <>
                   <li>
-                    <Link to="/login" className="footer-link">
+                    <Link href="/login" className="footer-link">
                       Account Sign In
                     </Link>
                   </li>
                   <li>
-                    <Link to="/signup" className="footer-link">
+                    <Link href="/signup" className="footer-link">
                       Register Account
                     </Link>
                   </li>

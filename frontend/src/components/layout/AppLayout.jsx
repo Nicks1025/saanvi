@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { usePathname } from 'next/navigation';
 import AppHeader from './AppHeader';
 import AppSidebar from './AppSidebar';
 import AppFooter from './AppFooter';
@@ -17,7 +17,8 @@ const isMobileNow = () => {
 };
 
 const AppLayout = ({ children, noHeader = false }) => {
-  const location = useLocation();
+  const pathname = usePathname();
+  const location = { pathname, search: typeof window !== "undefined" ? window.location.search : "" };
   const isUnoGame = location.pathname.startsWith('/games/uno');
 
   const [isSidebarOpen, setSidebarOpen] = useState(() => {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import SDataTable from '../../../components/common/SDataTable';
+import SDataTable from '@/components/common/SDataTable';
 import { getSystemEvents } from './communicationService';
 import { Activity } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -77,9 +77,9 @@ const SystemEventsFeature = () => {
     <div className="page-container">
       <SDataTable
         title={
-          <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-h)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-h)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Activity size={24} color="var(--accent)" /> System Events Catalog
-          </h1>
+          </div>
         }
         data={events}
         columns={columns}

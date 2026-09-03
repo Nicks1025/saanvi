@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw } from 'lucide-react';
-import SButton from '../../../components/common/SButton';
+import SButton from '@/components/common/SButton';
 import './SystemHealthFeature.css';
 import { toast } from 'react-hot-toast';
 import healthService from './healthService';
 import { useTranslation } from 'react-i18next';
 
 // Initialize when the app loads, persist across page reloads in the same session
-let appStartTime = sessionStorage.getItem('app_start_time');
+let appStartTime = typeof window !== 'undefined' ? sessionStorage.getItem('app_start_time') : null;
 if (!appStartTime) {
   appStartTime = Date.now();
-  sessionStorage.setItem('app_start_time', appStartTime.toString());
+  if (typeof window !== 'undefined') sessionStorage.setItem('app_start_time', appStartTime.toString());
 } else {
   appStartTime = parseInt(appStartTime, 10);
 }
@@ -81,7 +81,7 @@ const SystemHealthFeature = () => {
       <div className="health-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <h2 style={{ margin: 0 }}>{t('admin.health.title', 'System Health')}</h2>
-          <SButton size="m" color="primary" onClick={fetchHealth} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <SButton size="m" color="primary" onClick={fetchHealth} disabled={loading}>
             <RefreshCw size={16} className={loading ? 'spinning-icon' : ''} />
             <span className="health-refresh-text">{loading ? t('common.refreshing', 'Refreshing...') : t('common.refresh', 'Refresh')}</span>
           </SButton>

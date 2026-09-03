@@ -1,4 +1,4 @@
-import axios from '../../../services/axios.client';
+import axios from '@/services/axios.client';
 
 export const getEmailTemplates = async () => {
   const response = await axios.get('/api/admin/email-templates');

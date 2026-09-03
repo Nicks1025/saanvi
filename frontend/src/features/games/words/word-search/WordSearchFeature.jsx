@@ -3,16 +3,17 @@ import { wordSearchService } from './wordSearchService';
 import WordSearchGrid from './WordSearchGrid';
 import WordSearchWordList from './WordSearchWordList';
 import WordSearchResult from './WordSearchResult';
-import SModal from '../../../../components/common/SModal';
-import { useSearchParams, useNavigate, useBlocker } from 'react-router-dom';
+import SModal from '@/components/common/SModal';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import './wordSearch.css';
 
 const WordSearchFeature = () => {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const navigate = useRouter();
   const { t } = useTranslation();
-  const difficultyFromUrl = searchParams.get('difficulty') || 'easy';
+  const difficultyFromUrl = searchParams?.get('difficulty') || 'easy';
 
   const [status, setStatus] = useState('loading'); // 'loading', 'ready', 'playing', 'paused', 'completed', 'error'
   const [difficulty, setDifficulty] = useState(difficultyFromUrl);
@@ -24,16 +25,15 @@ const WordSearchFeature = () => {
   const [finalScore, setFinalScore] = useState(0);
   const [showExitModal, setShowExitModal] = useState(false);
 
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      (status === 'playing' || status === 'paused') && currentLocation.pathname !== nextLocation.pathname
-  );
-
+  // Next.js App Router doesn't have a native useBlocker, mock for now
+  const blocker = { state: 'unblocked', proceed: () => {}, reset: () => {} };
+  
+  // Note: route blocking is partially handled by the window beforeunload below.
   useEffect(() => {
     if (blocker.state === 'blocked') {
       setShowExitModal(true);
     }
-  }, [blocker]);
+  }, [blocker.state]);
 
   const handleConfirmExit = async () => {
     setShowExitModal(false);
@@ -50,7 +50,7 @@ const WordSearchFeature = () => {
     if (blocker.state === 'blocked') {
       blocker.proceed();
     } else {
-      navigate('/games/word-search');
+      navigate.push('/games/word-search');
     }
   };
 
@@ -149,7 +149,7 @@ const WordSearchFeature = () => {
       const result = await wordSearchService.completeGame(puzzle.uuid, allFoundWords, timeElapsed);
       setFinalScore(result.score);
       setStatus('completed');
-      setSearchParams({}); // Clear query params on completion
+      navigate.replace(pathname); // Clear query params on completion
     } catch (err) {
       console.error('Completion error', err);
       setErrorMsg('Error submitting score. Please try again.');
@@ -182,7 +182,7 @@ const WordSearchFeature = () => {
       {status === 'error' && (
         <div className="ws-error">
           <p>{errorMsg}</p>
-          <button className="s-button" onClick={() => navigate('/games/word-search')}>{t('games.word_search.return_to_menu')}</button>
+          <button className="s-button" onClick={() => navigate.push('/games/word-search')}>{t('games.word_search.return_to_menu')}</button>
         </div>
       )}
 
@@ -201,7 +201,7 @@ const WordSearchFeature = () => {
               {status === 'paused' && <button className="s-button btn-primary" onClick={() => setStatus('playing')}>{t('games.word_search.resume')}</button>}
               <button className="s-button btn-secondary" onClick={() => {
                 if (status === 'ready') {
-                  navigate('/games/word-search');
+                  navigate.push('/games/word-search');
                 } else {
                   setShowExitModal(true);
                 }
@@ -227,7 +227,7 @@ const WordSearchFeature = () => {
           score={finalScore} 
           timeElapsed={timeElapsed} 
           onPlayAgain={() => {
-            navigate('/games/word-search');
+            navigate.push('/games/word-search');
           }} 
         />
       )}

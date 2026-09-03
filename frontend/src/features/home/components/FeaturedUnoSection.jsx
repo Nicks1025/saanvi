@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { 
   Gamepad2, 
   Users, 
@@ -84,7 +84,7 @@ const FeaturedUnoSection = () => {
 
             {/* Action Buttons */}
             <div className="uno-action-buttons">
-              <Link to="/games/uno" className="uno-play-btn" id="featured-uno-play-btn">
+              <Link href="/games/uno" className="uno-play-btn" id="featured-uno-play-btn">
                 <Gamepad2 size={22} />
                 <span>Play UNO Now</span>
                 <ArrowRight size={20} />

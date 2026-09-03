@@ -1,17 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, usePathname, useRouter } from 'next/navigation';
 import { Mail, Plus, CheckCircle, XCircle } from 'lucide-react';
-import SDataTable from '../../../components/common/SDataTable';
-import SButton from '../../../components/common/SButton';
-import SModal from '../../../components/common/SModal';
+import SDataTable from '@/components/common/SDataTable';
+import SButton from '@/components/common/SButton';
+import SModal from '@/components/common/SModal';
 import { getEmailTemplates, updateEmailTemplate, deleteEmailTemplate } from './communicationService';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 
 const EmailTemplatesFeature = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate = useRouter();
+  const pathname = usePathname();
+  const location = { pathname, search: typeof window !== "undefined" ? window.location.search : "" };
   const params = useParams();
 
   const [templates, setTemplates] = useState([]);
@@ -44,9 +45,9 @@ const EmailTemplatesFeature = () => {
     fetchTemplates();
   }, []);
 
-  const handleCreateNew = () => navigate('/admin/email-templates/create');
-  const handleEdit = (uuid) => navigate(`/admin/email-templates/${uuid}/edit`);
-  const handleView = (uuid) => navigate(`/admin/email-templates/${uuid}/view`);
+  const handleCreateNew = () => navigate.push('/admin/email-templates/create');
+  const handleEdit = (uuid) => navigate.push(`/admin/email-templates/${uuid}/edit`);
+  const handleView = (uuid) => navigate.push(`/admin/email-templates/${uuid}/view`);
 
   const confirmArchive = async () => {
     if (!archiveTemplateUuid) return;
@@ -139,18 +140,18 @@ const EmailTemplatesFeature = () => {
     <>
     <SDataTable
       title={
-        <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-h)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-h)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Mail size={22} />
           {t('admin.communication.email_templates', 'Email Templates')}
-        </h1>
+          </div>
       }
       headerActions={
         <SButton 
           type="button" 
           onClick={handleCreateNew} 
-          icon={<Plus size={16} />} 
-          text={t('admin.communication.create_template', 'New Template')} 
-          style={{ background: 'var(--accent)', color: 'white', border: 'none' }}
+          icon="add" 
+          text={t('admin.communication.create_template', 'New Template')}
+          color="primary"
         />
       }
         topTabs={
@@ -169,9 +170,9 @@ const EmailTemplatesFeature = () => {
             </button>
           </div>
         }
-      columns={columns}
+        columns={columns}
         data={filteredTemplates}
-      loading={loading}
+        loading={loading}
         actions={activeTab === 'ACTIVE' ? ['view', 'edit', 'archive', 'delete'] : ['view', 'restore', 'delete']}
         onAction={(action, row) => {
           if (action === 'view') handleView(row.uuid);

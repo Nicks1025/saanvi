@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createUnoRoom, joinUnoRoom } from './unoService';
-import axios from '../../../../services/axios.client';
+import axios from '@/services/axios.client';
 
 vi.mock('../../../../services/axios.client', () => {
   return {

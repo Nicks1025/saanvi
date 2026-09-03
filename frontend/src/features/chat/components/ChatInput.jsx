@@ -7,13 +7,13 @@ import { validateFileForCategory, formatFileSize } from '../attachmentTypes';
 import AttachmentPopover from './AttachmentPopover';
 import VoiceRecorder from './VoiceRecorder';
 import ImagePreviewStrip from './ImagePreviewStrip';
-import SButton from '../../../components/common/SButton';
-import STextField from '../../../components/common/STextField';
+import SButton from '@/components/common/SButton';
+import STextField from '@/components/common/STextField';
 import { generatePreviewBase64 } from '../attachmentUtils';
 import { chatStorage } from '../chatStorage';
 
-const MAX_FILE_SIZE = parseInt(import.meta.env.VITE_CHAT_MAX_FILE_SIZE) || 25 * 1024 * 1024;
-const MAX_IMAGES = parseInt(import.meta.env.VITE_CHAT_MAX_IMAGES, 10) || 5;
+const MAX_FILE_SIZE = parseInt(process.env.NEXT_PUBLIC_CHAT_MAX_FILE_SIZE) || 25 * 1024 * 1024;
+const MAX_IMAGES = parseInt(process.env.NEXT_PUBLIC_CHAT_MAX_IMAGES, 10) || 5;
 
 const ChatInput = ({ chatRealtime, user }) => {
   const { t } = useTranslation();

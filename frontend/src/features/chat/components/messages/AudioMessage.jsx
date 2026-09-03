@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, Music, Download } from 'lucide-react';
-import SButton from '../../../../components/common/SButton';
+import SButton from '@/components/common/SButton';
 import { downloadAttachment } from '../../attachmentUtils';
-import { useAttachment, ATTACHMENT_STATES } from '../../hooks/useAttachment';
+import { useAttachment, ATTACHMENT_STATES } from "../../hooks/useAttachment";
 import { CircularProgress } from '../common/CircularProgress';
 
 /**
@@ -95,7 +95,7 @@ const AudioMessage = ({ messageUuid, attachment, isSender }) => {
                 aria-label={!isDownloaded ? 'Download audio' : playing ? 'Pause audio' : 'Play audio'}
                 color="ghost"
                 size="small"
-                style={{ padding: '6px', minWidth: 'unset', color: 'var(--primary-color)' }}
+                className="p-2 min-w-unset text-primary"
               >
                 {!isDownloaded ? <Download size={16} /> : playing ? <Pause size={16} /> : <Play size={16} />}
               </SButton>

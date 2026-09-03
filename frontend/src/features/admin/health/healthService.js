@@ -1,4 +1,4 @@
-import axios from '../../../services/axios.client';
+import axios from '@/services/axios.client';
 
 class HealthService {
   async getSystemHealth() {

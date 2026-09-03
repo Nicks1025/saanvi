@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { 
   Gamepad2, 
   Brain, 
@@ -181,7 +181,7 @@ const MoreGamesSection = () => {
 
               <div className="game-card-action-bar">
                 {isAvailable ? (
-                  <Link to={game.route} className="game-play-link">
+                  <Link href={game.route} className="game-play-link">
                     <span>Play Now</span>
                     <ArrowRight size={16} />
                   </Link>

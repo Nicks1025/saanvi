@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
-import { Save, X } from 'lucide-react';
 import * as rolesService from './rolesService';
-import PermissionTree from '../../../components/common/PermissionTree';
-import SButton from '../../../components/common/SButton';
-import { useAuth } from '../../../store/AuthContext';
+import PermissionTree from '@/components/common/PermissionTree';
+import SButton from '@/components/common/SButton';
+import { useAuth } from '@/store/AuthContext';
 
 const RoleDetailsFeature = () => {
   const { uuid } = useParams();
-  const navigate = useNavigate();
+  const navigate = useRouter();
   const { t } = useTranslation();
   const { user } = useAuth();
   const userPermissions = user?.permissions || [];
@@ -70,12 +69,12 @@ const RoleDetailsFeature = () => {
           await rolesService.updateRolePermissions(savedRole.uuid, selectedPermissions);
         }
         toast.success(t('admin.roleCreated', 'Role created successfully'));
-        navigate(`/admin/roles`);
+        navigate.push(`/admin/roles`);
       } else {
         await rolesService.updateRole(uuid, role);
         await rolesService.updateRolePermissions(uuid, selectedPermissions);
         toast.success(t('admin.roleUpdated', 'Role updated successfully'));
-        navigate(`/admin/roles`);
+        navigate.push(`/admin/roles`);
       }
     } catch (err) {
       toast.error(err?.response?.data?.error || t('admin.roleSaveFailed', 'Failed to save role'));
@@ -92,7 +91,7 @@ const RoleDetailsFeature = () => {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
         <div>
           <button 
-            onClick={() => navigate('/admin/roles')}
+            onClick={() => navigate.push('/admin/roles')}
             style={{ background: 'none', border: 'none', color: 'var(--text)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: 0, marginBottom: '0.5rem' }}
           >
             &larr; {t('admin.backToRoles', 'Back to Roles')}
@@ -158,25 +157,25 @@ const RoleDetailsFeature = () => {
         {canEdit ? (
           <>
             <SButton 
-              onClick={() => navigate('/admin/roles')}
-              icon={<X size={16} />}
+              onClick={() => navigate.push('/admin/roles')}
+              color="danger"
+              icon="close"
               text={t('common.cancel', 'Cancel')}
-              style={{ background: '#ffebee', color: '#d32f2f', border: 'none', fontWeight: 600 }}
             />
             <SButton 
               onClick={handleSave}
               disabled={saving}
-              icon={<Save size={16} />}
+              icon="save"
               text={saving ? t('common.saving', 'Saving...') : t('common.save', 'Save')}
-              style={{ background: 'var(--accent)', color: 'white', border: 'none', fontWeight: 600 }}
+              color="primary"
             />
           </>
         ) : (
           <SButton 
-            onClick={() => navigate('/admin/roles')}
-            icon={<X size={16} />}
-            text={t('common.close', 'Close')}
-            style={{ background: '#ffebee', color: '#d32f2f', border: 'none', fontWeight: 600 }}
+              onClick={() => navigate.push('/admin/roles')}
+              color="danger"
+              icon="close"
+              text={t('common.close', 'Close')}
           />
         )}
       </div>

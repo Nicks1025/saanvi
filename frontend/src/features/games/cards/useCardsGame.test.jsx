@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useCardsGame } from './useCardsGame';
-import socketService from '../../../services/socket.client';
+import socketService from './services/socket.client';
 
 // Mock dependencies
 vi.mock('../../../store/AuthContext', () => ({

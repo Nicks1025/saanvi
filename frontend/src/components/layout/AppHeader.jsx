@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../store/AuthContext';
+import { useAuth } from '@/store/AuthContext';
 import { User, Menu } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useLocation } from 'react-router-dom';
-import healthService from '../../features/admin/health/healthService';
+import { usePathname } from 'next/navigation';
+import healthService from '@/features/admin/health/healthService';
 import './layout.css';
 
 const AppHeader = ({ toggleSidebar }) => {
   const { user } = useAuth();
   const { t } = useTranslation();
-  const location = useLocation();
+  const pathname = usePathname();
+  const location = { pathname, search: typeof window !== "undefined" ? window.location.search : "" };
   const AUTH_ROUTES = ['/login', '/signup'];
   const isAuthPage = AUTH_ROUTES.includes(location.pathname);
   const [healthStatus, setHealthStatus] = useState(() => {

@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Save, Play, Loader2, Send, Info } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import EmailEditor from 'react-email-editor';
-import STextField from '../../../components/common/STextField';
-import SDropdown from '../../../components/common/SDropdown';
-import SButton from '../../../components/common/SButton';
-import SModal from '../../../components/common/SModal';
-import STooltip from '../../../components/common/STooltip';
-import { getEmailTemplate, createEmailTemplate, updateEmailTemplate, previewEmailTemplate, testEmailTemplate, getEmailTemplateTableColumns } from './communicationService';
-import axios from '../../../services/axios.client';
+import STextField from '@/components/common/STextField';
+import SDropdown from '@/components/common/SDropdown';
+import SButton from '@/components/common/SButton';
+import SModal from '@/components/common/SModal';
+import STooltip from '@/components/common/STooltip';
+import { getEmailTemplate, createEmailTemplate, updateEmailTemplate, testEmailTemplate, getEmailTemplateTableColumns } from './communicationService';
+import axios from '@/services/axios.client';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 
@@ -395,8 +395,8 @@ const EmailTemplateEditor = ({ templateUuid, isViewing = false, onClose }) => {
   }
 
   return (
-    <div className="page-container" style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
-      <div style={{ flex: 1, minWidth: '0' }}>
+    <div className="page-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', alignItems: 'flex-start' }}>
+      <div style={{ flex: '1 1 600px', minWidth: '0', maxWidth: '100%' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem', justifyContent: 'space-between' }}>
           <button 
             onClick={() => onClose()}
@@ -408,7 +408,7 @@ const EmailTemplateEditor = ({ templateUuid, isViewing = false, onClose }) => {
           {templateUuid && !isViewing && (
             <SButton 
               onClick={() => setShowTestModal(true)} 
-              icon={<Send size={16} />} 
+              icon="send" 
               style={{ background: 'var(--accent-hover)', color: 'white', border: 'none' }}
             >
               Send Test Email
@@ -499,16 +499,16 @@ const EmailTemplateEditor = ({ templateUuid, isViewing = false, onClose }) => {
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem' }}>
-              <SButton type="button" text="Cancel" onClick={() => onClose()} style={{ background: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--border)' }} />
+              <SButton type="button" text="Cancel" color="danger" onClick={() => onClose()} />
               {!isViewing && (
-                <SButton type="submit" color="primary" text={saving ? 'Saving...' : 'Save Template'} disabled={saving} icon={<Save size={16} />} />
+                <SButton type="submit" color="primary" text={saving ? 'Saving...' : 'Save Template'} disabled={saving} icon="save" />
               )}
             </div>
           </form>
         </div>
       </div>
 
-      <div style={{ width: '450px', flexShrink: 0, position: 'sticky', top: '2rem' }}>
+      <div style={{ flex: '1 1 400px', maxWidth: '100%', position: 'sticky', top: '2rem' }}>
         <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '1rem' }}>
           <button 
             type="button"

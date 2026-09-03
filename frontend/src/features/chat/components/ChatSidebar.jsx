@@ -1,8 +1,8 @@
 import React from 'react';
-import { useAuth } from '../../../store/AuthContext';
+import { useAuth } from '@/store/AuthContext';
 import { MessageSquare, Users, UserPlus, Check, CheckCheck, Image as ImageIcon, Video, Mic, FileText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import SButton from '../../../components/common/SButton';
+import SButton from '@/components/common/SButton';
 
 const ChatSidebar = ({ chatRealtime, onShowRequests }) => {
   const { t } = useTranslation();

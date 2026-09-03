@@ -2,17 +2,17 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   CircularTable,
 } from '../components/CircularTable';
-import { DrawPile } from '../components/DrawPile';
-import { DrawAnimationLayer } from '../components/DrawAnimationLayer';
-import { CardPlayAnimationLayer } from '../components/CardPlayAnimationLayer';
-import { PlayerHand } from '../components/PlayerHand';
-import { VoiceControls } from '../components/VoiceControls';
-import { UnoControls } from '../components/UnoControls';
-import { ColorPickerModal } from '../components/ColorPickerModal';
-import { RulesModal } from '../components/RulesModal';
-import { ConnectionBanner } from '../components/ConnectionBanner';
+import { DrawPile } from "../components/DrawPile";
+import { DrawAnimationLayer } from "../components/DrawAnimationLayer";
+import { CardPlayAnimationLayer } from "../components/CardPlayAnimationLayer";
+import { PlayerHand } from "../components/PlayerHand";
+import { VoiceControls } from "../components/VoiceControls";
+import { UnoControls } from "../components/UnoControls";
+import { ColorPickerModal } from "../components/ColorPickerModal";
+import { RulesModal } from "../components/RulesModal";
+import { ConnectionBanner } from "../components/ConnectionBanner";
 import { ArrowLeft, HelpCircle, Users, Clock, AlertTriangle } from 'lucide-react';
-import SModal from '../../../../components/common/SModal';
+import SModal from '@/components/common/SModal';
 import { useTranslation } from 'react-i18next';
 
 export const GameTableView = ({ game, onLeaveGame }) => {

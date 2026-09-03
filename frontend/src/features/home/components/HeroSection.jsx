@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { 
   Gamepad2, 
   Calculator, 
@@ -58,7 +58,7 @@ const HeroSection = () => {
           </p>
 
           <div className="hero-cta-group">
-            <Link to="/games/uno" className="hero-btn-primary" id="hero-cta-play-uno">
+            <Link href="/games/uno" className="hero-btn-primary" id="hero-cta-play-uno">
               <Gamepad2 size={20} />
               <span>Play UNO Multiplayer</span>
               <ArrowRight size={18} />

@@ -1,14 +1,14 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import './wordSearch.css';
 
 const WordSearchMenu = () => {
-  const navigate = useNavigate();
+  const navigate = useRouter();
   const { t } = useTranslation();
 
   const handleStart = (difficulty) => {
-    navigate(`/games/word-search/play?difficulty=${difficulty}`);
+    navigate.push(`/games/word-search/play?difficulty=${difficulty}`);
   };
 
   return (

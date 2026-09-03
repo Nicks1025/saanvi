@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Check, X, ZoomIn, ZoomOut } from 'lucide-react';
-import SButton from '../../../components/common/SButton';
+import SButton from '@/components/common/SButton';
 import { chatService } from '../chat.service';
 import { toast } from 'react-hot-toast';
 
@@ -120,7 +120,7 @@ const InlineWallpaperCropper = ({ wallpaperData, onClose, onSave }) => {
         <SButton
           color="ghost"
           size="s"
-          icon={<ZoomOut size={18} />}
+          icon="zoom-out"
           onClick={() => handleZoomBtn(0.9)}
           label="Zoom out"
           title="Zoom out"
@@ -129,7 +129,7 @@ const InlineWallpaperCropper = ({ wallpaperData, onClose, onSave }) => {
         <SButton
           color="ghost"
           size="s"
-          icon={<ZoomIn size={18} />}
+          icon="zoom-in"
           onClick={() => handleZoomBtn(1.1)}
           label="Zoom in"
           title="Zoom in"
@@ -139,7 +139,7 @@ const InlineWallpaperCropper = ({ wallpaperData, onClose, onSave }) => {
         <SButton
           color="ghost"
           size="s"
-          icon={<X size={18} />}
+          icon="close"
           onClick={onClose}
           label="Cancel"
           title="Cancel"
@@ -148,7 +148,7 @@ const InlineWallpaperCropper = ({ wallpaperData, onClose, onSave }) => {
         <SButton
           color="primary"
           size="s"
-          icon={<Check size={16} />}
+          icon="check"
           text="Apply"
           onClick={performSave}
           className="chat-wallpaper-ctrl-btn chat-wallpaper-ctrl-save"

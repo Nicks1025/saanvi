@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation, useNavigate, useParams, useBlocker } from 'react-router-dom';
+import { usePathname, useRouter, useParams } from 'next/navigation';
 import useCardsGame from './useCardsGame';
 import { GAME_SCREENS } from './types';
 import CardsLobbyView from './views/CardsLobbyView';
@@ -9,15 +9,16 @@ import WaitingRoomView from './views/WaitingRoomView';
 import GameTableView from './views/GameTableView';
 import GameResultView from './views/GameResultView';
 import RulesModal from './components/RulesModal';
-import SModal from '../../../components/common/SModal';
+import SModal from '@/components/common/SModal';
 import './cards.css';
 import { useTranslation } from 'react-i18next';
 
 export const UnoGameContainer = () => {
   const { t } = useTranslation();
   const game = useCardsGame();
-  const location = useLocation();
-  const navigate = useNavigate();
+  const pathname = usePathname();
+  const location = { pathname, search: typeof window !== "undefined" ? window.location.search : "" };
+  const navigate = useRouter();
   const { roomId } = useParams();
 
   const {
@@ -65,7 +66,7 @@ export const UnoGameContainer = () => {
       // Handle join and gracefully catch errors
       game.handleJoinRoom(roomId.toUpperCase()).catch(() => {
         // Drop the invalid roomId from URL
-        navigate('/games/uno', { replace: true, state: { forced: true } });
+        navigate.replace('/games/uno');
       }).finally(() => {
         setIsJoiningUrl(false);
       });
@@ -77,12 +78,8 @@ export const UnoGameContainer = () => {
     setCurrentScreen(GAME_SCREENS.GAME_TABLE);
   };
 
-  // Block navigation when inside an active game (only block GAME_TABLE, not WAITING_ROOM)
+  // Block navigation when inside an active game (handled by beforeunload and Leave Game UI in Next.js)
   const isPlaying = roomId && currentScreen === GAME_SCREENS.GAME_TABLE;
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) => 
-      isPlaying && currentLocation.pathname !== nextLocation.pathname && !nextLocation.state?.forced
-  );
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -121,7 +118,7 @@ export const UnoGameContainer = () => {
             gameResult={gameResult}
             onLeaveGame={() => {
               game.executeLeaveRoom();
-              navigate('/games/uno', { replace: true, state: { forced: true } });
+              navigate.replace('/games/uno');
             }}
           />
         );
@@ -139,7 +136,7 @@ export const UnoGameContainer = () => {
         <GameResultView
           gameResult={gameResult}
           onLeaveGame={() => {
-            navigate('/games/uno', { replace: true, state: { forced: true } });
+            navigate.replace('/games/uno');
           }}
         />
       );
@@ -181,7 +178,7 @@ export const UnoGameContainer = () => {
             onStartGame={handleStartGame}
             onLeaveRoom={() => {
               game.executeLeaveRoom();
-              navigate('/games/uno', { replace: true, state: { forced: true } });
+              navigate.replace('/games/uno');
             }}
             openRules={openRules}
             isHost={game.isHost}
@@ -195,7 +192,7 @@ export const UnoGameContainer = () => {
         return (
           <GameTableView
             game={game}
-            onLeaveGame={() => navigate('/games/uno')}
+            onLeaveGame={() => navigate.push('/games/uno')}
           />
         );
 
@@ -231,21 +228,7 @@ export const UnoGameContainer = () => {
         roomRules={room?.rules}
       />
 
-      {/* Navigation Confirmation Modal */}
-      <SModal
-        isOpen={blocker.state === 'blocked'}
-        onCancel={() => blocker.reset && blocker.reset()}
-        title={t('games.uno.leave_active_game', 'Leave Active Game?')}
-        icon="Flame"
-        confirmText={t('games.uno.leave_game_btn', 'Leave Game')}
-        cancelText={t('common.stay', 'Stay')}
-        onConfirm={() => {
-          game.executeLeaveRoom();
-          blocker.proceed && blocker.proceed();
-        }}
-        confirmColor="danger"
-        text={t('games.uno.leave_game_confirm', 'Are you sure you want to leave the active game? You will forfeit your spot and the game will continue without you.')}
-      />
+
     </div>
   );
 };

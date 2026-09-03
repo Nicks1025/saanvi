@@ -1,4 +1,4 @@
-import axios from '../../../services/axios.client';
+import axios from '@/services/axios.client';
 
 const API_BASE = '/api/admin';
 

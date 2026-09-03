@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import SDataTable from '../../../components/common/SDataTable';
-import SModal from '../../../components/common/SModal';
-import SButton from '../../../components/common/SButton';
-import STextField from '../../../components/common/STextField';
-import SDropdown from '../../../components/common/SDropdown';
-import axios from '../../../services/axios.client';
+import SDataTable from '@/components/common/SDataTable';
+import SModal from '@/components/common/SModal';
+import SButton from '@/components/common/SButton';
+import STextField from '@/components/common/STextField';
+import SDropdown from '@/components/common/SDropdown';
+import axios from '@/services/axios.client';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { Pencil, Trash2, Plus } from 'lucide-react';
@@ -180,9 +180,9 @@ const UserFieldsFeature = ({ disableContainer = false, topTabs }) => {
         headerActions={
           <SButton
             text="Add Field"
-            icon={<Plus size={16} />}
+            icon="add"
             onClick={handleOpenAdd}
-            style={{ background: 'var(--accent)', color: 'white' }}
+            color="primary"
           />
         }
         isDraggable={true}

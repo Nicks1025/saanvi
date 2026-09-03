@@ -3,7 +3,7 @@ import { render, act, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ChatProvider, useGlobalChat } from './ChatProvider';
 import { AuthProvider } from './AuthContext';
-import socketService from '../services/socket.client';
+import socketService from '@/services/socket.client';
 
 // Mock dependencies
 vi.mock('../features/chat/chat.service', () => ({

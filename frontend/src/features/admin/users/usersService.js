@@ -1,4 +1,4 @@
-import axios from '../../../services/axios.client';
+import axios from '@/services/axios.client';
 
 export const getUsers = async (search = '', showArchived = false, page = 1, limit = 10) => {
   const queryParams = new URLSearchParams();

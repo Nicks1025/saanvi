@@ -1,7 +1,7 @@
 import React from 'react';
 import { Download } from 'lucide-react';
-import { useIntersectionObserver } from '../../../../hooks/useIntersectionObserver';
-import { useAttachment, ATTACHMENT_STATES } from '../../hooks/useAttachment';
+import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
+import { useAttachment, ATTACHMENT_STATES } from "../../hooks/useAttachment";
 import { CircularProgress } from '../common/CircularProgress';
 
 const GalleryItem = ({ messageUuid, attachment, onImageClick, index, className, isExtra, extraCount }) => {

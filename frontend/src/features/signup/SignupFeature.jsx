@@ -1,8 +1,9 @@
+"use client";
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import STextField from '../../components/common/STextField';
-import SDropdown from '../../components/common/SDropdown';
-import SButton from '../../components/common/SButton';
+import { useRouter } from 'next/navigation';
+import STextField from '@/components/common/STextField';
+import SDropdown from '@/components/common/SDropdown';
+import SButton from '@/components/common/SButton';
 import { signupUser } from './service/signupService';
 import {
   validateRequired,
@@ -128,15 +129,15 @@ const DropdownField = ({ label, required, value, options, onChange, error }) => 
   </div>
 );
 
-import DynamicFormRenderer from '../../components/common/DynamicFormRenderer';
-import axios from '../../services/axios.client';
+import DynamicFormRenderer from '@/components/common/DynamicFormRenderer';
+import axios from '@/services/axios.client';
 
 // ---------------------------------------------------------------------------
 // Main feature
 // ---------------------------------------------------------------------------
 
 const SignupFeature = () => {
-  const navigate = useNavigate();
+  const navigate = useRouter();
 
   const [form, setForm] = useState({ email: '', password: '', confirmPassword: '' });
   const [errors, setErrors] = useState({});
@@ -247,7 +248,7 @@ const SignupFeature = () => {
       const payload = { ...form, email: form.email.trim() };
       delete payload.confirmPassword;
       await signupUser(payload);
-      navigate('/login?signup=success');
+      navigate.push('/login?signup=success');
     } catch (err) {
       const data = err.response?.data;
       let msg = 'Something went wrong. Please try again.';
