@@ -17,6 +17,9 @@ i18n
     interpolation: {
       escapeValue: false, // react already safes from xss
     },
+    react: {
+      useSuspense: false, // Prevent SSR hangs during static generation
+    },
   });
 
 export default i18n;
