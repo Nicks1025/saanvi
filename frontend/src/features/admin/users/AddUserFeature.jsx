@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import STextField from '../../../components/common/STextField';
-import SButton from '../../../components/common/SButton';
-import DynamicFormRenderer from '../../../components/common/DynamicFormRenderer';
+import { useRouter } from 'next/navigation';
+import STextField from '@/components/common/STextField';
+import SButton from '@/components/common/SButton';
+import DynamicFormRenderer from '@/components/common/DynamicFormRenderer';
 import { createUser, getFormConfig } from './usersService';
 import { validateEmail } from '../../../common/validations';
 import toast from 'react-hot-toast';
@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 
 const AddUserFeature = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const navigate = useRouter();
   const [form, setForm] = useState({ email: '' });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -82,7 +82,7 @@ const AddUserFeature = () => {
       const result = await createUser(payload);
 
       toast.success(result?.message || 'User created successfully. A welcome email has been queued for delivery.');
-      navigate('/admin/users');
+      navigate.push('/admin/users');
     } catch (err) {
       const data = err.response?.data;
       let msg = 'Something went wrong. Please try again.';
@@ -99,14 +99,14 @@ const AddUserFeature = () => {
     }
   };
 
-  const handleCancel = () => navigate('/admin/users');
+  const handleCancel = () => navigate.push('/admin/users');
 
   return (
     <div className="admin-users-container page-container">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
         <div>
           <button 
-            onClick={() => navigate('/admin/users')}
+            onClick={() => navigate.push('/admin/users')}
             style={{ background: 'none', border: 'none', color: 'var(--text)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: 0, marginBottom: '0.5rem' }}
           >
             &larr; {t('admin.backToUsers', 'Back to Users')}
@@ -154,10 +154,9 @@ const AddUserFeature = () => {
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem', paddingBottom: '2rem' }}>
                 <SButton
                   type="button"
-                  color="default"
+                  color="danger"
                   text={t('common.cancel', 'Cancel')}
                   onClick={handleCancel}
-                  style={{ background: '#ffebee', color: '#d32f2f', border: 'none', fontWeight: 600 }}
                 />
                 <SButton
                   type="submit"

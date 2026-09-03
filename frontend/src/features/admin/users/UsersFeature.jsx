@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Pencil, Eye, Archive, Trash2, RefreshCw, UserPlus } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
-import { useAuth } from '../../../store/AuthContext';
-import SDataTable from '../../../components/common/SDataTable';
-import SModal from '../../../components/common/SModal';
-import SButton from '../../../components/common/SButton';
-import SDropdown from '../../../components/common/SDropdown';
+import { useAuth } from '@/store/AuthContext';
+import SDataTable from '@/components/common/SDataTable';
+import SModal from '@/components/common/SModal';
+import SButton from '@/components/common/SButton';
+import SDropdown from '@/components/common/SDropdown';
 import * as usersService from './usersService';
 import UserFieldsFeature from './UserFieldsFeature';
 import TriggersFeature from '../communication/TriggersFeature';
@@ -23,21 +23,20 @@ const UsersFeature = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [modalState, setModalState] = useState({ isOpen: false, type: null, user: null });
   const [isProcessing, setIsProcessing] = useState(false);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [activeTab, setActiveTabState] = useState(searchParams.get('tab') || 'records'); // 'records', 'fields', 'triggers'
-  const navigate = useNavigate();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const [activeTab, setActiveTabState] = useState(searchParams?.get('tab') || 'records'); // 'records', 'fields', 'triggers'
+  const navigate = useRouter();
 
   const setActiveTab = (tab) => {
     setActiveTabState(tab);
-    setSearchParams(prev => {
-      const params = new URLSearchParams(prev);
-      params.set('tab', tab);
-      return params;
-    });
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', tab);
+    navigate.push(`${pathname}?${params.toString()}`);
   };
 
   useEffect(() => {
-    const tabInUrl = searchParams.get('tab');
+    const tabInUrl = searchParams?.get('tab');
     if (tabInUrl && tabInUrl !== activeTab) {
       setActiveTabState(tabInUrl);
     }
@@ -69,11 +68,11 @@ const UsersFeature = () => {
   };
 
   const handleView = (user) => {
-    navigate(`/admin/users/${user.uuid}?mode=view`, { state: { user } });
+    navigate.push(`/admin/users/${user.uuid}?mode=view`);
   };
 
   const handleEdit = (user) => {
-    navigate(`/admin/users/${user.uuid}?mode=edit`, { state: { user } });
+    navigate.push(`/admin/users/${user.uuid}?mode=edit`);
   };
 
   const handleArchive = (user) => {
@@ -214,8 +213,8 @@ const UsersFeature = () => {
             userPermissions?.includes('admin.users.create') ? (
               <SButton
                 text={t('admin.addUser', 'Add User')}
-                icon={<UserPlus size={16} />}
-                onClick={() => navigate('/admin/users/add')}
+                icon="add-user"
+                onClick={() => navigate.push('/admin/users/add')}
                 style={{ background: 'var(--accent)', color: 'white', whiteSpace: 'nowrap' }}
               />
             ) : null

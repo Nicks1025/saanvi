@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Shield, Loader2, ArrowLeft } from 'lucide-react';
-import SButton from '../../components/common/SButton';
-import STextField from '../../components/common/STextField';
-import axios from '../../services/axios.client';
+import SButton from '@/components/common/SButton';
+import STextField from '@/components/common/STextField';
+import axios from '@/services/axios.client';
 
 const MfaVerificationFeature = ({ email, supabaseToken, onVerifySuccess, onCancel }) => {
   const [code, setCode] = useState('');
@@ -50,7 +50,7 @@ const MfaVerificationFeature = ({ email, supabaseToken, onVerifySuccess, onCance
         <SButton 
           type="submit" 
           disabled={loading || code.length !== 6} 
-          style={{ width: '100%', padding: '0.75rem', display: 'flex', justifyContent: 'center' }}
+          className="w-full p-3 flex justify-center" color="primary"
         >
           {loading ? <Loader2 className="spinner" size={20} /> : 'Verify'}
         </SButton>
@@ -58,16 +58,8 @@ const MfaVerificationFeature = ({ email, supabaseToken, onVerifySuccess, onCance
         <SButton 
           type="button" 
           onClick={onCancel}
-          style={{ 
-            width: '100%', 
-            padding: '0.75rem', 
-            background: 'transparent', 
-            border: 'none', 
-            color: 'var(--text-2)', 
-            marginTop: '1rem', 
-            cursor: 'pointer'
-          }}
-          icon={<ArrowLeft size={16} />}
+          className="w-full p-3 mt-4" color="ghost"
+          icon="back"
         >
           Back to Login
         </SButton>

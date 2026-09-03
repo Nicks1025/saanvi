@@ -4,20 +4,22 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "oxlint",
-    "preview": "vite preview"
+    "dev": "next dev -p 5000",
+    "build": "next build",
+    "start": "next start -p 5000",
+    "lint": "next lint"
   },
   "dependencies": {
     "@react-oauth/google": "^0.13.5",
     "@supabase/supabase-js": "^2.112.3",
     "axios": "^1.19.0",
     "date-fns": "^4.4.0",
+    "eslint-config-next": "^16.3.4",
     "i18next": "^26.3.6",
     "i18next-browser-languagedetector": "^8.2.1",
     "i18next-http-backend": "^4.0.1",
     "lucide-react": "^1.31.0",
+    "next": "^16.3.4",
     "nprogress": "^0.2.0",
     "react": "^19.2.8",
     "react-datepicker": "^9.1.0",
@@ -27,21 +29,13 @@
     "react-hot-toast": "^2.6.0",
     "react-i18next": "^17.0.11",
     "react-image-crop": "^11.1.2",
-    "react-router-dom": "^7.18.2",
     "react-select": "^5.10.2",
+    "server-only": "^0.0.1",
     "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^7.0.1",
-    "@testing-library/react": "^16.3.2",
-    "@testing-library/user-event": "^14.6.4",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.4",
-    "fake-indexeddb": "^6.2.5",
-    "jsdom": "^29.1.1",
-    "oxlint": "^1.75.0",
-    "vite": "^8.2.0",
-    "vitest": "^4.1.10"
+    "oxlint": "^1.75.0"
   }
 }

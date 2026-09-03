@@ -1,5 +1,6 @@
+"use client";
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from '../services/axios.client';
+import axios from '@/services/axios.client';
 import i18n from '../i18n';
 
 const AuthContext = createContext(null);

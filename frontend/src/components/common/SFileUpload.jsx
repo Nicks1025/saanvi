@@ -75,8 +75,8 @@ const SFileUpload = ({
             <SButton 
               type="button" 
               onClick={handleRemove} 
-              style={{ background: '#ffebee', color: '#d32f2f', padding: '0.5rem' }}
-              icon={<X size={16} />}
+              color="danger"
+              icon="close"
             />
           )}
           <input
@@ -91,7 +91,6 @@ const SFileUpload = ({
             onClick={() => fileInputRef.current?.click()} 
             color={file ? "default" : "primary"}
             text={file ? "Change" : "Browse"}
-            style={{ padding: '0.5rem 1rem' }}
           />
         </div>
       </div>

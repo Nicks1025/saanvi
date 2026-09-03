@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../store/AuthContext';
-import axios from '../../services/axios.client';
+import { useAuth } from '@/store/AuthContext';
+import axios from '@/services/axios.client';
 import toast from 'react-hot-toast';
 import { Shield, ShieldAlert, Loader2, QrCode } from 'lucide-react';
-import SButton from '../../components/common/SButton';
-import STextField from '../../components/common/STextField';
-import SModal from '../../components/common/SModal';
+import SButton from '@/components/common/SButton';
+import STextField from '@/components/common/STextField';
+import SModal from '@/components/common/SModal';
 import './settings.css';
 
 const MfaSetupFeature = () => {
@@ -146,7 +146,7 @@ const MfaSetupFeature = () => {
               <img src={qrCodeUrl} alt="MFA QR Code" style={{ width: '200px', height: '200px' }} />
             </div>
             
-            <div style={{ width: '100%', maxWidth: '300px' }}>
+            <div className="w-full max-w-xs" color="primary">
               <STextField 
                 text={verificationCode}
                 onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
@@ -157,7 +157,7 @@ const MfaSetupFeature = () => {
             <SButton 
               onClick={handleVerify} 
               disabled={loading || verificationCode.length !== 6} 
-              style={{ width: '100%', maxWidth: '300px' }}
+              className="w-full max-w-xs" color="primary"
             >
               {loading ? <Loader2 className="spinner" size={16} /> : 'Verify & Enable'}
             </SButton>

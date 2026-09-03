@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { chatService } from '../chat.service';
-import { useAuth } from '../../../store/AuthContext';
-import { useGlobalChat } from '../../../store/ChatProvider';
-import socketService from '../../../services/socket.client';
+import { useAuth } from '@/store/AuthContext';
+import { useGlobalChat } from '@/store/ChatProvider';
+import socketService from '@/services/socket.client';
 import { chatStorage } from '../chatStorage';
 
 export const useChatSocket = () => {
@@ -175,9 +175,12 @@ export const useChatSocket = () => {
 
   // 4. Outbox Processing
   useEffect(() => {
+    if (!user?.uuid) return;
+
     const processOutbox = async () => {
       if (!navigator.onLine) return;
       try {
+        await chatStorage.init(user.uuid);
         const pending = await chatStorage.getOutboxMessages();
         for (let msg of pending) {
            socketService.emit('message:send', { conversation_uuid: msg.conversation_uuid, message: msg.message }, async (response) => {
@@ -198,7 +201,7 @@ export const useChatSocket = () => {
     processOutbox();
     
     return () => window.removeEventListener('online', processOutbox);
-  }, []);
+  }, [user?.uuid]);
 
   const sendTyping = () => {
     if (activeConversation) {

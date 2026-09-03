@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { getWorkflows, deleteWorkflow } from './communicationService';
 import toast from 'react-hot-toast';
 import { Workflow, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import SDataTable from '../../../components/common/SDataTable';
-import SButton from '../../../components/common/SButton';
-import SModal from '../../../components/common/SModal';
+import SDataTable from '@/components/common/SDataTable';
+import SButton from '@/components/common/SButton';
+import SModal from '@/components/common/SModal';
 
 const WorkflowsFeature = ({ disableContainer = false, topTabs }) => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const navigate = useRouter();
 
   const [workflows, setWorkflows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -95,9 +95,9 @@ const WorkflowsFeature = ({ disableContainer = false, topTabs }) => {
           <Workflow /> Workflows
         </h1>
         <SButton 
-          onClick={() => navigate('/admin/workflow/create')}
+          onClick={() => navigate.push('/admin/workflow/create')}
           size="m"
-          icon={<Plus size={16} />}
+          icon="add"
         >
           Create Workflow
         </SButton>
@@ -109,8 +109,8 @@ const WorkflowsFeature = ({ disableContainer = false, topTabs }) => {
         loading={loading}
         actions={['view', 'edit', 'delete']}
         onAction={(action, row) => {
-          if (action === 'view') navigate(`/admin/workflow/${row.id}/view`);
-          if (action === 'edit') navigate(`/admin/workflow/${row.id}/edit`);
+          if (action === 'view') navigate.push(`/admin/workflow/${row.id}/view`);
+          if (action === 'edit') navigate.push(`/admin/workflow/${row.id}/edit`);
           if (action === 'delete') handleDelete(row.id);
         }}
         emptyText="No workflows configured."

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Database, Download } from 'lucide-react';
-import SButton from '../../../components/common/SButton';
-import SDataTable from '../../../components/common/SDataTable';
-import axios from '../../../services/axios.client';
+import { Database } from 'lucide-react';
+import SButton from '@/components/common/SButton';
+import SDataTable from '@/components/common/SDataTable';
+import axios from '@/services/axios.client';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 
@@ -177,7 +177,7 @@ const SqlEditorFeature = () => {
           />
           
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-            <SButton size="s" text={isExecuting ? t('admin.sql.executing', 'Executing...') : t('admin.sql.run_query', 'Run Query')} icon={<Play size={16} />} onClick={handleRunClick} disabled={isExecuting} style={{ background: '#4f46e5', color: 'white' }} />
+            <SButton size="s" text={isExecuting ? t('admin.sql.executing', 'Executing...') : t('admin.sql.run_query', 'Run Query')} icon="play" onClick={handleRunClick} disabled={isExecuting} color="primary" />
           </div>
 
 
@@ -196,9 +196,9 @@ const SqlEditorFeature = () => {
                     keyExtractor={(row, idx) => row.uuid || row.id || idx}
                     headerActions={
                       <SButton 
-                        icon={<Download size={18} />} 
+                        icon="download" 
                         onClick={downloadJson} 
-                        style={{ background: '#f3f4f6', color: '#4b5563', padding: '0.5rem', minWidth: 'auto', borderRadius: '6px' }} 
+                        color="secondary" 
                         title={t('admin.sql.download_json', 'Download JSON')}
                       />
                     }

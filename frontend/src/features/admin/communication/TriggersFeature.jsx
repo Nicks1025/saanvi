@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { getWorkflows, createWorkflow, updateWorkflow, deleteWorkflow, getSystemEvents, getEmailTemplates } from './communicationService';
 import toast from 'react-hot-toast';
 import { ChevronDown, ChevronRight, Plus, Trash2, Edit2, Save, X } from 'lucide-react';
-import SButton from '../../../components/common/SButton';
-import SModal from '../../../components/common/SModal';
-import SDataTable from '../../../components/common/SDataTable';
-import SLongText from '../../../components/common/SLongText';
-import axios from '../../../services/axios.client';
+import SButton from '@/components/common/SButton';
+import SModal from '@/components/common/SModal';
+import SDataTable from '@/components/common/SDataTable';
+import SLongText from '@/components/common/SLongText';
+import axios from '@/services/axios.client';
 import { useTranslation } from 'react-i18next';
 
 const RuleBuilder = ({ conditions, onChange, fields }) => {
@@ -171,8 +171,8 @@ const TriggerForm = ({ trigger, onSave, onCancel, systemEvents, templates, event
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
-        <SButton onClick={onCancel} style={{ background: 'transparent', color: 'var(--text)' }}>Cancel</SButton>
-        <SButton onClick={handleSave} color="primary" icon={<Save size={16} />}>Save Trigger</SButton>
+        <SButton onClick={onCancel} color="danger">Cancel</SButton>
+        <SButton onClick={handleSave} color="primary" icon="save">Save Trigger</SButton>
       </div>
     </div>
   );
@@ -295,7 +295,7 @@ const ActionForm = ({ templates, onSave, onCancel, eventFields }) => {
         )}
 
         <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '1rem', marginTop: '1rem' }}>
-          <SButton onClick={onCancel} size="s" style={{ background: 'transparent', color: 'var(--text)' }}>Cancel</SButton>
+          <SButton onClick={onCancel} size="s" color="danger">Cancel</SButton>
           <SButton onClick={() => onSave({ action_type: 'SEND_EMAIL', configuration: config })} size="s">Save Action</SButton>
         </div>
       </div>
@@ -429,7 +429,7 @@ const TriggersFeature = ({ topTabs }) => {
           if (action === 'delete') handleDeleteTrigger(row);
         }}
         headerActions={
-          <SButton text="Add Trigger" icon={<Plus size={16} />} onClick={handleAddTrigger} style={{ background: 'var(--accent)', color: 'white' }} />
+          <SButton text="Add Trigger" icon="add" onClick={handleAddTrigger} color="primary" />
         }
       />
 

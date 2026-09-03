@@ -1,7 +1,7 @@
 import { renderHook, act } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import useChatSocket from './useChatSocket';
-import socketService from '../../../services/socket.client';
+import socketService from '@/services/socket.client';
 
 vi.mock('../../../services/socket.client', () => ({
   default: {

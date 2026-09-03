@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import SModal from '../../../components/common/SModal';
-import STextField from '../../../components/common/STextField';
-import SButton from '../../../components/common/SButton';
+import SModal from '@/components/common/SModal';
+import STextField from '@/components/common/STextField';
+import SButton from '@/components/common/SButton';
 import { chatService } from '../chat.service';
-import { useAuth } from '../../../store/AuthContext';
+import { useAuth } from '@/store/AuthContext';
 import { toast } from 'react-hot-toast';
 import { UserPlus, UserCheck, Clock } from 'lucide-react';
 
@@ -93,14 +93,14 @@ const ChatRequestsModal = ({ isOpen, onClose, chatRealtime }) => {
       <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', borderBottom: '1px solid var(--border)' }}>
          <SButton 
            color="ghost"
-           style={{ padding: '8px', borderBottom: activeTab === 'requests' ? '2px solid var(--primary-color)' : 'none', fontWeight: activeTab === 'requests' ? 'bold' : 'normal', borderRadius: 0 }}
+           
            onClick={() => setActiveTab('requests')}
          >
            Pending Requests
          </SButton>
          <SButton 
            color="ghost"
-           style={{ padding: '8px', borderBottom: activeTab === 'new' ? '2px solid var(--primary-color)' : 'none', fontWeight: activeTab === 'new' ? 'bold' : 'normal', borderRadius: 0 }}
+           
            onClick={() => setActiveTab('new')}
          >
            Find Users

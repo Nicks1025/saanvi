@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, ImagePlus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import SButton from '../../../components/common/SButton';
+import SButton from '@/components/common/SButton';
 
-const MAX_IMAGES = parseInt(import.meta.env.VITE_CHAT_MAX_IMAGES, 10) || 5;
+const MAX_IMAGES = parseInt(process.env.NEXT_PUBLIC_CHAT_MAX_IMAGES, 10) || 5;
 
 /**
  * ImagePreviewStrip

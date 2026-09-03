@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 
 const formatTime = (seconds) => {
@@ -9,7 +9,7 @@ const formatTime = (seconds) => {
 };
 
 const WordSearchResult = ({ score, timeElapsed, onPlayAgain }) => {
-  const navigate = useNavigate();
+  const navigate = useRouter();
   const { t } = useTranslation();
 
   return (
@@ -30,7 +30,7 @@ const WordSearchResult = ({ score, timeElapsed, onPlayAgain }) => {
 
       <div className="ws-result-actions">
         <button className="s-button btn-primary" onClick={onPlayAgain}>{t('games.word_search.play_again')}</button>
-        <button className="s-button" onClick={() => navigate('/games/word-search')}>{t('games.word_search.return_to_menu')}</button>
+        <button className="s-button" onClick={() => navigate.push('/games/word-search')}>{t('games.word_search.return_to_menu')}</button>
       </div>
     </div>
   );

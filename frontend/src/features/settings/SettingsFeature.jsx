@@ -1,11 +1,11 @@
 import React from 'react';
-import { useAuth } from '../../store/AuthContext';
-import { useTheme } from '../../store/ThemeContext';
+import { useAuth } from '@/store/AuthContext';
+import { useTheme } from '@/store/ThemeContext';
 import { CheckCircle, XCircle, Save, Loader2 } from 'lucide-react';
 import { validatePassword, validateConfirmPassword, validateRequired, validatePhone, validateDate, validateCurrentPassword } from '../../common/validations';
-import SDropdown from '../../components/common/SDropdown';
-import SButton from '../../components/common/SButton';
-import STextField from '../../components/common/STextField';
+import SDropdown from '@/components/common/SDropdown';
+import SButton from '@/components/common/SButton';
+import STextField from '@/components/common/STextField';
 import { settingsService } from './services/settingsService';
 import { themeOptions, fontOptions } from '../../constants/themeConstants';
 import { useTranslation } from 'react-i18next';

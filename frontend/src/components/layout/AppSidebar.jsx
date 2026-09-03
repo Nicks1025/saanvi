@@ -1,27 +1,22 @@
 import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { LayoutDashboard, Settings, Gamepad2, ChevronDown, ChevronRight, Shield, LogOut, MessageSquare, Workflow } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../store/AuthContext';
+import { useAuth } from '@/store/AuthContext';
 import SButton from '../common/SButton';
 import './layout.css';
 
 const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
   const { t } = useTranslation();
-  const location = useLocation();
+  const pathname = usePathname();
+  const location = { pathname, search: typeof window !== "undefined" ? window.location.search : "" };
   const { user, logout } = useAuth();
   const userPermissions = user?.permissions || [];
   
   const [isGamesOpen, setIsGamesOpen] = useState(location.pathname.startsWith('/games'));
   const [isAdminOpen, setIsAdminOpen] = useState(location.pathname.startsWith('/admin'));
 
-  const getNavLinkClass = ({ isActive }) => {
-    return isActive ? 'sidebar-link active' : 'sidebar-link';
-  };
-
-  const getSubNavLinkClass = ({ isActive }) => {
-    return isActive ? 'sidebar-link sub-link active' : 'sidebar-link sub-link';
-  };
 
   const handleAdminClick = () => {
     if (!isOpen && setSidebarOpen) {
@@ -44,16 +39,16 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
   return (
     <aside className={`app-sidebar ${isOpen ? 'open' : 'closed'}${isMobile ? ' sidebar-mobile' : ''}`}>
       <nav className="sidebar-nav">
-        <NavLink to="/dashboard" className={getNavLinkClass} title={t('navigation.dashboard')} onClick={onNavClick}>
+        <Link href="/dashboard" className={pathname.startsWith("/dashboard") ? "sidebar-link active" : "sidebar-link"} title={t('navigation.dashboard')} onClick={onNavClick}>
           <LayoutDashboard size={20} style={{ flexShrink: 0 }} />
           <span className="sidebar-link-text">{t('navigation.dashboard')}</span>
-        </NavLink>
+        </Link>
 
         {userPermissions.includes('chat.access') && (
-          <NavLink to="/chat" className={getNavLinkClass} title={t('navigation.chat', 'Chat')} onClick={onNavClick}>
+          <Link href="/chat" className={pathname.startsWith("/chat") ? "sidebar-link active" : "sidebar-link"} title={t('navigation.chat', 'Chat')} onClick={onNavClick}>
             <MessageSquare size={20} style={{ flexShrink: 0 }} />
             <span className="sidebar-link-text">{t('navigation.chat', 'Chat')}</span>
-          </NavLink>
+          </Link>
         )}
 
         {(userPermissions.includes('admin.users.view') || userPermissions.includes('admin.roles.view') || userPermissions.includes('admin.system.health') || userPermissions.includes('admin.sql_editor') || userPermissions.includes('admin.email_templates.view') || userPermissions.includes('admin.workflows.view')) && (
@@ -75,44 +70,44 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
             {isAdminOpen && (
               <div className="sidebar-sub-menu">
                 {userPermissions.includes('admin.users.view') && (
-                  <NavLink to="/admin/users" className={getSubNavLinkClass} title={t('navigation.users', 'Users')} onClick={onNavClick}>
+                  <Link href="/admin/users" className={pathname.startsWith("/admin/users") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.users', 'Users')} onClick={onNavClick}>
                     <span className="sidebar-link-text">{t('navigation.users', 'Users')}</span>
-                  </NavLink>
+                  </Link>
                 )}
                 {userPermissions.includes('admin.roles.view') && (
-                  <NavLink to="/admin/roles" className={getSubNavLinkClass} title={t('navigation.roles', 'Roles')} onClick={onNavClick}>
+                  <Link href="/admin/roles" className={pathname.startsWith("/admin/roles") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.roles', 'Roles')} onClick={onNavClick}>
                     <span className="sidebar-link-text">{t('navigation.roles', 'Roles')}</span>
-                  </NavLink>
+                  </Link>
                 )}
                 {userPermissions.includes('admin.system.health') && (
-                  <NavLink to="/admin/health" className={getSubNavLinkClass} title={t('navigation.system_health', 'System Health')} onClick={onNavClick}>
+                  <Link href="/admin/health" className={pathname.startsWith("/admin/health") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.system_health', 'System Health')} onClick={onNavClick}>
                     <span className="sidebar-link-text">{t('navigation.system_health', 'System Health')}</span>
-                  </NavLink>
+                  </Link>
                 )}
                 {userPermissions.includes('admin.sql_editor') && (
-                  <NavLink to="/admin/sql-editor" className={getSubNavLinkClass} title={t('navigation.sql_editor', 'SQL Editor')} onClick={onNavClick}>
+                  <Link href="/admin/sql-editor" className={pathname.startsWith("/admin/sql-editor") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.sql_editor', 'SQL Editor')} onClick={onNavClick}>
                     <span className="sidebar-link-text">{t('navigation.sql_editor', 'SQL Editor')}</span>
-                  </NavLink>
+                  </Link>
                 )}
                 {userPermissions.includes('admin.email_templates.view') && (
-                  <NavLink to="/admin/email-templates" className={getSubNavLinkClass} title={t('navigation.email_templates', 'Email Templates')} onClick={onNavClick}>
+                  <Link href="/admin/email-templates" className={pathname.startsWith("/admin/email-templates") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.email_templates', 'Email Templates')} onClick={onNavClick}>
                     <span className="sidebar-link-text">{t('navigation.email_templates', 'Email Templates')}</span>
-                  </NavLink>
+                  </Link>
                 )}
                 {userPermissions.includes('admin.dynamic_variables.view') && (
-                  <NavLink to="/admin/dynamic-variables" className={getSubNavLinkClass} title={t('navigation.dynamic_variables', 'Dynamic Variables')} onClick={onNavClick}>
+                  <Link href="/admin/dynamic-variables" className={pathname.startsWith("/admin/dynamic-variables") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.dynamic_variables', 'Dynamic Variables')} onClick={onNavClick}>
                     <span className="sidebar-link-text">{t('navigation.dynamic_variables', 'Dynamic Variables')}</span>
-                  </NavLink>
+                  </Link>
                 )}
                 {userPermissions.includes('admin.workflows.view') && (
-                  <NavLink to="/admin/workflows" className={getSubNavLinkClass} title={t('navigation.workflows', 'Workflows')} onClick={onNavClick}>
+                  <Link href="/admin/workflows" className={pathname.startsWith("/admin/workflows") || pathname.startsWith("/admin/workflow/") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.workflows', 'Workflows')} onClick={onNavClick}>
                     <span className="sidebar-link-text">{t('navigation.workflows', 'Workflows')}</span>
-                  </NavLink>
+                  </Link>
                 )}
                 {userPermissions.includes('admin.workflows.view') && (
-                  <NavLink to="/admin/system-events" className={getSubNavLinkClass} title={t('navigation.system_events', 'System Events')} onClick={onNavClick}>
+                  <Link href="/admin/system-events" className={pathname.startsWith("/admin/system-events") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.system_events', 'System Events')} onClick={onNavClick}>
                     <span className="sidebar-link-text">{t('navigation.system_events', 'System Events')}</span>
-                  </NavLink>
+                  </Link>
                 )}
               </div>
             )}
@@ -138,42 +133,30 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
             {isGamesOpen && (
               <div className="sidebar-sub-menu">
                 {userPermissions.includes('games.uno') && (
-                  <NavLink to="/games/uno" className={getSubNavLinkClass} title={t('navigation.uno', 'UNO')} onClick={onNavClick}>
+                  <Link href="/games/uno" className={pathname.startsWith("/games/uno") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.uno', 'UNO')} onClick={onNavClick}>
                     <span className="sidebar-link-text">{t('navigation.uno', 'UNO')}</span>
-                  </NavLink>
+                  </Link>
                 )}
               {userPermissions.includes('games.words.wordsearch') && (
-                <NavLink to="/games/word-search" className={getSubNavLinkClass} title={t('navigation.word_search', 'Word Search')} onClick={onNavClick}>
+                <Link href="/games/word-search" className={pathname.startsWith("/games/word-search") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.word_search', 'Word Search')} onClick={onNavClick}>
                   <span className="sidebar-link-text">{t('navigation.word_search', 'Word Search')}</span>
-                </NavLink>
+                </Link>
               )}
               </div>
             )}
           </div>
         )}
-        <NavLink to="/settings" className={getNavLinkClass} title={t('navigation.settings')} onClick={onNavClick}>
+        <Link href="/settings" className={pathname.startsWith("/settings") ? "sidebar-link active" : "sidebar-link"} title={t('navigation.settings')} onClick={onNavClick}>
           <Settings size={20} style={{ flexShrink: 0 }} />
           <span className="sidebar-link-text">{t('navigation.settings')}</span>
-        </NavLink>
+        </Link>
       </nav>
 
       <SButton 
         onClick={logout}
-        className="sidebar-link"
+        className="sidebar-link mt-auto"
         title={t('navigation.logout')}
-        style={{ 
-          marginTop: 'auto', 
-          border: 'none', 
-          borderTop: '1px solid var(--border)',
-          background: 'transparent', 
-          cursor: 'pointer', 
-          textAlign: 'left', 
-          width: '100%', 
-          padding: '1rem 1.5rem',
-          color: 'var(--text-h)',
-          borderRadius: 0,
-          justifyContent: 'flex-start'
-        }}
+        color="sidebar"
       >
         <LogOut size={20} style={{ flexShrink: 0 }} />
         <span className="sidebar-link-text">{t('navigation.logout')}</span>

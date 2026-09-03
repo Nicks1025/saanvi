@@ -18,18 +18,6 @@
   color: var(--text);
 }
 
-.manage-btn {
-  background-color: transparent;
-    color: var(--accent);
-    border: none;
-    padding: 0.5rem;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-
-.manage-btn:hover {
-  background-color: var(--surface-hover);
-}
 
 .modal-footer {
   display: flex;

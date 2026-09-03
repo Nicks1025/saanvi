@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
-import { useAuth } from '../../../store/AuthContext';
-import SDataTable from '../../../components/common/SDataTable';
-import SButton from '../../../components/common/SButton';
-import SModal from '../../../components/common/SModal';
+import { useAuth } from '@/store/AuthContext';
+import SDataTable from '@/components/common/SDataTable';
+import SButton from '@/components/common/SButton';
+import SModal from '@/components/common/SModal';
 import * as rolesService from './rolesService';
 import '../users/users.css';
 
@@ -15,7 +15,7 @@ const RolesFeature = () => {
   const [loading, setLoading] = useState(true);
   const [modalState, setModalState] = useState({ isOpen: false, role: null });
   const [isProcessing, setIsProcessing] = useState(false);
-  const navigate = useNavigate();
+  const navigate = useRouter();
   const { t } = useTranslation();
   const { user } = useAuth();
   const userPermissions = user?.permissions || [];
@@ -40,11 +40,11 @@ const RolesFeature = () => {
   };
 
   const handleEdit = (role) => {
-    navigate(`/admin/roles/${role.uuid}`);
+    navigate.push(`/admin/roles/${role.uuid}`);
   };
   
   const handleCreate = () => {
-    navigate(`/admin/roles/new`);
+    navigate.push(`/admin/roles/new`);
   };
 
   const handleDelete = (role) => {
@@ -104,11 +104,10 @@ const RolesFeature = () => {
           userPermissions.includes('admin.roles.create') ? (
             <SButton 
               onClick={handleCreate} 
-              icon={<Plus size={16} />}
-              style={{ flexShrink: 0 }}
-            >
-              <span className="sdt-action-text">{t('admin.addRole', 'Add Role')}</span>
-            </SButton>
+              icon="add"
+              text={t('admin.addRole', 'Add Role')}
+              className="flex-shrink-0"
+            />
           ) : null
         }
       />

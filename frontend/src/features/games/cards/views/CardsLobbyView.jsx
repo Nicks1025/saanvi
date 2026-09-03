@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { PlusCircle, LogIn, BookOpen, Users, Sparkles, Trophy, Flame, Radio, Play, Trash2, ArrowRight } from 'lucide-react';
 import { GAME_SCREENS } from '../types';
-import SButton from '../../../../components/common/SButton';
-import { useNavigate } from 'react-router-dom';
+import SButton from '@/components/common/SButton';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 
 export const CardsLobbyView = ({ onNavigate, openRules }) => {
-  const navigate = useNavigate();
+  const navigate = useRouter();
   const { t } = useTranslation();
 
   const handleCreateClick = () => {

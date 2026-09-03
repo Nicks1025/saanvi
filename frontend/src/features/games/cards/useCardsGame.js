@@ -11,16 +11,16 @@ import {
 import { isCardLegallyPlayable, getPlayableCardIds } from './cardValidation';
 import toast from 'react-hot-toast';
 import { createUnoRoom, joinUnoRoom } from './services/unoService';
-import socketService from '../../../services/socket.client';
-import { useAuth } from '../../../store/AuthContext';
+import socketService from '@/services/socket.client';
+import { useAuth } from '@/store/AuthContext';
 import { useUnoVoice } from './useUnoVoice';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 
 export const useCardsGame = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useRouter();
   
   // Screen & Navigation
   const [currentScreen, setCurrentScreen] = useState(GAME_SCREENS.LOBBY);
@@ -147,7 +147,7 @@ export const useCardsGame = () => {
 
   const handleLeaveRoom = useCallback(() => {
     // Navigating away triggers the router's useBlocker modal if in an active game.
-    navigate('/games/uno', { replace: true });
+    navigate.replace('/games/uno');
   }, [navigate]);
 
   const handleJoinRoom = async (roomCode) => {
@@ -165,7 +165,7 @@ export const useCardsGame = () => {
       setCurrentScreen(GAME_SCREENS.WAITING_ROOM);
       
       // Update URL to match room
-      navigate(`/games/uno/${roomCode}`, { replace: true });
+      navigate.replace(`/games/uno/${roomCode}`);
 
       socketService.emit('uno:join', { roomCode: roomData.code });
     } catch (err) {
@@ -265,7 +265,7 @@ export const useCardsGame = () => {
         duration: 'Unknown' 
       });
       setCurrentScreen(GAME_SCREENS.RESULT);
-      navigate(`/games/uno/${roomId}/winner`, { replace: true, state: { forced: true } });
+      navigate.replace(`/games/uno/${roomId}/winner`);
     };
 
     const handleRoomDeleted = () => {
@@ -279,7 +279,7 @@ export const useCardsGame = () => {
       if (playerId === user?.uuid) {
         toast.error(t('games.uno.removed_inactivity', 'You were removed from the game due to inactivity.'));
         executeLeaveRoom();
-        navigate('/games/uno');
+        navigate.push('/games/uno');
       } else {
         setPlayers(prev => prev.filter(p => p.id !== playerId));
         if (reason === 'timeout') {

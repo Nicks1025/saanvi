@@ -3,7 +3,7 @@
  * Handles all API communications for the login feature.
  */
 
-import axios from '../../../services/axios.client';
+import axios from '@/services/axios.client';
 
 export const loginUser = async (email, password) => {
   const data = await axios.post('/api/login', { email, password });

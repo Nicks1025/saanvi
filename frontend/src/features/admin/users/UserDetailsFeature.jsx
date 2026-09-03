@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useRouter, usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
-import { Save, X } from 'lucide-react';
 import * as usersService from './usersService';
 import * as rolesService from '../roles/rolesService';
-import SButton from '../../../components/common/SButton';
+import SButton from '@/components/common/SButton';
 
-import { useAuth } from '../../../store/AuthContext';
+import { useAuth } from '@/store/AuthContext';
 
 const UserDetailsFeature = () => {
   const { uuid } = useParams();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate = useRouter();
+  const pathname = usePathname();
+  const location = { pathname, search: typeof window !== "undefined" ? window.location.search : "" };
   const { t } = useTranslation();
   const { user: authUser } = useAuth();
   const userPermissions = authUser?.permissions || [];
@@ -38,7 +38,7 @@ const UserDetailsFeature = () => {
   const updateModeInUrl = (mode) => {
     const params = new URLSearchParams(location.search);
     params.set('mode', mode);
-    navigate({ search: params.toString() }, { replace: true, state: location.state });
+    navigate.replace("?" + params.toString());
   };
 
   const isFetched = React.useRef(false);
@@ -94,7 +94,7 @@ const UserDetailsFeature = () => {
         status: editForm.status
       }));
       
-      navigate('/admin/users');
+      navigate.push('/admin/users');
     } catch (err) {
       toast.error(err?.response?.data?.error || t('admin.updateUserFailed', 'Failed to update user'));
       console.error(err);
@@ -104,7 +104,7 @@ const UserDetailsFeature = () => {
   };
 
   const cancelEdit = () => {
-    navigate('/admin/users');
+    navigate.push('/admin/users');
   };
 
   if (loading) return <div style={{ padding: '2rem' }}>{t('common.loading', 'Loading...')}</div>;
@@ -115,7 +115,7 @@ const UserDetailsFeature = () => {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
         <div>
           <button 
-            onClick={() => navigate('/admin/users')}
+            onClick={() => navigate.push('/admin/users')}
             style={{ background: 'none', border: 'none', color: 'var(--text)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: 0, marginBottom: '0.5rem' }}
           >
             &larr; {t('admin.backToUsers', 'Back to Users')}
@@ -216,24 +216,24 @@ const UserDetailsFeature = () => {
           <>
             <SButton 
               onClick={cancelEdit}
-              icon={<X size={16} />}
+              color="danger"
+              icon="close"
               text={t('common.cancel', 'Cancel')}
-              style={{ background: '#ffebee', color: '#d32f2f', border: 'none', fontWeight: 600 }}
             />
             <SButton 
               onClick={handleSave}
               disabled={saving}
-              icon={<Save size={16} />}
+              icon="save"
               text={saving ? t('common.saving', 'Saving...') : t('admin.saveChanges', 'Save Changes')}
-              style={{ background: 'var(--accent)', color: 'white', border: 'none', fontWeight: 600 }}
+              color="primary"
             />
           </>
         ) : (
           <SButton 
-            onClick={() => navigate('/admin/users')}
-            icon={<X size={16} />}
-            text={t('common.close', 'Close')}
-            style={{ background: '#ffebee', color: '#d32f2f', border: 'none', fontWeight: 600 }}
+              onClick={() => navigate.push('/admin/users')}
+              color="danger"
+              icon="close"
+              text={t('common.close', 'Close')}
           />
         )}
       </div>

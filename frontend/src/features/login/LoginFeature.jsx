@@ -1,13 +1,14 @@
+"use client";
 import React, { useState } from 'react';
-import STextField from '../../components/common/STextField';
-import SButton from '../../components/common/SButton';
+import STextField from '@/components/common/STextField';
+import SButton from '@/components/common/SButton';
 import { loginUser, loginWithGoogle } from './service/loginService';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import MfaVerificationFeature from './MfaVerificationFeature';
 import './login.css';
 
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../store/AuthContext';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/store/AuthContext';
 
 const LoginFeatureContent = () => {
   const [email, setEmail] = useState('');
@@ -16,7 +17,7 @@ const LoginFeatureContent = () => {
   const [error, setError] = useState('');
   const [mfaData, setMfaData] = useState(null);
   
-  const navigate = useNavigate();
+  const navigate = useRouter();
   const { login } = useAuth();
 
   const handleLogin = async (e) => {
@@ -43,7 +44,7 @@ const LoginFeatureContent = () => {
         setMfaData({ email: data.email, supabaseToken: data.supabaseToken });
       } else if (data.token) {
         login(data.token, data.user, data.supabaseToken);
-        navigate('/dashboard');
+        navigate.push('/dashboard');
       }
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Login failed.');
@@ -62,7 +63,7 @@ const LoginFeatureContent = () => {
           setMfaData({ email: data.email, supabaseToken: data.supabaseToken });
         } else if (data.token) {
           login(data.token, data.user, data.supabaseToken);
-          navigate('/dashboard');
+          navigate.push('/dashboard');
         }
       } catch (err) {
         setError(err.response?.data?.error || err.message || 'Google authentication failed.');
@@ -83,7 +84,7 @@ const LoginFeatureContent = () => {
           supabaseToken={mfaData.supabaseToken}
           onVerifySuccess={(data) => {
             login(data.token, data.user, data.supabaseToken);
-            navigate('/dashboard');
+            navigate.push('/dashboard');
           }}
           onCancel={() => {
             setMfaData(null);
@@ -166,7 +167,7 @@ const LoginFeatureContent = () => {
 
 const LoginFeature = () => {
   return (
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ''}>
+    <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''}>
       <LoginFeatureContent />
     </GoogleOAuthProvider>
   );

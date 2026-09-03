@@ -1,4 +1,4 @@
-import axios from '../../../../services/axios.client';
+import axios from '@/services/axios.client';
 
 export const createUnoRoom = async (roomData, userData) => {
   const response = await axios.post('/api/uno/create', { ...roomData, userData });

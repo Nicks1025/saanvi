@@ -37,7 +37,7 @@ function handleNuxtLoadingProgress() {
 }
 
 // Setup base URL
-$axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+$axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
 $axios.defaults.headers.common['Content-Type'] = 'application/json';
 
 let responseCount = 0;

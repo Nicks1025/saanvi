@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../../store/AuthContext';
+import {  useRouter, usePathname  } from 'next/navigation';
+import Link from 'next/link';
+import { useAuth } from '@/store/AuthContext';
 import { 
   Gamepad2, 
   Calculator, 
@@ -15,11 +16,13 @@ import {
   Shield,
   Home
 } from 'lucide-react';
+import '../home.css';
 
 const HomeNavbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate = useRouter();
+  const pathname = usePathname();
+  const location = { pathname, search: typeof window !== "undefined" ? window.location.search : "" };
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -41,7 +44,7 @@ const HomeNavbar = () => {
   const handleHomeClick = () => {
     setMobileMenuOpen(false);
     if (location.pathname !== '/') {
-      navigate('/');
+      navigate.push('/');
     } else {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -50,7 +53,7 @@ const HomeNavbar = () => {
   const scrollToSection = (id) => {
     setMobileMenuOpen(false);
     if (location.pathname !== '/') {
-      navigate(`/#${id}`);
+      navigate.push(`/#${id}`);
       return;
     }
     const element = document.getElementById(id);
@@ -69,7 +72,7 @@ const HomeNavbar = () => {
     <header className={`home-nav-container ${scrolled ? 'nav-scrolled' : ''}`}>
       <div className="home-nav-inner">
         {/* Brand Logo */}
-        <Link to="/" className="home-nav-brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+        <Link href="/" className="home-nav-brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
           <div className="brand-logo-wrapper">
             <img src="/saanvi_logo.png" alt="Saanvi Logo" className="brand-logo-img" />
           </div>
@@ -119,7 +122,7 @@ const HomeNavbar = () => {
         <div className="home-nav-auth">
           {isAuthenticated && user ? (
             <div className="nav-user-controls">
-              <Link to="/dashboard" className="nav-user-badge" title="Go to Dashboard">
+              <Link href="/dashboard" className="nav-user-badge" title="Go to Dashboard">
                 {user.profileImageUrl ? (
                   <img src={user.profileImageUrl} alt="Avatar" className="nav-avatar" />
                 ) : (
@@ -132,7 +135,7 @@ const HomeNavbar = () => {
                 </span>
               </Link>
               
-              <Link to="/dashboard" className="nav-action-btn btn-outline" title="Dashboard">
+              <Link href="/dashboard" className="nav-action-btn btn-outline" title="Dashboard">
                 <LayoutDashboard size={16} />
                 <span>Dashboard</span>
               </Link>
@@ -150,20 +153,20 @@ const HomeNavbar = () => {
           ) : (
             <div className="nav-guest-controls">
               {isLoginPage ? (
-                <Link to="/signup" className="nav-action-btn btn-primary">
+                <Link href="/signup" className="nav-action-btn btn-primary">
                   <span>Get Started</span>
                   <ArrowRight size={15} />
                 </Link>
               ) : isSignupPage ? (
-                <Link to="/login" className="nav-action-btn btn-primary">
+                <Link href="/login" className="nav-action-btn btn-primary">
                   <span>Sign In</span>
                 </Link>
               ) : (
                 <>
-                  <Link to="/login" className="nav-action-btn btn-ghost">
+                  <Link href="/login" className="nav-action-btn btn-ghost">
                     Sign In
                   </Link>
-                  <Link to="/signup" className="nav-action-btn btn-primary">
+                  <Link href="/signup" className="nav-action-btn btn-primary">
                     <span>Get Started</span>
                     <ArrowRight size={15} />
                   </Link>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../../store/AuthContext';
-import SButton from '../../../components/common/SButton';
+import { useAuth } from '@/store/AuthContext';
+import SButton from '@/components/common/SButton';
 import TextMessage from './messages/TextMessage';
 import ImageMessage from './messages/ImageMessage';
 import MediaGalleryMessage from './messages/MediaGalleryMessage';

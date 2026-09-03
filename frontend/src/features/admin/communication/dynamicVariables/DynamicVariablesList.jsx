@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import SDataTable from '../../../../components/common/SDataTable';
-import SButton from '../../../../components/common/SButton';
+import SDataTable from '@/components/common/SDataTable';
+import SButton from '@/components/common/SButton';
 import DynamicVariableModal from './DynamicVariableModal';
-import SModal from '../../../../components/common/SModal';
-import axios from '../../../../services/axios.client';
+import SModal from '@/components/common/SModal';
+import axios from '@/services/axios.client';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { Eye, Edit, Trash2 } from 'lucide-react';
-import { useAuth } from '../../../../store/AuthContext';
+import { Eye, Edit, Trash2, Plus } from 'lucide-react';
+import { useAuth } from '@/store/AuthContext';
 
 const DynamicVariablesList = () => {
   const { t } = useTranslation();
@@ -113,9 +113,7 @@ const DynamicVariablesList = () => {
         title="Dynamic Variables"
         headerActions={
           userPermissions?.includes('admin.dynamic_variables.create') ? (
-            <SButton color="primary" onClick={handleAdd}>
-              + Add Dynamic Variable
-            </SButton>
+            <SButton color="primary" onClick={handleAdd} icon="add" text="Add Dynamic Variable" />
           ) : null
         }
         data={variables}

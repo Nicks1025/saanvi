@@ -1,8 +1,9 @@
+"use client";
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { chatService } from '../features/chat/chat.service';
-import socketService from '../services/socket.client';
+import { chatService } from '@/features/chat/chat.service';
+import socketService from '@/services/socket.client';
 import { useAuth } from './AuthContext';
-import { chatStorage } from '../features/chat/chatStorage';
+import { chatStorage } from '@/features/chat/chatStorage';
 
 const ChatContext = createContext(null);
 

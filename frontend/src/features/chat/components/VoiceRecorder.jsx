@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Pause, Play, X, Send } from 'lucide-react';
-import SButton from '../../../components/common/SButton';
+import SButton from '@/components/common/SButton';
 
 /**
  * VoiceRecorder
@@ -151,7 +151,7 @@ const VoiceRecorder = ({ onSend, onCancel }) => {
       <SButton
         color="danger"
         size="s"
-        icon={<X size={20} />}
+        icon="close"
         onClick={handleCancel}
         label="Cancel recording"
         title="Cancel recording"
@@ -169,7 +169,7 @@ const VoiceRecorder = ({ onSend, onCancel }) => {
       <SButton
         color="ghost"
         size="s"
-        icon={isPaused ? <Play size={20} /> : <Pause size={20} />}
+        icon={isPaused ? "play" : "pause"}
         onClick={handlePauseResume}
         label={isPaused ? 'Resume recording' : 'Pause recording'}
         title={isPaused ? 'Resume recording' : 'Pause recording'}
@@ -179,7 +179,7 @@ const VoiceRecorder = ({ onSend, onCancel }) => {
       <SButton
         color="primary"
         size="s"
-        icon={<Send size={18} className="voice-send-icon" />}
+        icon="send"
         onClick={handleSend}
         label="Send voice message"
         title="Send voice message"

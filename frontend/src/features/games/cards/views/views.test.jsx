@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'next/navigation';
 import CardsLobbyView from './CardsLobbyView';
 import CreateGameView from './CreateGameView';
 import JoinGameView from './JoinGameView';

@@ -1,3 +1,4 @@
+"use client";
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const ThemeContext = createContext();
@@ -6,11 +7,17 @@ export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('app-theme') || 'system';
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('app-theme') || 'system';
+    }
+    return 'system';
   });
 
   const [font, setFont] = useState(() => {
-    return localStorage.getItem('app-font') || 'sans';
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('app-font') || 'inter';
+    }
+    return 'inter';
   });
 
   useEffect(() => {
