@@ -19,6 +19,7 @@ const signup = {
   request: {
     body: Joi.object({
       email: Joi.string().email().required(),
+      password: Joi.string().min(8).required(),
       first_name: Joi.string().max(100).required(),
       last_name: Joi.string().max(100).required(),
       display_name: Joi.string().max(200).required(),

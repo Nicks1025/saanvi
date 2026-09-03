@@ -12,7 +12,7 @@ class SignupController extends BaseController {
 
   async signup(req, res) {
     try {
-      this.validateRequiredParams(req.body, ['email', 'password', 'firstName', 'lastName', 'displayName', 'phoneNumber', 'gender']);
+      this.validateRequiredParams(req.body, ['email', 'password', 'first_name', 'last_name', 'display_name', 'phone_number', 'gender']);
       const result = await this.signupService.processSignup(req.body);
       return this.sendSuccess(res, result, 'Account created successfully');
     } catch (error) {
