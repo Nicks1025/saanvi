@@ -18,16 +18,17 @@ const signup = {
   },
   request: {
     body: Joi.object({
-      email:        Joi.string().email().max(254).required(),
-      password:     Joi.string().min(8).required(),
-      firstName:    Joi.string().max(100).required(),
-      lastName:     Joi.string().max(100).required(),
-      displayName:  Joi.string().max(200).required(),
-      phoneNumber:  Joi.string().max(30).required(),
-      dateOfBirth:  Joi.string().isoDate().required(),
-      gender:       Joi.string().valid('male', 'female', 'other', 'prefer_not_to_say').required(),
-      language:     Joi.string().max(20).allow('', null).optional()
-    })
+      email: Joi.string().email().required(),
+      password: Joi.string().min(8).required(),
+      first_name: Joi.string().max(100).required(),
+      last_name: Joi.string().max(100).required(),
+      display_name: Joi.string().max(200).required(),
+      phone_number: Joi.string().required(),
+      date_of_birth: Joi.string().required(),
+      gender: Joi.string().required(),
+      language: Joi.string().optional().default('en')
+    }).unknown(true),
+    stripUnknown: false
   }
 };
 
