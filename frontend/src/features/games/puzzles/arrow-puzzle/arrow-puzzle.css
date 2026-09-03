@@ -1,0 +1,124 @@
+.arrow-puzzle-feature {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.arrow-puzzle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.arrow-puzzle-header h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  color: #1e293b;
+}
+
+.difficulty-selector {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.diff-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  background-color: #f1f5f9;
+  color: #64748b;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.diff-badge:hover {
+  background-color: #e2e8f0;
+}
+
+.diff-badge.active {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.stats-box {
+  background-color: #f8fafc;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.stat {
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.stat strong {
+  font-size: 1.1rem;
+  color: #0f172a;
+}
+
+.arrow-puzzle-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-height: 300px;
+}
+
+.arrow-puzzle-controls {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.control-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.completion-modal {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.trophy-icon {
+  color: #fbbf24;
+  margin-bottom: 1rem;
+}
+
+.completion-modal h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  color: #0f172a;
+}
+
+.completion-modal p {
+  color: #64748b;
+  margin-bottom: 2rem;
+}
+
+.completion-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}

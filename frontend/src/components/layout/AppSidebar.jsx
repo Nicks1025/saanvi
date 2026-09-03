@@ -142,6 +142,11 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
                   <span className="sidebar-link-text">{t('navigation.word_search', 'Word Search')}</span>
                 </Link>
               )}
+              {userPermissions.includes('games.words.wordsearch') && (
+                <Link href="/games/arrow-puzzle" className={pathname.startsWith("/games/arrow-puzzle") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title="Arrow Puzzle" onClick={onNavClick}>
+                  <span className="sidebar-link-text">Arrow Puzzle</span>
+                </Link>
+              )}
               </div>
             )}
           </div>

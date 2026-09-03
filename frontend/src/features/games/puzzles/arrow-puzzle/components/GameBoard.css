@@ -1,0 +1,64 @@
+.arrow-puzzle-board-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  aspect-ratio: 1 / 1;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  /* Add a subtle grid background just for aesthetics, but not strictly cells */
+  background-image: radial-gradient(#cbd5e1 1px, transparent 0);
+  background-size: 25px 25px;
+}
+
+.arrow-puzzle-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible; 
+}
+
+.puzzle-object {
+  cursor: pointer;
+}
+
+.puzzle-object:hover polyline:last-of-type,
+.puzzle-object:hover g > path {
+  filter: drop-shadow(0 4px 6px rgba(15, 23, 42, 0.4));
+  stroke-width: 6; /* Slightly thicken to indicate hover */
+}
+
+.puzzle-object.escaping {
+  pointer-events: none;
+}
+
+@keyframes shake {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-4px, 0); }
+  40% { transform: translate(4px, 0); }
+  60% { transform: translate(-4px, 0); }
+  80% { transform: translate(4px, 0); }
+  100% { transform: translate(0, 0); }
+}
+
+.puzzle-object.shaking {
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes hintPulse {
+  0% { filter: drop-shadow(0 0 0 transparent); }
+  50% { filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.8)); }
+  100% { filter: drop-shadow(0 0 0 transparent); }
+}
+
+.puzzle-object.hint-pulse polyline:last-of-type {
+  stroke: #3b82f6;
+  animation: hintPulse 1s infinite alternate;
+}
+.puzzle-object.hint-pulse marker path {
+  fill: #3b82f6;
+}
