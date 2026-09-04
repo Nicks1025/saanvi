@@ -54,9 +54,12 @@ app.get('/health', (req, res) => {
 const { initSocket } = require('./socket');
 initSocket(server);
 
+const startKeepAlive = require('./infrastructure/keepAlive');
+
 const PORT = process.env.BACKEND_PORT || 3002;
 server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
+  startKeepAlive();
 });
 
 // Graceful Shutdown

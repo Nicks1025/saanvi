@@ -1,18 +1,23 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, Home, ArrowLeft } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { useAuth } from '@/store/AuthContext';
+import { AlertCircle } from 'lucide-react';
+import SButton from '@/components/common/SButton';
 
 export default function NotFoundClient() {
   const [countdown, setCountdown] = useState(8);
   const navigate = useRouter();
-  const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
-  
-  const targetPath = isAuthenticated ? '/dashboard' : '/';
-  const targetLabel = isAuthenticated ? 'Dashboard' : 'Home';
+  const [targetPath, setTargetPath] = useState('/');
+  const [targetLabel, setTargetLabel] = useState('Home');
+
+  useEffect(() => {
+    // Detect auth state client-side without relying on AuthContext
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      setTargetPath('/dashboard');
+      setTargetLabel('Dashboard');
+    }
+  }, []);
 
   useEffect(() => {
     if (countdown === 0) {
@@ -28,63 +33,51 @@ export default function NotFoundClient() {
   }, [countdown, navigate, targetPath]);
 
   return (
-    <div className="saanvi-public-page" style={{ justifyContent: 'center', alignItems: 'center' }}>
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        textAlign: 'center',
-        padding: '2.5rem',
-        maxWidth: '520px',
-        margin: 'auto',
-        background: 'rgba(17, 24, 39, 0.88)',
-        backdropFilter: 'blur(16px)',
-        borderRadius: '16px',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.5)',
-        zIndex: 1
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      minHeight: '100vh', 
+      background: 'var(--bg-main)', 
+      color: 'var(--text-h)',
+      padding: '2rem'
+    }}>
+      <AlertCircle size={72} style={{ color: 'var(--primary, #4f46e5)', marginBottom: '1.5rem' }} />
+      <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', fontWeight: 600 }}>
+        Page Not Found
+      </h1>
+      <p style={{ 
+        fontSize: '1.1rem', 
+        color: 'var(--text-p)', 
+        marginBottom: '2.5rem', 
+        textAlign: 'center', 
+        maxWidth: '450px',
+        lineHeight: 1.6
       }}>
-        <AlertCircle size={56} style={{ color: '#818cf8', marginBottom: '1.25rem' }} />
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: '0 0 0.5rem', color: '#ffffff' }}>
-          {t('not_found.title', 'Page Not Found')}
-        </h1>
-        <p style={{ fontSize: '0.98rem', color: '#94a3b8', margin: '0 0 1.75rem', lineHeight: 1.5 }}>
-          {t('not_found.message', 'The page you are looking for does not exist or has been moved.')}
+        The page you are looking for does not exist or has been moved.
+      </p>
+      
+      <div style={{ 
+        padding: '1.25rem 2.5rem', 
+        background: 'var(--bg-card)', 
+        borderRadius: '12px', 
+        border: '1px solid var(--border)', 
+        marginBottom: '2.5rem',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+      }}>
+        <p style={{ fontSize: '1.05rem', margin: 0, color: 'var(--text-h)' }}>
+          Redirecting to {targetLabel} in <strong style={{ color: 'var(--primary)', fontSize: '1.2rem', padding: '0 0.2rem' }}>{countdown}</strong> seconds...
         </p>
-        <div style={{ 
-          backgroundColor: 'rgba(15, 23, 42, 0.8)', 
-          padding: '0.75rem 1.25rem', 
-          borderRadius: '10px',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          marginBottom: '1.5rem',
-          width: '100%',
-          boxSizing: 'border-box'
-        }}>
-          <p style={{ margin: 0, fontSize: '0.9rem', color: '#cbd5e1' }}>
-            {t('not_found.redirecting', `Redirecting to ${targetLabel} in`)} <strong style={{ color: '#818cf8', fontSize: '1.1rem' }}>{countdown}</strong> {t('not_found.seconds', 'seconds')}...
-          </p>
-        </div>
-        <button
-          onClick={() => navigate.push(targetPath)}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.75rem 1.5rem',
-            borderRadius: '8px',
-            background: '#4f46e5',
-            color: 'white',
-            fontWeight: 600,
-            fontSize: '0.94rem',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.25)',
-            cursor: 'pointer'
-          }}
-        >
-          <Home size={16} /> Return to {targetLabel}
-        </button>
       </div>
+
+      <SButton 
+        onClick={() => navigate.push(targetPath)}
+        style={{ padding: '0.75rem 2rem', fontSize: '1.05rem' }}
+        icon="home"
+      >
+        Return to {targetLabel}
+      </SButton>
     </div>
   );
 };

@@ -64,6 +64,11 @@
   
   .layout-main-full {
     height: 100vh;
+    overflow: hidden;
+  }
+
+  .layout-main-game {
+    overflow: hidden;
   }
   
   /* Backdrop overlay for mobile sidebar */

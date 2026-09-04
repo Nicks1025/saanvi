@@ -19,6 +19,19 @@ const MoreGamesSection = () => {
 
   const games = [
     {
+      id: 'game-arrow-puzzle',
+      title: 'Arrow Puzzle',
+      category: 'Logic & Spatial',
+      description: 'Untangle interlocking orthogonal arrows in a progressively difficult spatial logic puzzle.',
+      icon: Sparkles, // Use Sparkles or Gamepad2
+      accent: 'blue',
+      status: 'available',
+      statusLabel: 'Available Now',
+      players: 'Solo / Progressive',
+      route: '/games/arrow-puzzle',
+      highlights: ['Infinite Levels', 'Procedural Gen', 'Progress Tracking']
+    },
+    {
       id: 'game-uno',
       title: 'Multiplayer UNO',
       category: 'Cards & Tabletop',
@@ -128,7 +141,7 @@ const MoreGamesSection = () => {
             className={`filter-pill ${filter === 'available' ? 'active' : ''}`}
             onClick={() => setFilter('available')}
           >
-            Available Now (2)
+            Available Now (3)
           </button>
           <button 
             type="button" 
