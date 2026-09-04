@@ -250,7 +250,7 @@ const HomeNavbar = () => {
 
                 <div className="mobile-user-actions">
                   <Link 
-                    to="/dashboard" 
+                    href="/dashboard" 
                     onClick={() => setMobileMenuOpen(false)}
                     className="mobile-btn btn-primary"
                   >
@@ -271,7 +271,7 @@ const HomeNavbar = () => {
               <div className="mobile-guest-actions">
                 {isLoginPage ? (
                   <Link 
-                    to="/signup" 
+                    href="/signup" 
                     onClick={() => setMobileMenuOpen(false)} 
                     className="mobile-btn btn-primary"
                   >
@@ -280,7 +280,7 @@ const HomeNavbar = () => {
                   </Link>
                 ) : isSignupPage ? (
                   <Link 
-                    to="/login" 
+                    href="/login" 
                     onClick={() => setMobileMenuOpen(false)} 
                     className="mobile-btn btn-primary"
                   >
@@ -289,14 +289,14 @@ const HomeNavbar = () => {
                 ) : (
                   <>
                     <Link 
-                      to="/login" 
+                      href="/login" 
                       onClick={() => setMobileMenuOpen(false)} 
                       className="mobile-btn btn-outline"
                     >
                       Sign In
                     </Link>
                     <Link 
-                      to="/signup" 
+                      href="/signup" 
                       onClick={() => setMobileMenuOpen(false)} 
                       className="mobile-btn btn-primary"
                     >
