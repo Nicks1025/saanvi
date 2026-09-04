@@ -1,9 +1,9 @@
-import { createPuzzle, isMoveValid, doesObjectOverlap } from './PuzzleEngine.js';
+const { createPuzzle, doesObjectOverlap, hasDeadlock } = require('./PuzzleEngine.js');
 
 const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const randomItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-const STEP = 50; // Logical grid step
+const STEP = 35; // Finer logical grid step to allow better shape definition
 const PADDING = 50; // Padding from edge
 
 const DIRS = [
@@ -46,17 +46,23 @@ const maskHeart = (x, y, width, height) => {
   return term1 - term2 <= 0;
 };
 
-const getMaskForLevel = (level) => {
-  if (level % 10 === 0) return maskHeart;
-  if (level % 5 === 0) return maskCircle;
-  return maskSquare;
+const SHAPES = {
+  SQUARE: 'Square',
+  CIRCLE: 'Circle',
+  HEART: 'Heart'
+};
+
+const SHAPE_MASKS = {
+  [SHAPES.SQUARE]: maskSquare,
+  [SHAPES.CIRCLE]: maskCircle,
+  [SHAPES.HEART]: maskHeart
 };
 
 /**
  * Generates a structured orthogonal path strictly within the mask.
  */
-const generateCandidatePath = (width, height, maskFunc, idCounter, maxSegments) => {
-  const numSegments = randomInt(1, maxSegments);
+const generateCandidatePath = (width, height, maskFunc, idCounter, minSegments, maxSegments) => {
+  const numSegments = randomInt(minSegments, maxSegments);
   
   let currX, currY;
   let isValidStart = false;
@@ -101,17 +107,52 @@ const generateCandidatePath = (width, height, maskFunc, idCounter, maxSegments) 
     }
   }
 
-  // Filter 0-length segments
+  // Filter 0-length segments and enforce strict orthogonal alternation
   const cleanedPoints = [points[0]];
+  let lastAxis = null;
+
   for (let i = 1; i < points.length; i++) {
     const prev = cleanedPoints[cleanedPoints.length - 1];
     const curr = points[i];
-    if (prev.x !== curr.x || prev.y !== curr.y) {
-      cleanedPoints.push(curr);
+    
+    if (prev.x === curr.x && prev.y === curr.y) continue; // Skip 0-length
+    
+    const currentAxis = (prev.x !== curr.x) ? 'X' : 'Y';
+    
+    // If we move on the same axis twice, a perpendicular segment was 0-length.
+    // This creates collinear extensions or double-backs. Reject it.
+    if (lastAxis === currentAxis) {
+      return null;
     }
+    
+    cleanedPoints.push(curr);
+    lastAxis = currentAxis;
   }
 
-  if (cleanedPoints.length < 2) return null;
+  // A valid arrow of N segments must have exactly N + 1 points.
+  if (cleanedPoints.length - 1 < minSegments) {
+    return null;
+  }
+  
+  // Check for self-intersection (prevents ugly loops)
+  for (let i = 0; i < cleanedPoints.length - 1; i++) {
+    const minXA = Math.min(cleanedPoints[i].x, cleanedPoints[i+1].x);
+    const maxXA = Math.max(cleanedPoints[i].x, cleanedPoints[i+1].x);
+    const minYA = Math.min(cleanedPoints[i].y, cleanedPoints[i+1].y);
+    const maxYA = Math.max(cleanedPoints[i].y, cleanedPoints[i+1].y);
+    
+    for (let j = i + 2; j < cleanedPoints.length - 1; j++) {
+      // Ignore adjacent segments intersecting at their shared vertex (j=i+1)
+      const minXC = Math.min(cleanedPoints[j].x, cleanedPoints[j+1].x);
+      const maxXC = Math.max(cleanedPoints[j].x, cleanedPoints[j+1].x);
+      const minYC = Math.min(cleanedPoints[j].y, cleanedPoints[j+1].y);
+      const maxYC = Math.max(cleanedPoints[j].y, cleanedPoints[j+1].y);
+      
+      if (minXA <= maxXC && maxXA >= minXC && minYA <= maxYC && maxYA >= minYC) {
+        return null; // Self-intersects
+      }
+    }
+  }
   
   const lastP = cleanedPoints[cleanedPoints.length - 1];
   const prevP = cleanedPoints[cleanedPoints.length - 2];
@@ -128,20 +169,27 @@ const generateCandidatePath = (width, height, maskFunc, idCounter, maxSegments) 
   };
 };
 
-export const generatePuzzle = (level) => {
-  // Infinite complexity scaling!
-  // Width grows faster to accommodate density
-  const size = Math.min(400 + level * 25, 1000);
+const generatePuzzle = (level, shape = SHAPES.SQUARE) => {
+  // Base size scales infinitely with level. Each level adds roughly one grid step (35px).
+  const size = 500 + level * 35;
   const width = size;
   const height = size;
+
   
-  // Density grows linearly
-  const targetDensity = Math.min(10 + Math.floor(level * 1.5), 150);
+  // We want to pack the shape as tightly as possible, so targetDensity is infinite.
+  // The generation stops when it fails to find an empty spot consecutively.
+  const targetDensity = 99999; 
   
-  // Higher levels allow more complex snakes (up to 5 segments)
-  const maxSegments = Math.min(2 + Math.floor(level / 5), 5);
+  // Calculate minimum segments based on a logarithmic scale
+  const minSegments = Math.min(
+    6,
+    Math.ceil(Math.log2(Math.max(level, 5) / 5)) + 1
+  );
   
-  const maskFunc = getMaskForLevel(level);
+  // Ensure max segments is always at least minSegments, allowing for variation
+  const maxSegments = Math.max(minSegments + 1, Math.min(2 + Math.floor(level / 4), 8));
+  
+  const maskFunc = SHAPE_MASKS[shape] || maskSquare;
 
   let bestPuzzle = null;
   let bestCount = 0;
@@ -150,10 +198,11 @@ export const generatePuzzle = (level) => {
     const puzzle = createPuzzle(width, height);
     let idCounter = 1;
     let consecutiveFailures = 0;
-    const maxConsecutiveFailures = 200; 
+    // Higher levels get more attempts to pack the board even tighter
+    const maxConsecutiveFailures = Math.min(200 + level * 20, 1000); 
 
     while (puzzle.objects.length < targetDensity && consecutiveFailures < maxConsecutiveFailures) {
-      const candidate = generateCandidatePath(width, height, maskFunc, idCounter, maxSegments);
+      const candidate = generateCandidatePath(width, height, maskFunc, idCounter, minSegments, maxSegments);
       
       if (!candidate) {
         consecutiveFailures++;
@@ -166,7 +215,7 @@ export const generatePuzzle = (level) => {
       }
 
       puzzle.objects.push(candidate);
-      if (isMoveValid(puzzle, candidate.id)) {
+      if (!hasDeadlock(puzzle)) {
         idCounter++;
         consecutiveFailures = 0;
       } else {
@@ -180,7 +229,9 @@ export const generatePuzzle = (level) => {
       bestPuzzle = puzzle;
     }
     
-    if (bestCount >= targetDensity * 0.8) break;
+    // If we managed to pack a decent amount, we can stop trying to find a better one
+    // We scale the required target aggressively so higher levels always have more pieces
+    if (bestCount >= 10 + level * 3) break;
   }
 
   if (bestPuzzle) {
@@ -189,3 +240,5 @@ export const generatePuzzle = (level) => {
   
   return bestPuzzle;
 };
+
+module.exports = { SHAPES, SHAPE_MASKS, generatePuzzle };

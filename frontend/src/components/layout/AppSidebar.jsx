@@ -114,7 +114,7 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
           </div>
         )}
 
-        {(userPermissions.includes('games.uno') || userPermissions.includes('games.words.wordsearch')) && (
+        {(userPermissions.includes('games.uno') || userPermissions.includes('games.words.wordsearch') || userPermissions.includes('games.puzzles.arrowpuzzle')) && (
           <div className="sidebar-group">
             <button 
               className={`sidebar-link sidebar-group-btn ${location.pathname.startsWith('/games') ? 'active-parent' : ''}`} 
@@ -142,7 +142,7 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
                   <span className="sidebar-link-text">{t('navigation.word_search', 'Word Search')}</span>
                 </Link>
               )}
-              {userPermissions.includes('games.words.wordsearch') && (
+              {userPermissions.includes('games.puzzles.arrowpuzzle') && (
                 <Link href="/games/arrow-puzzle" className={pathname.startsWith("/games/arrow-puzzle") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title="Arrow Puzzle" onClick={onNavClick}>
                   <span className="sidebar-link-text">Arrow Puzzle</span>
                 </Link>

@@ -13,19 +13,33 @@ const calculatePathLength = (points) => {
   return len;
 };
 
-export const GameBoard = ({ puzzle, onObjectTap, hintObjectId }) => {
+export const GameBoard = ({ puzzle, shape, onObjectTap, onMoveAttempt, hintObjectId }) => {
   const [animatingObjects, setAnimatingObjects] = useState({});
 
   const handleTap = (obj) => {
     if (animatingObjects[obj.id]) return;
 
-    const valid = isMoveValid(puzzle, obj.id);
+    // Filter out escaping objects so they don't block subsequent taps
+    const escapingIds = Object.keys(animatingObjects).filter(id => animatingObjects[id].state === 'ESCAPING');
+    const virtualPuzzle = {
+      ...puzzle,
+      objects: puzzle.objects.filter(o => !escapingIds.includes(o.id))
+    };
+
+    const valid = isMoveValid(virtualPuzzle, obj.id);
+    if (onMoveAttempt) onMoveAttempt();
+
     if (valid) {
       setAnimatingObjects((prev) => ({
         ...prev,
         [obj.id]: { state: 'ESCAPING', dir: obj.dir },
       }));
       setTimeout(() => {
+        setAnimatingObjects(prev => {
+          const next = { ...prev };
+          delete next[obj.id];
+          return next;
+        });
         onObjectTap(obj.id);
       }, 500);
     } else {
@@ -73,6 +87,7 @@ export const GameBoard = ({ puzzle, onObjectTap, hintObjectId }) => {
           const dy = DIRECTIONS[obj.dir].dy * dist;
           
           // The body points include the infinite escape ray so it's always ready
+          const originalPointsStr = obj.points.map((p) => `${p.x},${p.y}`).join(' ');
           const pointsToRender = [...obj.points, { x: head.x + dx, y: head.y + dy }];
           const pointsStr = pointsToRender.map((p) => `${p.x},${p.y}`).join(' ');
 
@@ -90,9 +105,9 @@ export const GameBoard = ({ puzzle, onObjectTap, hintObjectId }) => {
 
           return (
             <g key={obj.id} className={className} onClick={() => handleTap(obj)}>
-              {/* Invisible wide path for easy tapping */}
+              {/* Invisible wide path for easy tapping (only covers the actual physical object) */}
               <polyline
-                points={pointsStr}
+                points={originalPointsStr}
                 fill="none"
                 stroke="transparent"
                 strokeWidth={30}

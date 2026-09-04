@@ -2,7 +2,8 @@ import React from 'react';
 import { 
   Plus, UserPlus, X, Save, Pencil, Trash2, 
   Archive, RefreshCw, ArrowLeft, Send, MoreVertical, 
-  ZoomIn, ZoomOut, Check, Play, Download, Pause 
+  ZoomIn, ZoomOut, Check, Play, Download, Pause,
+  Lightbulb, Trophy
 } from 'lucide-react';
 
 const ICON_MAP = {
@@ -22,7 +23,9 @@ const ICON_MAP = {
   'check': Check,
   'play': Play,
   'pause': Pause,
-  'download': Download
+  'download': Download,
+  'hint': Lightbulb,
+  'trophy': Trophy
 };
 
 const SIZE_MAP = {

@@ -1,22 +1,16 @@
-export const THICKNESS = 16; // Logical bounding box thickness (visual stroke will be thinner, e.g. 6px or 8px)
+const THICKNESS = 16; // Logical bounding box thickness (visual stroke will be thinner, e.g. 6px or 8px)
 
-export const DIRECTIONS = {
+const DIRECTIONS = {
   UP: { dx: 0, dy: -1 },
   DOWN: { dx: 0, dy: 1 },
   LEFT: { dx: -1, dy: 0 },
   RIGHT: { dx: 1, dy: 0 },
 };
 
-export const SHAPES = {
-  SQUARE: 'Square',
-  CIRCLE: 'Circle',
-  HEART: 'Heart'
-};
-
 /**
  * Creates an empty puzzle board with a specified continuous logical area.
  */
-export const createPuzzle = (width, height) => ({
+const createPuzzle = (width, height) => ({
   width,   // e.g. 1000
   height,  // e.g. 1000
   objects: [], // Array of { id, dir: 'UP'|'DOWN'|'LEFT'|'RIGHT', points: [{x,y}], color: string }
@@ -25,7 +19,7 @@ export const createPuzzle = (width, height) => ({
 /**
  * Gets the Axis-Aligned Bounding Box for a single line segment.
  */
-export const getSegmentAABB = (p1, p2) => {
+const getSegmentAABB = (p1, p2) => {
   return {
     minX: Math.min(p1.x, p2.x) - THICKNESS / 2,
     maxX: Math.max(p1.x, p2.x) + THICKNESS / 2,
@@ -37,7 +31,7 @@ export const getSegmentAABB = (p1, p2) => {
 /**
  * Checks if two static AABBs intersect.
  */
-export const aabbIntersect = (A, B) => {
+const aabbIntersect = (A, B) => {
   return (
     A.minX < B.maxX &&
     A.maxX > B.minX &&
@@ -49,7 +43,7 @@ export const aabbIntersect = (A, B) => {
 /**
  * Checks if AABB 'A' moving infinitely in 'dir' will intersect stationary AABB 'B'.
  */
-export const sweptAABBHit = (A, B, dir) => {
+const sweptAABBHit = (A, B, dir) => {
   const overlapX = A.minX < B.maxX && A.maxX > B.minX;
   const overlapY = A.minY < B.maxY && A.maxY > B.minY;
 
@@ -65,7 +59,7 @@ export const sweptAABBHit = (A, B, dir) => {
 /**
  * Gets all AABBs for an object's path.
  */
-export const getObjectAABBs = (obj) => {
+const getObjectAABBs = (obj) => {
   const aabbs = [];
   for (let i = 0; i < obj.points.length - 1; i++) {
     aabbs.push(getSegmentAABB(obj.points[i], obj.points[i + 1]));
@@ -76,7 +70,7 @@ export const getObjectAABBs = (obj) => {
 /**
  * Checks if a candidate object overlaps with any existing objects in the puzzle.
  */
-export const doesObjectOverlap = (puzzle, candidateObj) => {
+const doesObjectOverlap = (puzzle, candidateObj) => {
   const candidateAABBs = getObjectAABBs(candidateObj);
   
   for (const obj of puzzle.objects) {
@@ -94,7 +88,7 @@ export const doesObjectOverlap = (puzzle, candidateObj) => {
 /**
  * Checks if an object can move off the board in its designated direction without hitting OTHER objects.
  */
-export const isMoveValid = (puzzle, objectId) => {
+const isMoveValid = (puzzle, objectId) => {
   const obj = puzzle.objects.find((o) => o.id === objectId);
   if (!obj) return false;
 
@@ -122,7 +116,7 @@ export const isMoveValid = (puzzle, objectId) => {
   return true; // Unblocked by all other objects
 };
 
-export const getBlockingObjects = (puzzle, obj) => {
+const getBlockingObjects = (puzzle, obj) => {
   const blockers = [];
   const headPoint = obj.points[obj.points.length - 1];
   
@@ -146,7 +140,7 @@ export const getBlockingObjects = (puzzle, obj) => {
   return blockers;
 };
 
-export const hasDeadlock = (puzzle) => {
+const hasDeadlock = (puzzle) => {
   const adj = {};
   for (const obj of puzzle.objects) {
     adj[obj.id] = getBlockingObjects(puzzle, obj);
@@ -177,17 +171,19 @@ export const hasDeadlock = (puzzle) => {
   return false;
 };
 
-export const getAvailableMoves = (puzzle) => {
+const getAvailableMoves = (puzzle) => {
   return puzzle.objects.filter((obj) => isMoveValid(puzzle, obj.id));
 };
 
-export const applyMove = (puzzle, objectId) => {
+const applyMove = (puzzle, objectId) => {
   return {
     ...puzzle,
     objects: puzzle.objects.filter((o) => o.id !== objectId),
   };
 };
 
-export const isPuzzleSolved = (puzzle) => {
+const isPuzzleSolved = (puzzle) => {
   return puzzle.objects.length === 0;
 };
+
+module.exports = { THICKNESS, DIRECTIONS, createPuzzle, getSegmentAABB, aabbIntersect, sweptAABBHit, getObjectAABBs, doesObjectOverlap, isMoveValid, getBlockingObjects, hasDeadlock, getAvailableMoves, applyMove, isPuzzleSolved };
