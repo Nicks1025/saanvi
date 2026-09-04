@@ -1,19 +1,23 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, Home, ArrowLeft } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { useAuth } from '@/store/AuthContext';
+import { AlertCircle } from 'lucide-react';
 import SButton from '@/components/common/SButton';
 
 export default function NotFoundClient() {
   const [countdown, setCountdown] = useState(8);
   const navigate = useRouter();
-  const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
-  
-  const targetPath = isAuthenticated ? '/dashboard' : '/';
-  const targetLabel = isAuthenticated ? 'Dashboard' : 'Home';
+  const [targetPath, setTargetPath] = useState('/');
+  const [targetLabel, setTargetLabel] = useState('Home');
+
+  useEffect(() => {
+    // Detect auth state client-side without relying on AuthContext
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      setTargetPath('/dashboard');
+      setTargetLabel('Dashboard');
+    }
+  }, []);
 
   useEffect(() => {
     if (countdown === 0) {
@@ -41,7 +45,7 @@ export default function NotFoundClient() {
     }}>
       <AlertCircle size={72} style={{ color: 'var(--primary, #4f46e5)', marginBottom: '1.5rem' }} />
       <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', fontWeight: 600 }}>
-        {t('not_found.title', 'Page Not Found')}
+        Page Not Found
       </h1>
       <p style={{ 
         fontSize: '1.1rem', 
@@ -51,7 +55,7 @@ export default function NotFoundClient() {
         maxWidth: '450px',
         lineHeight: 1.6
       }}>
-        {t('not_found.message', 'The page you are looking for does not exist or has been moved.')}
+        The page you are looking for does not exist or has been moved.
       </p>
       
       <div style={{ 
@@ -63,7 +67,7 @@ export default function NotFoundClient() {
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
       }}>
         <p style={{ fontSize: '1.05rem', margin: 0, color: 'var(--text-h)' }}>
-          {t('not_found.redirecting', `Redirecting to ${targetLabel} in`)} <strong style={{ color: 'var(--primary)', fontSize: '1.2rem', padding: '0 0.2rem' }}>{countdown}</strong> {t('not_found.seconds', 'seconds')}...
+          Redirecting to {targetLabel} in <strong style={{ color: 'var(--primary)', fontSize: '1.2rem', padding: '0 0.2rem' }}>{countdown}</strong> seconds...
         </p>
       </div>
 
