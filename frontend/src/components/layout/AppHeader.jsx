@@ -14,7 +14,10 @@ const AppHeader = ({ toggleSidebar }) => {
   const AUTH_ROUTES = ['/login', '/signup'];
   const isAuthPage = AUTH_ROUTES.includes(location.pathname);
   const [healthStatus, setHealthStatus] = useState(() => {
-    return sessionStorage.getItem('app_health_status') || 'loading';
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('app_health_status') || 'loading';
+    }
+    return 'loading';
   });
 
   useEffect(() => {

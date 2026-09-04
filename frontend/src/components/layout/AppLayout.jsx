@@ -16,21 +16,30 @@ const isMobileNow = () => {
   return window.innerWidth <= 768 || window.innerHeight <= 500;
 };
 
-const AppLayout = ({ children, noHeader = false }) => {
+const AppLayout = ({ children, noHeader = false, noFooter = false, gameMode = false }) => {
   const pathname = usePathname();
   const location = { pathname, search: typeof window !== "undefined" ? window.location.search : "" };
   const isUnoGame = location.pathname.startsWith('/games/uno');
 
-  const [isSidebarOpen, setSidebarOpen] = useState(() => {
-    if (isMobileNow()) return false;
-    const saved = localStorage.getItem('sidebarOpen');
-    return saved !== null ? saved === 'true' : true;
-  });
-
-  const [isMobile, setIsMobile] = useState(isMobileNow);
-  const [isLandscape, setIsLandscape] = useState(isLandscapeNow);
+  const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+    
+    const mobile = isMobileNow();
+    const landscape = isLandscapeNow();
+    setIsMobile(mobile);
+    setIsLandscape(landscape);
+    
+    if (mobile) {
+      setSidebarOpen(false);
+    } else {
+      const saved = localStorage.getItem('sidebarOpen');
+      setSidebarOpen(saved !== null ? saved === 'true' : true);
+    }
     const handleResize = () => {
       const mobile = isMobileNow();
       const landscape = isLandscapeNow();
@@ -97,15 +106,15 @@ const AppLayout = ({ children, noHeader = false }) => {
       <div className="layout-middle">
 
         <AppSidebar
-          isOpen={isSidebarOpen}
+          isOpen={isMounted ? isSidebarOpen : true}
           setSidebarOpen={handleSetSidebarOpen}
-          isMobile={isMobile}
+          isMobile={isMounted ? isMobile : false}
           onNavClick={handleMobileNavClick}
         />
 
-        <main className={`layout-main${mainFullHeight ? ' layout-main-full' : ''}`}>
+        <main className={`layout-main${mainFullHeight ? ' layout-main-full' : ''}${gameMode ? ' layout-main-game' : ''}`}>
           {children}
-          <AppFooter />
+          {!noFooter && !gameMode && <AppFooter />}
         </main>
       </div>
 

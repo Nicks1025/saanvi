@@ -6,6 +6,7 @@ import MoreGamesSection from './components/MoreGamesSection';
 import FinanceSection from './components/FinanceSection';
 import WhySaanviSection from './components/WhySaanviSection';
 import HomeFooter from './components/HomeFooter';
+import { ArrowPuzzleGame } from '@/features/games/puzzles/arrow-puzzle/ArrowPuzzleGame';
 import './home.css';
 
 const HomePage = () => {
@@ -36,6 +37,17 @@ const HomePage = () => {
       <main className="saanvi-home-main">
         {/* 1. Hero Section */}
         <HeroSection />
+
+        {/* Quick Play Daily Puzzle */}
+        <section className="home-section" style={{ padding: '1rem 5% 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+          <div className="section-header-block text-center" style={{ marginBottom: 0 }}>
+            <h2 className="section-main-heading" style={{ fontSize: '1.75rem', marginBottom: '0.25rem' }}>Quick Play</h2>
+            <p className="section-sub-heading" style={{ marginBottom: 0 }}>Jump right into our daily mini-games. No menus, no waiting.</p>
+          </div>
+          <div style={{ width: '100%', maxWidth: '450px', height: '480px', display: 'flex' }}>
+            <ArrowPuzzleGame initialShape="Square" initialLevel={1} liteMode={true} />
+          </div>
+        </section>
 
         {/* 2. Platform Category Overview */}
         <CategoryGrid />
