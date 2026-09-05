@@ -70,6 +70,16 @@ class UserController extends BaseController {
       return this.sendError(res, error.message, statusCode);
     }
   }
+
+  async deleteAccount(req, res, next) {
+    try {
+      const userUuid = req.user.uuid; // from requireAuth middleware
+      const result = await this.userService.deleteAccount(userUuid);
+      return this.sendSuccess(res, result, 'Account deleted successfully');
+    } catch (err) {
+      return this.sendError(res, err.message, 500);
+    }
+  }
 }
 
 module.exports = UserController;

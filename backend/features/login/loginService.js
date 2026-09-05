@@ -18,18 +18,17 @@ class LoginService extends BaseService {
     const user = await this.repository.getUserByEmail(email);
 
     if (!user) {
-      throw new Error('Invalid email or password.');
+      throw new Error('No user exists with this email, please register youself.');
     }
-
-    if (user.status === 'archived' || user.status === 'inactive') {
-       throw new Error('Invalid email or password.');
+    if (user.status === 'archived') {
+       throw new Error('Your account has been suspended by Admin, please contact admin to get your query resolved.');
     }
 
     if (user.status === 'locked') {
       throw new Error('Account is locked. Please try again later.');
     }
 
-    // 2. Verify password hash
+    // 2. Verify password hash first to prevent enumeration
     try {
       const isPasswordValid = await argon2.verify(user.password_hash, password);
       
@@ -37,15 +36,26 @@ class LoginService extends BaseService {
         throw new Error('Invalid email or password.');
       }
     } catch (err) {
-      // Catch argon2 errors and obfuscate
       throw new Error('Invalid email or password.');
     }
 
-    // 3. Generate token
+    // 3. Check if email is verified AFTER password validation
+    if (!user.is_email_verified) {
+      throw new Error('UNVERIFIED_EMAIL');
+    }
+
+    // 4. Generate token
     const tokenPayload = {
       uuid: user.uuid,
       email: user.email,
       is_mfa_enabled: user.is_mfa_enabled,
+      language: user.language,
+      theme: user.theme,
+      font: user.font,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      displayName: user.display_name,
+      profileImageUrl: user.profile_image_url,
       permissions: user.permissions || []
     };
 
@@ -71,13 +81,7 @@ class LoginService extends BaseService {
     // 5. Return success result
     return {
       token,
-      supabaseToken,
-      user: {
-        uuid: user.uuid,
-        email: user.email,
-        is_mfa_enabled: user.is_mfa_enabled,
-        permissions: user.permissions || []
-      }
+      supabaseToken
     };
   }
 
@@ -106,11 +110,15 @@ class LoginService extends BaseService {
     // 1. Retrieve user by email (strictly existing user only)
     const user = await this.repository.getUserByEmail(email);
     if (!user) {
-      throw new Error('Invalid email or password.');
+      throw new Error('No user exists with this email, please register youself.');
     }
 
-    if (user.status === 'archived' || user.status === 'inactive') {
-      throw new Error('Google authentication failed.');
+    if (!user.is_email_verified) {
+      throw new Error('UNVERIFIED_EMAIL');
+    }
+
+    if (user.status === 'archived') {
+      throw new Error('Your account has been suspended by Admin, please contact admin to get your query resolved');
     }
 
     if (user.status === 'locked') {
@@ -122,6 +130,13 @@ class LoginService extends BaseService {
       uuid: user.uuid,
       email: user.email,
       is_mfa_enabled: user.is_mfa_enabled,
+      language: user.language,
+      theme: user.theme,
+      font: user.font,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      displayName: user.display_name,
+      profileImageUrl: user.profile_image_url,
       permissions: user.permissions || []
     };
 
@@ -147,13 +162,7 @@ class LoginService extends BaseService {
     // 4. Return success result
     return {
       token,
-      supabaseToken,
-      user: {
-        uuid: user.uuid,
-        email: user.email,
-        is_mfa_enabled: user.is_mfa_enabled,
-        permissions: user.permissions || []
-      }
+      supabaseToken
     };
   }
 
@@ -240,6 +249,13 @@ class LoginService extends BaseService {
       uuid: user.uuid,
       email: user.email,
       is_mfa_enabled: user.is_mfa_enabled,
+      language: user.language,
+      theme: user.theme,
+      font: user.font,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      displayName: user.display_name,
+      profileImageUrl: user.profile_image_url,
       permissions: user.permissions || []
     };
     const secret = process.env.JWT_SECRET || 'fallback_secret';
@@ -247,13 +263,7 @@ class LoginService extends BaseService {
 
     return {
       token,
-      supabaseToken,
-      user: {
-        uuid: user.uuid,
-        email: user.email,
-        is_mfa_enabled: user.is_mfa_enabled,
-        permissions: user.permissions || []
-      }
+      supabaseToken
     };
   }
 }

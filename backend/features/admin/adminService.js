@@ -3,7 +3,7 @@ const RbacService = require('../rbac/rbacService');
 const crypto = require('crypto');
 const SignupRepository = require('../signup/signupRepository');
 const SignupService = require('../signup/signupService');
-const { queueEmail } = require('../../services/emailService');
+const EmailService = require('../../services/emailService');
 const { encrypt } = require('../../services/cryptoService');
 
 class AdminService extends BaseService {
@@ -66,7 +66,16 @@ class AdminService extends BaseService {
     const user = await this.repository.getUserByUuid(uuid, true);
     if (!user) throw new Error('User not found.');
 
-    await this.repository.deleteUser(uuid);
+    const { supabaseAdmin } = require('../../services/supabaseAdmin');
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(uuid);
+    
+    if (error) {
+      console.error('[AdminService] Supabase delete user error:', error.message);
+      throw new Error(`Failed to delete authentication user: ${error.message}`);
+    }
+
+    // Do NOT call this.repository.deleteUser(uuid) anymore.
+    // PostgreSQL ON DELETE CASCADE will handle deleting the public records automatically.
     return true;
   }
 
@@ -87,12 +96,12 @@ class AdminService extends BaseService {
     // is resolved at send time from the linked table configured on the template.
     // Only the temporary password is passed as an encrypted variable since it is not in any DB table.
     try {
-      await queueEmail(
-        'USER_ACCOUNT_CREATED',
-        userData.email,
-        {},
-        { password: encrypt(temporaryPassword) }
-      );
+      await EmailService.sendAsync({
+        template: 'USER_ACCOUNT_CREATED',
+        to: userData.email,
+        encryptedVariables: { password: encrypt(temporaryPassword) },
+        type: 'TRANSACTIONAL'
+      });
     } catch (emailErr) {
       // Don't fail the whole request if email queueing fails — user is already created
       console.error('[AdminService] Failed to queue welcome email:', emailErr.message);

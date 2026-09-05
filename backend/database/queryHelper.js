@@ -36,6 +36,7 @@ class QueryHelper {
       _sharedKnex = knex({
         client: 'pg',
         connection: dbUrl,
+        pool: { min: 2, max: 50 }
       });
     }
     
@@ -250,12 +251,8 @@ class QueryHelper {
       return result;
     } catch (error) {
       this._resetState();
-      if (error.code !== '23505') {
-        console.error(`[Database Error] Code: ${error.code} | Message: ${error.message}`);
-      }
-      const customError = new Error('A database error occurred during execution.');
-      customError.code = error.code;
-      throw customError;
+      console.error('[QueryHelper Error]', error.message);
+      throw new Error(`DB_ERROR: ${error.message}`);
     }
   }
 
@@ -267,9 +264,7 @@ class QueryHelper {
       if (error.code !== '23505') {
         console.error(`[Database Error] Code: ${error.code} | Message: ${error.message}`);
       }
-      const customError = new Error('A database error occurred during raw execution.');
-      customError.code = error.code;
-      throw customError;
+      throw new Error(`DB_ERROR: ${error.message}`);
     }
   }
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAuth } from '@/store/AuthContext';
 import { useTheme } from '@/store/ThemeContext';
+
 import { CheckCircle, XCircle, Save, Loader2 } from 'lucide-react';
 import { validatePassword, validateConfirmPassword, validateRequired, validatePhone, validateDate, validateCurrentPassword } from '../../common/validations';
 import SDropdown from '@/components/common/SDropdown';
@@ -93,6 +94,10 @@ const SettingsFeature = () => {
       setProfileImage(user.profileImageUrl || null);
     }
   }, [user]);
+
+  const handleThemeChange = (newTheme) => {
+    setTheme(newTheme);
+  };
 
   const handleSaveSettings = async () => {
     setIsSaving(true);
@@ -326,8 +331,8 @@ const SettingsFeature = () => {
                 <SDropdown
                   label={t('settings.appTheme')}
                   value={theme}
-                  onChange={setTheme}
-                  options={themeOptions}
+                  onChange={handleThemeChange}
+                  options={[...themeOptions, { label: 'Birthday Celebration 🎈', value: 'birthday' }]}
                 />
                 <SDropdown
                   label={t('settings.textStyle')}

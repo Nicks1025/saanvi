@@ -1,5 +1,5 @@
 const BaseService = require('../../../base/baseService');
-const { enqueueEmailJob } = require('../../../services/jobQueueService');
+const EmailService = require('../../../services/emailService');
 
 class EmailTemplateService extends BaseService {
 
@@ -95,7 +95,12 @@ class EmailTemplateService extends BaseService {
     // We enqueue a job using jobQueueService (BullMQ), which the emailWorker will process 
     // or the .NET worker can process if it's listening to this queue.
     // The requirement states to test via the centralized email infrastructure.
-    const jobId = await enqueueEmailJob(template.template_key, recipient_email, test_variables);
+    const jobId = await EmailService.sendAsync({
+      template: template.template_key,
+      to: recipient_email,
+      variables: test_variables,
+      type: 'TRANSACTIONAL'
+    });
     return { success: true, message: 'Test email queued successfully.', job_id: jobId };
   }
 

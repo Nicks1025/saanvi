@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 
 const HeroSection = () => {
+
   const scrollToSection = (id) => {
     const element = document.getElementById(id);
     if (element) {

@@ -72,7 +72,7 @@ export const ArrowPuzzleMenu = () => {
               {thumbnails[shape] ? (
                 <GameBoard puzzle={thumbnails[shape]} shape={shape} onObjectTap={() => {}} />
               ) : (
-                <div style={{ width: '100%', height: '100%', backgroundColor: '#f1f5f9', borderRadius: '8px' }} />
+                <div style={{ width: '100%', height: '100%', backgroundColor: 'var(--code-bg)', borderRadius: '8px' }} />
               )}
             </div>
             <p>Level {progress[shape] || 1}</p>

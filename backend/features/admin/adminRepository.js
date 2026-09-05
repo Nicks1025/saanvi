@@ -147,7 +147,7 @@ class AdminRepository extends BaseRepository {
     return await this.queryHelper
       .from('users')
       .update({
-        status: 'inactive',
+        status: 'archived',
         archived_at: new Date().toISOString()
       })
       .where('uuid', 'eq', uuid)
@@ -164,33 +164,6 @@ class AdminRepository extends BaseRepository {
       .where('uuid', 'eq', uuid)
       .execute();
   }
-
-  async deleteUser(uuid) {
-    try {
-      return await this.queryHelper.transaction(async (trx) => {
-        // 1. Delete from user_permissions
-        await trx('user_permissions').where('user_uuid', uuid).del();
-        
-        // 2. Delete from user_roles
-        await trx('user_roles').where('user_uuid', uuid).del();
-        
-        // 3. Delete from user_details
-        await trx('user_details').where('user_uuid', uuid).del();
-        
-        // 4. Delete from users
-        await trx('users').where('uuid', uuid).del();
-      });
-    } catch (err) {
-      if (err.message && err.message.includes('violates foreign key constraint')) {
-        // Extract the table name from the postgres error message if possible
-        const match = err.message.match(/on table "([^"]+)"/);
-        const tableName = match ? match[1] : 'another table';
-        throw new Error(`Cannot delete user because they have associated records in the '${tableName}' module (e.g., chat history, IPO applications, etc.). Please archive the user instead.`);
-      }
-      throw err;
-    }
-  }
-
   async getAllRoles(searchQuery) {
     const builder = this.queryHelper
       .from('roles')

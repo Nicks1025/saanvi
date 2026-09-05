@@ -7,10 +7,22 @@ class LoginRepository extends BaseRepository {
    */
   async getUserByEmail(email) {
     const data = await this.queryHelper
-      .from('users')
-      .select('uuid, email, password_hash, is_mfa_enabled, status')
-      .where('email', 'eq', email)
-      .where('archived_at', 'is', null)
+      .from('users', 'u')
+      .field('u.uuid')
+      .field('u.email')
+      .field('u.password_hash')
+      .field('u.is_mfa_enabled')
+      .field('u.status')
+      .field('u.is_email_verified')
+      .field('u.language')
+      .field('u.theme')
+      .field('u.font')
+      .leftJoin('user_details', 'ud', 'u.uuid = ud.user_uuid')
+      .field('ud.first_name')
+      .field('ud.last_name')
+      .field('ud.display_name')
+      .field('ud.profile_image_url')
+      .where('u.email', 'eq', email)
       .execute();
 
     if (!data || data.length === 0) {

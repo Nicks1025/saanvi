@@ -407,7 +407,7 @@ const getEmailLogs = {
   verb: 'GET',
   auditMessage: 'getting email logs',
   handler: { controller: emailTemplateController, method: 'getEmailLogs' },
-  middleware: { requirePermission: ['admin.email_templates.view'] }
+  middleware: { requirePermission: ['admin.email.logs'] }
 };
 
 const getEmailTemplateTableColumns = {

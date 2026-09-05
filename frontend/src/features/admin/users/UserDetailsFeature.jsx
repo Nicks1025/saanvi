@@ -21,7 +21,7 @@ const UserDetailsFeature = () => {
   const initialMode = queryParams.get('mode');
   
   const [user, setUser] = useState(null);
-  const [editForm, setEditForm] = useState({ status: 'Active' });
+  const [editForm, setEditForm] = useState({ status: 'active' });
   const [allRoles, setAllRoles] = useState([]);
   const [selectedRoles, setSelectedRoles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -56,7 +56,7 @@ const UserDetailsFeature = () => {
       const userData = userDataResponse?.data || userDataResponse;
       setUser(userData);
       setEditForm({
-        status: userData.status || 'Active'
+        status: userData.status || 'active'
       });
       
       const rolesData = await rolesService.getRoles();
@@ -171,16 +171,18 @@ const UserDetailsFeature = () => {
                 onChange={(e) => setEditForm(prev => ({...prev, status: e.target.value}))}
                 style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--border)', outline: 'none', background: 'transparent', color: 'var(--text)' }}
               >
-                <option value="Active">{t('admin.statusActive', 'Active')}</option>
-                <option value="Inactive">{t('admin.statusInactive', 'Inactive')}</option>
+                <option value="active">{t('admin.statusActive', 'Active')}</option>
+                <option value="inactive">{t('admin.statusInactive', 'Inactive')}</option>
+                <option value="locked">{t('admin.statusLocked', 'Locked')}</option>
+                <option value="archived">{t('admin.statusArchived', 'Archived')}</option>
               </select>
             ) : (
               <input 
                 type="text" 
                 readOnly 
                 disabled 
-                value={user.status || 'Active'}
-                style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--border)', outline: 'none', background: 'var(--code-bg)', color: 'var(--text)', cursor: 'not-allowed' }}
+                value={user.status || 'active'}
+                style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--border)', outline: 'none', background: 'var(--code-bg)', color: 'var(--text)', cursor: 'not-allowed', textTransform: 'capitalize' }}
               />
             )}
           </div>

@@ -80,6 +80,19 @@ const changePassword = {
   }
 };
 
+const deleteAccount = {
+  path: '/me',
+  verb: 'DELETE',
+  auditMessage: 'deleting user account',
+  handler: {
+    controller: userController,
+    method: 'deleteAccount'
+  },
+  middleware: {
+    requireAuth: true
+  }
+};
+
 const UserApi = {
   name: 'User',
   url: '/api/users',
@@ -87,7 +100,8 @@ const UserApi = {
     getMe,
     updateProfile,
     updateSettings,
-    changePassword
+    changePassword,
+    deleteAccount
   ]
 };
 

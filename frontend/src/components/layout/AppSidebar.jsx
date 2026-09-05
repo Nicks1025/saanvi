@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, Settings, Gamepad2, ChevronDown, ChevronRight, Shield, LogOut, MessageSquare, Workflow } from 'lucide-react';
+import { LayoutDashboard, Settings, Gamepad2, ChevronDown, ChevronRight, Shield, LogOut, MessageSquare, Workflow, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/store/AuthContext';
 import SButton from '../common/SButton';
@@ -16,6 +16,7 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
   
   const [isGamesOpen, setIsGamesOpen] = useState(location.pathname.startsWith('/games'));
   const [isAdminOpen, setIsAdminOpen] = useState(location.pathname.startsWith('/admin'));
+  const [isEmailOpen, setIsEmailOpen] = useState(location.pathname.startsWith('/email'));
 
 
   const handleAdminClick = () => {
@@ -24,6 +25,15 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
       setIsAdminOpen(true);
     } else {
       setIsAdminOpen(!isAdminOpen);
+    }
+  };
+
+  const handleEmailClick = () => {
+    if (!isOpen && setSidebarOpen) {
+      setSidebarOpen(true);
+      setIsEmailOpen(true);
+    } else {
+      setIsEmailOpen(!isEmailOpen);
     }
   };
 
@@ -151,6 +161,39 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
             )}
           </div>
         )}
+        {(userPermissions.includes('admin.email.logs') || userPermissions.includes('admin.email.campaign.get')) && (
+          <div className="sidebar-group">
+            <button 
+              className={`sidebar-link sidebar-group-btn ${location.pathname.startsWith('/email') ? 'active-parent' : ''}`} 
+              onClick={handleEmailClick}
+              title={t('navigation.email', 'Email')}
+            >
+              <Mail size={20} style={{ flexShrink: 0 }} />
+              <span className="sidebar-link-text">{t('navigation.email', 'Email')}</span>
+              {isOpen && (
+                <span className="sidebar-group-toggle" style={{ marginLeft: 'auto' }}>
+                  {isEmailOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                </span>
+              )}
+            </button>
+            
+            {isEmailOpen && (
+              <div className="sidebar-sub-menu">
+                {userPermissions.includes('admin.email.logs') && (
+                  <Link href="/email/logs" className={pathname.startsWith("/email/logs") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.email_logs', 'Logs')} onClick={onNavClick}>
+                    <span className="sidebar-link-text">{t('navigation.email_logs', 'Logs')}</span>
+                  </Link>
+                )}
+                {userPermissions.includes('admin.email.campaign.get') && (
+                  <Link href="/email/campaigns" className={pathname.startsWith("/email/campaigns") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.email_campaigns', 'Campaigns')} onClick={onNavClick}>
+                    <span className="sidebar-link-text">{t('navigation.email_campaigns', 'Campaigns')}</span>
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         <Link href="/settings" className={pathname.startsWith("/settings") ? "sidebar-link active" : "sidebar-link"} title={t('navigation.settings')} onClick={onNavClick}>
           <Settings size={20} style={{ flexShrink: 0 }} />
           <span className="sidebar-link-text">{t('navigation.settings')}</span>

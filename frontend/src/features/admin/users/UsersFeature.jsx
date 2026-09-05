@@ -114,7 +114,7 @@ const UsersFeature = () => {
   const columns = [
     { key: 'first_name', label: t('admin.firstName'), sortable: true },
     { key: 'last_name', label: t('admin.lastName'), sortable: true },
-    { key: 'email', label: t('admin.email'), sortable: true },
+    { key: 'email', label: t('admin.email.title'), sortable: true },
     { key: 'status', label: t('admin.status'), sortable: true },
   ];
 

@@ -1,5 +1,8 @@
 const BaseService = require('../../base/baseService');
 const argon2 = require('argon2');
+const { supabaseAdmin } = require('../../services/supabaseAdmin');
+const LoginRepository = require('../login/loginRepository');
+const jwt = require('jsonwebtoken');
 
 /**
  * SignupService
@@ -34,51 +37,138 @@ class SignupService extends BaseService {
     // 2. Hash password
     const passwordHash = await argon2.hash(password);
 
-    // 3. UUIDs
-    const userUuid = this.generateUuid();
-    const userDetailsUuid = this.generateUuid();
-    const userRoleEntryUuid = this.generateUuid();
-
-    // 4. Resolve the default 'user' role (outside transaction — read-only)
-    const userRole = await this.repository.getRoleByName('user');
-    if (!userRole) {
-      throw new Error('Default \'user\' role not found. Please ensure it exists in the roles table.');
-    }
-
-    // 5. Insert users, user_details and user_roles atomically
-    await this.repository.queryHelper.transaction(async (trx) => {
-      await this.repository.createUser(
-        { uuid: userUuid, email, passwordHash, language: language || 'en' },
-        trx
-      );
-      // Dynamically extract user_details fields
-      const activeFields = await this.repository.queryHelper.from('sph_user_fields').where('is_active', 'eq', true).execute();
-      const detailsData = {
-        uuid: userDetailsUuid,
-        user_uuid: userUuid
-      };
-
-      for (const field of activeFields) {
-        // Skip base user fields that belong to the users table, not user_details
-        if (['email', 'language', 'password'].includes(field.field_name)) continue;
-
-        if (userData[field.field_name] !== undefined) {
-          detailsData[field.field_name] = userData[field.field_name] || null;
-        }
-      }
-
-      await this.repository.createUserDetails(detailsData, trx);
-      await this.repository.assignUserRole(
-        { uuid: userRoleEntryUuid, userUuid, roleUuid: userRole.uuid },
-        trx
-      );
-
-      if (typeof onTransaction === 'function') {
-        await onTransaction(trx, userUuid);
+    // 3. Supabase Auth Signup
+    const { createClient } = require('@supabase/supabase-js');
+    const supabaseAnon = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+    
+    const { data: authData, error: signUpError } = await supabaseAnon.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: process.env.NODE_ENV === 'production' ? 'https://www.saanviworld.com/auth/callback': 'http://localhost:5000/auth/callback'
       }
     });
 
-    return { message: 'Account created successfully. Please sign in.', userUuid };
+    if (signUpError) {
+      console.error('[SignupService] Supabase signUp error:', signUpError.message);
+      throw new Error(signUpError.message);
+    }
+
+    if (!authData.user || !authData.user.id) {
+       throw new Error('Failed to create authentication user in Supabase.');
+    }
+
+    // 4. UUIDs
+    const userUuid = authData.user.id;
+    const userDetailsUuid = this.generateUuid();
+    const userRoleEntryUuid = this.generateUuid();
+
+    // 5. Resolve the default 'user' role (outside transaction — read-only)
+    const userRole = await this.repository.getRoleByName('user');
+    if (!userRole) {
+      // Rollback Auth User
+      await supabaseAdmin.auth.admin.deleteUser(userUuid);
+      throw new Error("Default 'user' role not found. Please ensure it exists in the roles table.");
+    }
+
+    // 6. Insert users, user_details and user_roles atomically
+    try {
+      await this.repository.queryHelper.transaction(async (trx) => {
+        await this.repository.createUser(
+          { uuid: userUuid, email, passwordHash, language: language || 'en' },
+          trx
+        );
+        // Dynamically extract user_details fields
+        const activeFields = await this.repository.queryHelper.from('sph_user_fields').where('is_active', 'eq', true).execute();
+        const detailsData = {
+          uuid: userDetailsUuid,
+          user_uuid: userUuid
+        };
+
+        for (const field of activeFields) {
+          // Skip base user fields that belong to the users table, not user_details
+          if (['email', 'language', 'password'].includes(field.field_name)) continue;
+
+          if (userData[field.field_name] !== undefined) {
+            detailsData[field.field_name] = userData[field.field_name] || null;
+          }
+        }
+
+        await this.repository.createUserDetails(detailsData, trx);
+        await this.repository.assignUserRole(
+          { uuid: userRoleEntryUuid, userUuid, roleUuid: userRole.uuid },
+          trx
+        );
+
+        if (typeof onTransaction === 'function') {
+          await onTransaction(trx, userUuid);
+        }
+      });
+    } catch (dbError) {
+      console.error('[SignupService] Failed to insert public user records, rolling back Auth user:', dbError.message);
+      await supabaseAdmin.auth.admin.deleteUser(userUuid);
+      throw dbError;
+    }
+
+    return { message: 'Account created successfully. Please verify your email.', userUuid };
+  }
+
+  /**
+   * Resends the verification email if the user is unverified.
+   * Prevents abuse by applying rate limits.
+   */
+  async resendVerification(email) {
+    // Standard response to avoid leaking account existence
+    const successMsg = 'If your account exists and is unverified, a verification email will be sent.';
+
+    const user = await this.repository.getUserByEmail(email);
+    if (!user) {
+      return { success: true, message: successMsg };
+    }
+
+    if (user.is_email_verified) {
+      return { success: true, message: successMsg };
+    }
+
+    const RedisHelper = require('../../redis/redisHelper');
+    const rateLimitKey = `resend_verify:${email}`;
+    
+    const currentCount = await RedisHelper.get(rateLimitKey);
+    if (currentCount && Number(currentCount) >= 5) {
+      throw new Error('Please wait before requesting another verification email.');
+    }
+
+    // Call Supabase Auth resend
+    const { createClient } = require('@supabase/supabase-js');
+    const supabaseAnon = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+    
+    const emailRedirectTo = process.env.NODE_ENV === 'production' 
+      ? 'https://www.saanviworld.com/auth/callback' 
+      : 'http://localhost:5000/auth/callback';
+      
+    console.log(`[SignupService] Triggering Supabase resend for: ${email}`);
+    
+    const { error } = await supabaseAnon.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo }
+    });
+    
+    if (error) {
+      console.error('[SignupService] Supabase resend error:', error.message);
+      // Still return success to front-end to prevent enumeration/leaks, but it failed internally.
+      // Wait, if it fails, maybe we should not increment rate limit?
+      return { success: true, message: successMsg };
+    }
+
+    // Increment rate limit after successful send
+    if (!currentCount) {
+      await RedisHelper.set(rateLimitKey, 1, 15 * 60); // 15 mins
+    } else {
+      await RedisHelper.increment(rateLimitKey);
+    }
+
+    return { success: true, message: successMsg };
   }
 }
 

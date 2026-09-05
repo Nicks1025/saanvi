@@ -9,8 +9,8 @@
   flex: 1;
   min-height: 0;
   position: relative;
-  background: radial-gradient(circle at 50% 20%, #17152c 0%, #0c0a17 100%) !important;
-  color: #f8fafc;
+  background: var(--bg) !important;
+  color: var(--text);
   overflow-y: auto;
   overflow-x: hidden;
   -ms-overflow-style: none;
