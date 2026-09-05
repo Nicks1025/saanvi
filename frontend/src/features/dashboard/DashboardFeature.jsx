@@ -13,8 +13,7 @@ const DashboardFeature = () => {
   
   const hasAdmin = userPermissions.includes('admin.users.view') || 
                    userPermissions.includes('admin.roles.view') || 
-                   userPermissions.includes('admin.system.health') || 
-                   userPermissions.includes('admin.workflows.view');
+                   userPermissions.includes('admin.system.health');
                    
   const hasChat = userPermissions.includes('chat.access');
   const hasGames = userPermissions.includes('games.uno') || userPermissions.includes('games.words.wordsearch');
@@ -70,7 +69,7 @@ const DashboardFeature = () => {
               <Shield size={24} />
             </div>
             <h3 className="quick-link-title">Admin Portal</h3>
-            <p className="quick-link-desc">Manage users, roles, and system workflows.</p>
+            <p className="quick-link-desc">Manage users, roles, and system settings.</p>
           </Link>
         )}
 

@@ -1,12 +1,18 @@
 const { v4: uuidv4 } = require('uuid');
 const QueryHelper = require('../database/queryHelper');
 const { sendEmail } = require('../providers/emailProvider');
-const { getEmailQueue } = require('./jobQueueService');
 const { decrypt } = require('./cryptoService');
+
+// NOTE: new QueryHelper() does NOT create a new DB connection.
+// All QueryHelper instances share the same module-level _sharedKnex connection pool
+// (defined in queryHelper.js). QueryHelper is a STATEFUL query-builder — each instance
+// holds its own this._query chain — so we must create a fresh instance per operation.
 
 class EmailService {
   /**
-   * Main API for sending emails asynchronously via the queue.
+   * Main API for sending emails asynchronously.
+   * Inserts a row into sph_email_queue (Postgres).
+   * A background worker polls the table and calls sendDirect().
    */
   async sendAsync(options) {
     const {
@@ -24,56 +30,48 @@ class EmailService {
     if (!to) throw new Error('Recipient email "to" is required.');
     if (!template && !html) throw new Error('Either "template" or "html" must be provided.');
     if (template && html) throw new Error('Cannot provide both "template" and "html". Please use one.');
-    
-    // Create the queue job payload
-    const payload = {
-      to,
-      subject,
-      template,
-      variables,
-      encryptedVariables,
-      html,
-      text,
-      type,
-      campaign_uuid,
-      queuedAt: new Date().toISOString()
-    };
 
-    const queue = getEmailQueue();
-    if (!queue) {
-      console.warn('[EmailService] Queue not initialized. Falling back to direct send.');
-      return await this.sendDirect(payload);
+    const logUuid = uuidv4();
+
+    // 1. Create initial PENDING log row
+    try {
+      const qh = new QueryHelper();
+      await qh.db('sph_email_logs').insert({
+        uuid: logUuid,
+        recipient: to,
+        template_key: template || null,
+        status: 'PENDING',
+      });
+    } catch (e) {
+      console.error('[EmailService] Failed to create initial log:', e.message);
     }
 
-    const job = await queue.add('sendEmail', payload, {
-      attempts: 3,
-      backoff: { type: 'exponential', delay: 2000 },
-      removeOnComplete: true,
-      removeOnFail: false
-    });
-
-    if (job && job.id) {
-      // Record initial PENDING status
-      try {
-        const qh = new QueryHelper();
-        await qh.from('sph_email_logs')
-          .insert({
-            uuid: uuidv4(),
-            recipient: to,
-            template_key: template || null,
-            job_id: job.id,
-            status: 'PENDING',
-            type
-          })
-          .execute();
-      } catch (e) {
-        console.error('[EmailService] Failed to log initial email state to DB:', e.message);
-      }
-      return job.id;
+    // 2. Enqueue into sph_email_queue (Postgres)
+    try {
+      const qh = new QueryHelper();
+      await qh.db('sph_email_queue').insert({
+        id: uuidv4(),
+        recipient: to,
+        template_key: template || null,
+        subject: subject || null,
+        variables: JSON.stringify(variables),
+        encrypted_variables: JSON.stringify(encryptedVariables),
+        html_body: html || null,
+        plain_text: text || null,
+        type,
+        campaign_uuid: campaign_uuid || null,
+        status: 'PENDING',
+        email_log_uuid: logUuid,
+      });
+      console.log(`[EmailService] Queued email to ${to} (log: ${logUuid})`);
+    } catch (e) {
+      console.error('[EmailService] Failed to enqueue email — falling back to direct send:', e.message);
+      return await this.sendDirect({ to, subject, template, variables, encryptedVariables, html, text, type, campaign_uuid }, logUuid);
     }
-    
-    return null;
+
+    return logUuid;
   }
+
 
   /**
    * Internal method used by workers to process the actual sending.
@@ -95,7 +93,6 @@ class EmailService {
     let finalSubject = defaultSubject;
     let finalHtml = directHtml;
     let finalText = directText;
-    const qh = new QueryHelper();
 
     // 1. Process Template if provided
     if (template) {
@@ -110,19 +107,19 @@ class EmailService {
         }
       }
 
-      // Fetch template
-      const result = await qh.from('sph_email_templates')
+      // Fetch template — fresh QueryHelper per query
+      const templateResult = await (new QueryHelper()).from('sph_email_templates')
         .where('template_key', 'eq', template)
         .where('status', 'eq', 'ACTIVE')
         .execute();
         
-      const templateData = result[0];
+      const templateData = templateResult[0];
       if (!templateData) {
         throw new Error(`Template '${template}' not found or inactive.`);
       }
 
-      // Resolve global dynamic variables
-      const dynVarRows = await qh.from('sph_dynamic_variables').execute();
+      // Resolve global dynamic variables — fresh QueryHelper per query
+      const dynVarRows = await (new QueryHelper()).from('sph_dynamic_variables').execute();
       const dynamicVarMap = {};
       for (const row of dynVarRows) {
         const key = row.variable_name.replace(/^\$\$/, '').replace(/\$\$$/, '');
@@ -135,12 +132,13 @@ class EmailService {
 
       if (linkedTable) {
         try {
-          const userRows = await qh.db('users').where('email', to).select('*');
+          const qhLinked = new QueryHelper();
+          const userRows = await qhLinked.db('users').where('email', to).select('*');
           const userRow = userRows && userRows.length > 0 ? userRows[0] : null;
 
           if (userRow) {
             const idCol = linkedTable === 'users' ? 'uuid' : 'user_uuid';
-            const linkedRows = await qh.db(linkedTable).where(idCol, userRow.uuid).select('*');
+            const linkedRows = await (new QueryHelper()).db(linkedTable).where(idCol, userRow.uuid).select('*');
             if (linkedRows && linkedRows.length > 0) {
               tableVars = { ...linkedRows[0] };
             }
@@ -178,13 +176,14 @@ class EmailService {
     // Create log if this wasn't called via a queue job (which logs upon enqueue)
     if (!existingJobId) {
       try {
-        await qh.from('sph_email_logs').insert({
+        const qh = new QueryHelper();
+        // Use raw insert (qh.db) to avoid FK violation if template_key doesn't exist
+        await qh.db('sph_email_logs').insert({
           uuid: logUuid,
           recipient: to,
           template_key: template || null,
           status: 'PENDING',
-          type
-        }).execute();
+        });
       } catch (e) {
         console.error('[EmailService] Failed to log direct email:', e.message);
       }
@@ -201,23 +200,23 @@ class EmailService {
       
       const providerMessageId = info?.messageId || null;
 
-      // 3. Update Log on Success
-      const updateQh = new QueryHelper();
-      const logQuery = updateQh.from('sph_email_logs');
+      // 3. Update Log on Success — fresh QueryHelper per query
+      const successQh = new QueryHelper();
       if (existingJobId) {
-        logQuery.where('job_id', 'eq', existingJobId);
+        await successQh.from('sph_email_logs')
+          .where('job_id', 'eq', existingJobId)
+          .update({ status: 'COMPLETED', sent_at: new Date().toISOString() })
+          .execute();
       } else {
-        logQuery.where('uuid', 'eq', logUuid);
+        await successQh.from('sph_email_logs')
+          .where('uuid', 'eq', logUuid)
+          .update({ status: 'COMPLETED', sent_at: new Date().toISOString() })
+          .execute();
       }
-      
-      await logQuery.update({
-        status: 'COMPLETED',
-        sent_at: new Date().toISOString()
-      }).execute();
 
       // If marketing campaign, update recipient status
       if (campaign_uuid) {
-        await updateQh.from('sph_email_campaign_recipients')
+        await (new QueryHelper()).from('sph_email_campaign_recipients')
           .where('campaign_uuid', 'eq', campaign_uuid)
           .where('email', 'eq', to)
           .update({
@@ -229,28 +228,35 @@ class EmailService {
 
       return { success: true, messageId: providerMessageId };
     } catch (error) {
-      // 4. Update Log on Failure
-      const updateQh = new QueryHelper();
-      const logQuery = updateQh.from('sph_email_logs');
-      if (existingJobId) {
-        logQuery.where('job_id', 'eq', existingJobId);
-      } else {
-        logQuery.where('uuid', 'eq', logUuid);
+      // 4. Update Log on Failure — fresh QueryHelper per query
+      console.error(`[EmailService] Failed to send email to ${to}:`, error.message);
+      try {
+        const failQh = new QueryHelper();
+        if (existingJobId) {
+          await failQh.from('sph_email_logs')
+            .where('job_id', 'eq', existingJobId)
+            .update({ status: 'FAILED', error_details: error.message })
+            .execute();
+        } else {
+          await failQh.from('sph_email_logs')
+            .where('uuid', 'eq', logUuid)
+            .update({ status: 'FAILED', error_details: error.message })
+            .execute();
+        }
+      } catch (logErr) {
+        console.error('[EmailService] Failed to update FAILED log:', logErr.message);
       }
-
-      await logQuery.update({
-        status: 'FAILED',
-        error_details: error.message
-      }).execute();
       
       if (campaign_uuid) {
-        await updateQh.from('sph_email_campaign_recipients')
-          .where('campaign_uuid', 'eq', campaign_uuid)
-          .where('email', 'eq', to)
-          .update({
-            status: 'FAILED',
-            error_details: error.message
-          }).execute();
+        try {
+          await (new QueryHelper()).from('sph_email_campaign_recipients')
+            .where('campaign_uuid', 'eq', campaign_uuid)
+            .where('email', 'eq', to)
+            .update({ status: 'FAILED', error_details: error.message })
+            .execute();
+        } catch (recErr) {
+          console.error('[EmailService] Failed to update recipient FAILED log:', recErr.message);
+        }
       }
 
       throw error;

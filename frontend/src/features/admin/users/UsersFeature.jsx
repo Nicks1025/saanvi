@@ -10,7 +10,6 @@ import SButton from '@/components/common/SButton';
 import SDropdown from '@/components/common/SDropdown';
 import * as usersService from './usersService';
 import UserFieldsFeature from './UserFieldsFeature';
-import TriggersFeature from '../communication/TriggersFeature';
 import './users.css';
 
 const UsersFeature = () => {
@@ -25,7 +24,7 @@ const UsersFeature = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const [activeTab, setActiveTabState] = useState(searchParams?.get('tab') || 'records'); // 'records', 'fields', 'triggers'
+  const [activeTab, setActiveTabState] = useState(searchParams?.get('tab') || 'records'); // 'records', 'fields'
   const navigate = useRouter();
 
   const setActiveTab = (tab) => {
@@ -163,12 +162,6 @@ const UsersFeature = () => {
       >
         Fields
       </button>
-      <button
-        className={`admin-tab ${activeTab === 'triggers' ? 'active' : ''}`}
-        onClick={() => setActiveTab('triggers')}
-      >
-        Triggers
-      </button>
     </div>
   );
 
@@ -177,9 +170,6 @@ const UsersFeature = () => {
       return <UserFieldsFeature topTabs={tabs} />;
     }
 
-    if (activeTab === 'triggers') {
-      return <TriggersFeature topTabs={tabs} />;
-    }
 
     return (
       <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>

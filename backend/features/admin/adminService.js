@@ -86,15 +86,12 @@ class AdminService extends BaseService {
     const bytes = crypto.randomBytes(12);
     const temporaryPassword = Array.from(bytes, b => chars[b % chars.length]).join('');
 
-    // Delegate entirely to SignupService — zero duplication.
+    // Delegate entirely to SignupService
+    // We pass suppressSupabaseEmail: true to prevent Supabase from sending the verification instantly
     const signupRepo = new SignupRepository(this.repository.queryHelper);
     const signupService = new SignupService(signupRepo);
-    await signupService.processSignup({ ...userData, password: temporaryPassword });
+    await signupService.processSignup({ ...userData, password: temporaryPassword }, null, true);
 
-    // After successful DB commit, directly queue the welcome email via BullMQ.
-    // No variables are hardcoded here — all user data (first_name, email, etc.) 
-    // is resolved at send time from the linked table configured on the template.
-    // Only the temporary password is passed as an encrypted variable since it is not in any DB table.
     try {
       await EmailService.sendAsync({
         template: 'USER_ACCOUNT_CREATED',
@@ -102,12 +99,20 @@ class AdminService extends BaseService {
         encryptedVariables: { password: encrypt(temporaryPassword) },
         type: 'TRANSACTIONAL'
       });
+      console.log(`[AdminService] Queued welcome email for ${userData.email}`);
     } catch (emailErr) {
-      // Don't fail the whole request if email queueing fails — user is already created
       console.error('[AdminService] Failed to queue welcome email:', emailErr.message);
     }
 
-    return { message: 'User created successfully. A welcome email has been queued for delivery.' };
+    // NOW trigger the Supabase verification email to send, so it arrives AFTER the welcome email.
+    try {
+      await signupService.resendVerification(userData.email);
+      console.log(`[AdminService] Triggered verification email for ${userData.email}`);
+    } catch (verifyErr) {
+      console.error('[AdminService] Failed to trigger verification email:', verifyErr.message);
+    }
+
+    return { message: 'User created successfully. Credentials and verification emails have been queued.' };
   }
 
   async getAllRoles(searchQuery) {
