@@ -24,9 +24,6 @@ class UserRepository extends BaseRepository {
       .field('ud.date_of_birth')
       .field('ud.gender')
       .field('ud.profile_image_url')
-      .leftJoin('user_roles', 'ur', 'u.uuid = ur.user_uuid')
-      .leftJoin('roles', 'r', 'ur.role_uuid = r.uuid')
-      .field('r.name as role_name')
       .where('u.uuid', 'eq', uuid)
       .where('u.archived_at', 'is', null)
       .execute();
@@ -36,33 +33,9 @@ class UserRepository extends BaseRepository {
     }
 
     const user = usersData[0];
-    
-    // 2. Fetch permissions in a separate query to handle 0-permission safely
-    let permissions = [];
-    try {
-      const permsData = await this.queryHelper
-        .from('user_roles', 'ur')
-        .join('roles', 'r', 'ur.role_uuid = r.uuid')
-        .join('role_permissions', 'rp', 'r.uuid = rp.role_uuid')
-        .join('permissions', 'p', 'rp.permission_uuid = p.uuid')
-        .field('p.permission')
-        .where('ur.user_uuid', 'eq', user.uuid)
-        .where('r.is_active', 'eq', true)
-        .where('r.archived_at', 'is', null)
-        .where('p.is_active', 'eq', true)
-        .where('p.archived_at', 'is', null)
-        .execute();
-        
-      if (permsData) {
-        permissions = [...new Set(permsData.map(row => row.permission).filter(Boolean))];
-      }
-    } catch (err) {
-      console.error('Failed to fetch permissions in getUserByUuid:', err);
-    }
 
     return {
       uuid: user.uuid,
-      email: user.email,
       isMfaEnabled: user.is_mfa_enabled,
       isEmailVerified: user.is_email_verified,
       status: user.status,
@@ -76,8 +49,6 @@ class UserRepository extends BaseRepository {
       language: user.language || 'en',
       theme: user.theme || 'system',
       font: user.font || 'sans',
-      permissions,
-      roles: user.role_name
     };
   }
 

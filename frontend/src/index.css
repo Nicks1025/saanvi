@@ -32,11 +32,14 @@
   }
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   overflow-x: hidden;
   max-width: 100%;
@@ -204,6 +207,34 @@ html, body {
     rgba(180, 40, 80, 0.05) 0 4px 6px -2px;
 }
 
+/* Issue 5 fix: Force all layout/page containers to be transparent so the fixed birthday
+   background image shows through on ALL devices (including mobile). Using static CSS
+   rather than JS-injected styles for maximum cross-browser compatibility. */
+:root[data-theme="birthday"] body,
+:root[data-theme="birthday"] #root,
+:root[data-theme="birthday"] .app-container,
+:root[data-theme="birthday"] .saanvi-home-wrapper,
+:root[data-theme="birthday"] .home-hero-section,
+:root[data-theme="birthday"] .app-layout,
+:root[data-theme="birthday"] .layout-middle,
+:root[data-theme="birthday"] .layout-main,
+:root[data-theme="birthday"] .app-sidebar,
+:root[data-theme="birthday"] .app-header,
+:root[data-theme="birthday"] .dashboard-layout,
+:root[data-theme="birthday"] .page-wrapper,
+:root[data-theme="birthday"] .layout-sidebar-container,
+:root[data-theme="birthday"] .dashboard-container,
+:root[data-theme="birthday"] .page-container,
+:root[data-theme="birthday"] .admin-container,
+:root[data-theme="birthday"] .saanvi-public-page,
+:root[data-theme="birthday"] .login-page-wrapper,
+:root[data-theme="birthday"] .login-page-container,
+:root[data-theme="birthday"] .auth-page-layout,
+:root[data-theme="birthday"] .signup-content-wrapper {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
 /* Add a glowing white halo to all text in the birthday theme 
    so it is perfectly legible over dark/busy background balloons */
 :root[data-theme="birthday"] body {
@@ -300,6 +331,252 @@ html, body {
   background-color: transparent !important;
   box-shadow: none !important;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Birthday Theme — Home Page Overrides
+   The home page uses many hardcoded colors in home.css;
+   these overrides bring those elements in line with the birthday palette.
+   ───────────────────────────────────────────────────────────── */
+
+/* Navigation bar */
+:root[data-theme="birthday"] .home-nav-container,
+:root[data-theme="birthday"] .home-mobile-drawer {
+  background: rgba(255, 240, 245, 0.96) !important;
+  border-bottom-color: #f0b8c6 !important;
+}
+
+:root[data-theme="birthday"] .home-nav-brand,
+:root[data-theme="birthday"] .brand-title,
+:root[data-theme="birthday"] .nav-link-btn,
+:root[data-theme="birthday"] .badge-text,
+:root[data-theme="birthday"] .mobile-drawer-item {
+  color: #2a0b14 !important;
+}
+
+:root[data-theme="birthday"] .brand-dot,
+:root[data-theme="birthday"] .nav-icon {
+  color: #d4547a !important;
+}
+
+:root[data-theme="birthday"] .nav-action-btn.btn-outline {
+  border-color: #f0b8c6 !important;
+  color: #2a0b14 !important;
+  background: rgba(255, 232, 238, 0.5) !important;
+}
+
+:root[data-theme="birthday"] .nav-action-btn.btn-primary,
+:root[data-theme="birthday"] .hero-btn-primary,
+:root[data-theme="birthday"] .mobile-btn.btn-primary {
+  background: #d4547a !important;
+  border-color: rgba(212, 84, 122, 0.3) !important;
+}
+
+:root[data-theme="birthday"] .nav-action-btn.btn-primary:hover,
+:root[data-theme="birthday"] .hero-btn-primary:hover {
+  background: #b83d65 !important;
+}
+
+/* Home page wrappers and backgrounds */
+:root[data-theme="birthday"] .saanvi-home-wrapper,
+:root[data-theme="birthday"] .saanvi-public-page,
+:root[data-theme="birthday"] .home-footer-container,
+.saanvi-birthday-theme-active .home-footer-container {
+  background-color: transparent !important;
+  background-image: none !important;
+  color: #2a0b14 !important;
+}
+
+:root[data-theme="birthday"] .saanvi-home-wrapper::before,
+:root[data-theme="birthday"] .saanvi-public-page::before {
+  display: none !important;
+}
+
+/* Hero section text */
+:root[data-theme="birthday"] .hero-headline,
+:root[data-theme="birthday"] .hero-subtext,
+:root[data-theme="birthday"] .hero-feat-item,
+:root[data-theme="birthday"] .badge-text,
+:root[data-theme="birthday"] .stage-live-indicator {
+  color: #2a0b14 !important;
+}
+
+:root[data-theme="birthday"] .text-gradient-purple {
+  background: linear-gradient(135deg, #d4547a 0%, #9b2c5a 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+:root[data-theme="birthday"] .hero-stage-card,
+.saanvi-birthday-theme-active .hero-stage-card {
+  background: rgba(255, 228, 235, 0.75) !important;
+  background-color: rgba(255, 228, 235, 0.75) !important;
+  border-color: #f0b8c6 !important;
+}
+
+:root[data-theme="birthday"] .hero-btn-secondary {
+  background: rgba(255, 232, 238, 0.6) !important;
+  border-color: #f0b8c6 !important;
+  color: #2a0b14 !important;
+}
+
+:root[data-theme="birthday"] .hero-pill-badge {
+  background: rgba(255, 232, 238, 0.6) !important;
+  border-color: #f0b8c6 !important;
+  color: #2a0b14 !important;
+}
+
+:root[data-theme="birthday"] .feat-icon-bubble {
+  background: rgba(255, 232, 238, 0.7) !important;
+  border-color: #f0b8c6 !important;
+  color: #d4547a !important;
+}
+
+:root[data-theme="birthday"] .badge-tag {
+  background: #d4547a !important;
+}
+
+/* Mobile drawer button */
+:root[data-theme="birthday"] .mobile-btn.btn-outline {
+  color: #2a0b14 !important;
+  border-color: #f0b8c6 !important;
+  background: rgba(255, 232, 238, 0.5) !important;
+}
+
+/* ─── Birthday Theme: Card Container Overrides ────────────────
+   Use background shorthand AND individual properties to guarantee overrides.
+   Added .saanvi-birthday-theme-active as an alternative selector for the home page. */
+
+:root[data-theme="birthday"] .category-card,
+:root[data-theme="birthday"] .game-catalog-card,
+:root[data-theme="birthday"] .uno-arena-preview-card,
+:root[data-theme="birthday"] .why-card,
+:root[data-theme="birthday"] .finance-calculator-stage,
+:root[data-theme="birthday"] .finance-tab-card,
+:root[data-theme="birthday"] .ipo-card-box,
+:root[data-theme="birthday"] .ipo-gateway-card,
+:root[data-theme="birthday"] .calc-result-card,
+:root[data-theme="birthday"] .footer-callout-card,
+.saanvi-birthday-theme-active .category-card,
+.saanvi-birthday-theme-active .game-catalog-card,
+.saanvi-birthday-theme-active .uno-arena-preview-card,
+.saanvi-birthday-theme-active .why-card,
+.saanvi-birthday-theme-active .finance-calculator-stage,
+.saanvi-birthday-theme-active .finance-tab-card,
+.saanvi-birthday-theme-active .ipo-card-box,
+.saanvi-birthday-theme-active .ipo-gateway-card,
+.saanvi-birthday-theme-active .calc-result-card,
+.saanvi-birthday-theme-active .footer-callout-card {
+  background: rgba(255, 228, 235, 0.75) !important;
+  background-color: rgba(255, 228, 235, 0.75) !important;
+  background-image: none !important;
+  border-color: #f0b8c6 !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  box-shadow: none !important;
+}
+
+:root[data-theme="birthday"] .category-card:hover,
+:root[data-theme="birthday"] .game-catalog-card:hover,
+:root[data-theme="birthday"] .why-card:hover,
+:root[data-theme="birthday"] .finance-tab-card:hover,
+.saanvi-birthday-theme-active .category-card:hover,
+.saanvi-birthday-theme-active .game-catalog-card:hover,
+.saanvi-birthday-theme-active .why-card:hover,
+.saanvi-birthday-theme-active .finance-tab-card:hover {
+  background: rgba(255, 215, 225, 0.95) !important;
+  background-color: rgba(255, 215, 225, 0.95) !important;
+  background-image: none !important;
+  border-color: #d4547a !important;
+}
+
+:root[data-theme="birthday"] .arena-table-surface,
+.saanvi-birthday-theme-active .arena-table-surface {
+  background: rgba(255, 228, 235, 0.6) !important;
+  background-color: rgba(255, 228, 235, 0.6) !important;
+  background-image: none !important;
+  border-color: #f0b8c6 !important;
+}
+
+:root[data-theme="birthday"] .finance-tab-card.is-active,
+.saanvi-birthday-theme-active .finance-tab-card.is-active {
+  background: rgba(212, 84, 122, 0.15) !important;
+  background-color: rgba(212, 84, 122, 0.15) !important;
+  background-image: none !important;
+  border-color: #d4547a !important;
+}
+
+/* Section wrapper backgrounds */
+:root[data-theme="birthday"] .category-section,
+:root[data-theme="birthday"] .games-section,
+:root[data-theme="birthday"] .finance-section,
+:root[data-theme="birthday"] .ipo-section,
+:root[data-theme="birthday"] .why-section,
+:root[data-theme="birthday"] .more-games-section,
+:root[data-theme="birthday"] .featured-uno-section {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+/* Text colors inside cards */
+:root[data-theme="birthday"] .cat-card-title,
+:root[data-theme="birthday"] .why-card-title,
+:root[data-theme="birthday"] .box-title,
+:root[data-theme="birthday"] .game-card-title,
+:root[data-theme="birthday"] .tab-card-title,
+:root[data-theme="birthday"] .room-code-val,
+:root[data-theme="birthday"] .stage-live-indicator {
+  color: #2a0b14 !important;
+}
+
+:root[data-theme="birthday"] .cat-card-desc,
+:root[data-theme="birthday"] .cat-card-subtitle,
+:root[data-theme="birthday"] .why-card-desc,
+:root[data-theme="birthday"] .box-desc,
+:root[data-theme="birthday"] .tab-card-sub,
+:root[data-theme="birthday"] .room-code-label {
+  color: #7b3050 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Birthday background overlay — fixed full-viewport layer
+   Responsive: cover on desktop (crisp), 100% auto on portrait
+   mobile (full arch visible, no zoom/crop)
+   ───────────────────────────────────────────────────────────── */
+.birthday-bg-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.95;
+
+  /* Desktop default: cover scales to fill the viewport perfectly */
+  background-image:
+    linear-gradient(rgba(255, 246, 248, 0.2), rgba(255, 246, 248, 0.45)),
+    url(/birthday_balloon_arch.jpg);
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-color: #fff0f5;
+}
+
+/* Portrait mobile: scale to 100% width so the full arch is always
+   visible without zooming in. A blush gradient (background-color)
+   fills the space below the image seamlessly. */
+@media (max-width: 768px) and (orientation: portrait) {
+  .birthday-bg-overlay {
+    background-image:
+      linear-gradient(rgba(255, 246, 248, 0.15), rgba(255, 246, 248, 0.4)),
+      url(/birthday_balloon_arch_portrait.jpeg);
+    background-position: top center, top center;
+    background-repeat: no-repeat, no-repeat;
+    background-size: cover, cover;
+    background-color: #fff0f5;
+  }
+}
+
 [data-theme="dark"] #social .button-icon,
 [data-theme="forest"] #social .button-icon,
 [data-theme="midnight"] #social .button-icon,
@@ -397,20 +674,24 @@ h1 {
   font-size: 56px;
   letter-spacing: -1.68px;
   margin: 32px 0;
+
   @media (max-width: 1024px) {
     font-size: 36px;
     margin: 20px 0;
   }
 }
+
 h2 {
   font-size: 24px;
   line-height: 118%;
   letter-spacing: -0.24px;
   margin: 0 0 8px;
+
   @media (max-width: 1024px) {
     font-size: 20px;
   }
 }
+
 p {
   margin: 0;
 }
@@ -463,6 +744,7 @@ code {
   padding: 12px 20px;
   font-size: 1.15rem;
 }
+
 .s-button:hover {
   border-color: var(--accent-border);
 }
@@ -551,27 +833,89 @@ input[type="checkbox"]:disabled {
 }
 
 /* --- Utility Classes --- */
-.flex-shrink-0 { flex-shrink: 0 !important; }
-.w-full { width: 100% !important; }
-.max-w-xs { max-width: 300px !important; }
-.mt-auto { margin-top: auto !important; }
-.flex-col { flex-direction: column !important; }
-.items-center { align-items: center !important; }
-.items-stretch { align-items: stretch !important; }
-.justify-center { justify-content: center !important; }
-.gap-1 { gap: 0.25rem !important; }
-.gap-2 { gap: 0.5rem !important; }
-.gap-3 { gap: 0.75rem !important; }
-.gap-4 { gap: 1rem !important; }
-.mt-4 { margin-top: 1rem !important; }
-.pt-4 { padding-top: 1rem !important; }
-.p-1 { padding: 0.25rem !important; }
-.p-2 { padding: 0.5rem !important; }
-.p-3 { padding: 0.75rem !important; }
-.min-w-0 { min-width: 0 !important; }
-.min-w-unset { min-width: unset !important; }
-.text-primary { color: var(--accent) !important; }
-.text-inherit { color: inherit !important; }
+.flex-shrink-0 {
+  flex-shrink: 0 !important;
+}
+
+.w-full {
+  width: 100% !important;
+}
+
+.max-w-xs {
+  max-width: 300px !important;
+}
+
+.mt-auto {
+  margin-top: auto !important;
+}
+
+.flex-col {
+  flex-direction: column !important;
+}
+
+.items-center {
+  align-items: center !important;
+}
+
+.items-stretch {
+  align-items: stretch !important;
+}
+
+.justify-center {
+  justify-content: center !important;
+}
+
+.gap-1 {
+  gap: 0.25rem !important;
+}
+
+.gap-2 {
+  gap: 0.5rem !important;
+}
+
+.gap-3 {
+  gap: 0.75rem !important;
+}
+
+.gap-4 {
+  gap: 1rem !important;
+}
+
+.mt-4 {
+  margin-top: 1rem !important;
+}
+
+.pt-4 {
+  padding-top: 1rem !important;
+}
+
+.p-1 {
+  padding: 0.25rem !important;
+}
+
+.p-2 {
+  padding: 0.5rem !important;
+}
+
+.p-3 {
+  padding: 0.75rem !important;
+}
+
+.min-w-0 {
+  min-width: 0 !important;
+}
+
+.min-w-unset {
+  min-width: unset !important;
+}
+
+.text-primary {
+  color: var(--accent) !important;
+}
+
+.text-inherit {
+  color: inherit !important;
+}
 
 /* Custom button additions for SButton colors */
 .s-button.btn-ghost {
@@ -579,6 +923,7 @@ input[type="checkbox"]:disabled {
   color: var(--text);
   border-color: transparent;
 }
+
 .s-button.btn-ghost:hover {
   background: var(--code-bg);
 }
@@ -594,6 +939,7 @@ input[type="checkbox"]:disabled {
   width: 100%;
   padding: 1rem 1.5rem;
 }
+
 .s-button.btn-sidebar:hover {
   background: var(--code-bg);
 }
