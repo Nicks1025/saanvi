@@ -149,13 +149,15 @@ const EmailTemplatesFeature = () => {
           </div>
       }
       headerActions={
-        <SButton 
-          type="button" 
-          onClick={handleCreateNew} 
-          icon="add" 
-          text={t('admin.communication.create_template', 'New Template')}
-          color="primary"
-        />
+        userPermissions?.includes('admin.email_templates.create') ? (
+          <SButton 
+            type="button" 
+            onClick={handleCreateNew} 
+            icon="add" 
+            text={t('admin.communication.create_template', 'New Template')}
+            color="primary"
+          />
+        ) : null
       }
         topTabs={
           <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid var(--border)' }}>
@@ -179,10 +181,10 @@ const EmailTemplatesFeature = () => {
         actions={activeTab === 'ACTIVE' ? ['view', 'edit', 'archive', 'delete'] : ['view', 'restore', 'delete']}
         canExecuteAction={(action) => {
           if (action === 'view') return userPermissions.includes('admin.email_templates.view');
-          if (action === 'edit') return userPermissions.includes('admin.email_templates.edit');
-          if (action === 'archive') return userPermissions.includes('admin.email_templates.archive');
-          if (action === 'restore') return userPermissions.includes('admin.email_templates.restore');
-          if (action === 'delete') return userPermissions.includes('admin.email_templates.delete');
+          if (action === 'edit') return userPermissions.includes('admin.email_templates.update');
+          if (action === 'archive') return userPermissions.includes('admin.email_templates.archive') || userPermissions.includes('admin.email_templates.update');
+          if (action === 'restore') return userPermissions.includes('admin.email_templates.restore') || userPermissions.includes('admin.email_templates.update');
+          if (action === 'delete') return userPermissions.includes('admin.email_templates.delete') || userPermissions.includes('admin.email_templates.update');
           return false;
         }}
         onAction={(action, row) => {

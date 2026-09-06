@@ -11,7 +11,8 @@ import { useAuth } from '@/store/AuthContext';
 
 const DynamicVariablesList = () => {
   const { t } = useTranslation();
-  const { userPermissions } = useAuth();
+  const { user } = useAuth();
+  const userPermissions = user?.permissions || [];
   const [variables, setVariables] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
