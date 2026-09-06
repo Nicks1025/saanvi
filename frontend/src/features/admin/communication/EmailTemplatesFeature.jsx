@@ -6,10 +6,13 @@ import SButton from '@/components/common/SButton';
 import SModal from '@/components/common/SModal';
 import { getEmailTemplates, updateEmailTemplate, deleteEmailTemplate } from './communicationService';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/store/AuthContext';
 import toast from 'react-hot-toast';
 
 const EmailTemplatesFeature = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const userPermissions = user?.permissions || [];
   const navigate = useRouter();
   const pathname = usePathname();
   const location = { pathname, search: typeof window !== "undefined" ? window.location.search : "" };
@@ -174,6 +177,14 @@ const EmailTemplatesFeature = () => {
         data={filteredTemplates}
         loading={loading}
         actions={activeTab === 'ACTIVE' ? ['view', 'edit', 'archive', 'delete'] : ['view', 'restore', 'delete']}
+        canExecuteAction={(action) => {
+          if (action === 'view') return userPermissions.includes('admin.email_templates.view');
+          if (action === 'edit') return userPermissions.includes('admin.email_templates.edit');
+          if (action === 'archive') return userPermissions.includes('admin.email_templates.archive');
+          if (action === 'restore') return userPermissions.includes('admin.email_templates.restore');
+          if (action === 'delete') return userPermissions.includes('admin.email_templates.delete');
+          return false;
+        }}
         onAction={(action, row) => {
           if (action === 'view') handleView(row.uuid);
           if (action === 'edit') handleEdit(row.uuid);
