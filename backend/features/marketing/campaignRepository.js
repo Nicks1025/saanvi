@@ -27,6 +27,10 @@ class CampaignRepository extends BaseRepository {
     return await this.queryHelper.from('sph_email_campaigns').where('uuid', 'eq', uuid).update(data).execute();
   }
 
+  async deleteCampaign(uuid) {
+    return await this.queryHelper.db('sph_email_campaigns').where('uuid', uuid).del();
+  }
+
   async createRecipients(recipients) {
     if (!recipients || recipients.length === 0) return;
     
@@ -51,6 +55,14 @@ class CampaignRepository extends BaseRepository {
     }
     
     return await query;
+  }
+
+  async getSpecificAudience(emails) {
+    if (!emails || emails.length === 0) return [];
+    return await this.queryHelper.db('users')
+      .select('uuid', 'email')
+      .whereIn('email', emails)
+      .where('status', 'active');
   }
 
   async optOutUser(email) {

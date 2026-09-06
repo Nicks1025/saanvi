@@ -43,7 +43,9 @@ const createCampaign = {
       subject: Joi.string().required(),
       template_key: Joi.string().allow(null).optional(),
       html_body: Joi.string().allow(null).optional(),
-      scheduled_at: Joi.string().isoDate().allow(null).optional()
+      scheduled_at: Joi.string().isoDate().allow(null).optional(),
+      audience_type: Joi.string().valid('ALL', 'SPECIFIC').default('ALL'),
+      target_emails: Joi.array().items(Joi.string().email()).optional()
     })
   }
 };
@@ -75,6 +77,41 @@ const unsubscribe = {
   }
 };
 
+const updateCampaign = {
+  path: '/:uuid',
+  verb: 'PUT',
+  auditMessage: 'updating campaign',
+  handler: { controller, method: 'updateCampaign' },
+  middleware: { requirePermission: ['admin.email.campaign.update'] },
+  request: {
+    params: Joi.object({
+      uuid: Joi.string().uuid().required()
+    }),
+    body: Joi.object({
+      name: Joi.string().required(),
+      subject: Joi.string().required(),
+      template_key: Joi.string().allow(null).optional(),
+      html_body: Joi.string().allow(null).optional(),
+      scheduled_at: Joi.string().isoDate().allow(null).optional(),
+      audience_type: Joi.string().valid('ALL', 'SPECIFIC').default('ALL'),
+      target_emails: Joi.array().items(Joi.string().email()).optional()
+    })
+  }
+};
+
+const deleteCampaign = {
+  path: '/:uuid',
+  verb: 'DELETE',
+  auditMessage: 'deleting campaign',
+  handler: { controller, method: 'deleteCampaign' },
+  middleware: { requirePermission: ['admin.email.campaign.delete'] },
+  request: {
+    params: Joi.object({
+      uuid: Joi.string().uuid().required()
+    })
+  }
+};
+
 const CampaignApi = {
   name: 'Marketing Campaign',
   url: '/api/marketing/campaigns',
@@ -82,6 +119,8 @@ const CampaignApi = {
     getAllCampaigns,
     getCampaign,
     createCampaign,
+    updateCampaign,
+    deleteCampaign,
     sendCampaign,
     unsubscribe
   ]

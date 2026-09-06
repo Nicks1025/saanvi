@@ -4,16 +4,19 @@ import { Mail, Plus, CheckCircle, XCircle, Clock, Send } from 'lucide-react';
 import SDataTable from '@/components/common/SDataTable';
 import SButton from '@/components/common/SButton';
 import SModal from '@/components/common/SModal';
-import { getCampaigns, sendCampaign } from '../emailService';
+import { getCampaigns, sendCampaign, deleteCampaign } from '../emailService';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import { useAuth } from '@/store/AuthContext';
 
 const EmailCampaignsFeature = () => {
   const { t } = useTranslation();
+  const { hasPermission } = useAuth();
   const router = useRouter();
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sendCampaignUuid, setSendCampaignUuid] = useState(null);
+  const [deleteCampaignUuid, setDeleteCampaignUuid] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const fetchCampaigns = async () => {
@@ -50,6 +53,22 @@ const EmailCampaignsFeature = () => {
     }
   };
 
+  const confirmDelete = async () => {
+    if (!deleteCampaignUuid) return;
+    setIsProcessing(true);
+    try {
+      await deleteCampaign(deleteCampaignUuid);
+      toast.success('Campaign deleted successfully!');
+      setDeleteCampaignUuid(null);
+      fetchCampaigns();
+    } catch (err) {
+      toast.error(err.response?.data?.error || err.message || 'Failed to delete campaign');
+      setDeleteCampaignUuid(null);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const columns = [
     {
       key: 'name',
@@ -60,46 +79,6 @@ const EmailCampaignsFeature = () => {
     {
       key: 'subject',
       label: t('admin.email.column_subject', 'Subject')
-    },
-    {
-      key: 'status',
-      label: t('admin.email.column_status', 'Status'),
-      render: (item) => {
-        let bg = 'rgba(239, 68, 68, 0.1)';
-        let fg = '#ef4444';
-        let Icon = XCircle;
-
-        if (item.status === 'COMPLETED') {
-          bg = 'rgba(34, 197, 94, 0.1)';
-          fg = '#22c55e';
-          Icon = CheckCircle;
-        } else if (item.status === 'DRAFT') {
-          bg = 'rgba(100, 116, 139, 0.1)';
-          fg = '#64748b';
-          Icon = Mail;
-        } else if (item.status === 'PROCESSING') {
-          bg = 'rgba(59, 130, 246, 0.1)';
-          fg = '#3b82f6';
-          Icon = Clock;
-        }
-
-        return (
-          <span style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '4px',
-            padding: '4px 8px',
-            borderRadius: '12px',
-            fontSize: '0.8rem',
-            fontWeight: 600,
-            backgroundColor: bg,
-            color: fg
-          }}>
-            <Icon size={14} />
-            {item.status}
-          </span>
-        );
-      }
     },
     {
       key: 'scheduled_at',
@@ -125,23 +104,33 @@ const EmailCampaignsFeature = () => {
           </div>
         }
         headerActions={
-          <SButton 
-            type="button" 
-            onClick={handleCreateNew} 
-            icon="add" 
-            text={t('admin.email.create_campaign', 'Create Campaign')}
-            color="primary"
-          />
+          hasPermission('admin.email.campaign.create') && (
+            <SButton 
+              type="button" 
+              onClick={handleCreateNew} 
+              icon="add" 
+              text={t('admin.email.create_campaign', 'Create Campaign')}
+              color="primary"
+            />
+          )
         }
         columns={columns}
         data={campaigns}
         loading={loading}
-        actions={['send']}
+        actions={['edit', 'send', 'delete']}
+        canExecuteAction={(action) => {
+          if (action === 'edit') return hasPermission('admin.email.campaign.update');
+          if (action === 'delete') return hasPermission('admin.email.campaign.delete');
+          if (action === 'send') return hasPermission('admin.email.campaign.send');
+          return true;
+        }}
         onAction={(action, row) => {
-          if (action === 'send' && row.status === 'DRAFT') {
+          if (action === 'send') {
             setSendCampaignUuid(row.uuid);
-          } else if (action === 'send') {
-            toast.error('Only DRAFT campaigns can be sent.');
+          } else if (action === 'edit') {
+            router.push(`/email/campaigns/${row.uuid}/edit`);
+          } else if (action === 'delete') {
+            setDeleteCampaignUuid(row.uuid);
           }
         }}
         emptyText={t('admin.email.no_campaigns', 'No campaigns found.')}
@@ -156,6 +145,17 @@ const EmailCampaignsFeature = () => {
         confirmColor="primary"
         isProcessing={isProcessing}
         text={t('admin.email.confirm_send_desc', 'Are you sure you want to dispatch this campaign to all subscribed users? This action cannot be undone.')}
+      />
+
+      <SModal
+        isOpen={!!deleteCampaignUuid}
+        title="Delete Campaign"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteCampaignUuid(null)}
+        confirmText="Delete"
+        confirmColor="danger"
+        isProcessing={isProcessing}
+        text="Are you sure you want to delete this campaign? This action cannot be undone."
       />
     </div>
   );

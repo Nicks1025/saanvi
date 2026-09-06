@@ -403,6 +403,7 @@ body {
 :root[data-theme="birthday"] .text-gradient-purple {
   background: linear-gradient(135deg, #d4547a 0%, #9b2c5a 100%) !important;
   -webkit-background-clip: text !important;
+  background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
 }
 
