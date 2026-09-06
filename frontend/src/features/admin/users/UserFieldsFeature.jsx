@@ -7,10 +7,13 @@ import SDropdown from '@/components/common/SDropdown';
 import axios from '@/services/axios.client';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/store/AuthContext';
 import { Pencil, Trash2, Plus } from 'lucide-react';
 
 const UserFieldsFeature = ({ disableContainer = false, topTabs }) => {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const userPermissions = user?.permissions || [];
   const [fields, setFields] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalState, setModalState] = useState({ isOpen: false, type: 'add', field: null });
@@ -174,16 +177,22 @@ const UserFieldsFeature = ({ disableContainer = false, topTabs }) => {
           if (action === 'delete') handleOpenDelete(row);
         }}
         canExecuteAction={(action, row) => {
-          if (action === 'delete') return !row.is_system;
-          return true;
+          const hasEditPermission = userPermissions?.includes('admin.users.edit') || false;
+          const hasDeletePermission = userPermissions?.includes('admin.users.delete') || false;
+          
+          if (action === 'edit') return hasEditPermission;
+          if (action === 'delete') return !row.is_system && hasDeletePermission;
+          return false;
         }}
         headerActions={
-          <SButton
-            text="Add Field"
-            icon="add"
-            onClick={handleOpenAdd}
-            color="primary"
-          />
+          userPermissions?.includes('admin.users.create') ? (
+            <SButton
+              text="Add Field"
+              icon="add"
+              onClick={handleOpenAdd}
+              color="primary"
+            />
+          ) : null
         }
         isDraggable={true}
         hidePagination={true}

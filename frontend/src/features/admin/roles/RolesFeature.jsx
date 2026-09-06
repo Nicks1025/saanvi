@@ -39,10 +39,14 @@ const RolesFeature = () => {
     }
   };
 
-  const handleEdit = (role) => {
-    navigate.push(`/admin/roles/${role.uuid}`);
+  const handleView = (role) => {
+    navigate.push(`/admin/roles/${role.uuid}?mode=view`);
   };
-  
+
+  const handleEdit = (role) => {
+    navigate.push(`/admin/roles/${role.uuid}?mode=edit`);
+  };
+
   const handleCreate = () => {
     navigate.push(`/admin/roles/new`);
   };
@@ -50,11 +54,11 @@ const RolesFeature = () => {
   const handleDelete = (role) => {
     setModalState({ isOpen: true, role });
   };
-  
+
   const confirmDelete = async () => {
     const role = modalState.role;
     if (!role) return;
-    
+
     setIsProcessing(true);
     try {
       await rolesService.deleteRole(role.uuid);
@@ -72,9 +76,9 @@ const RolesFeature = () => {
   const columns = [
     { key: 'name', label: t('admin.roleName', 'Role Name'), sortable: true },
     { key: 'description', label: t('admin.description', 'Description'), sortable: true },
-    { 
-      key: 'is_active', 
-      label: t('admin.status', 'Status'), 
+    {
+      key: 'is_active',
+      label: t('admin.status', 'Status'),
       sortable: true,
       render: (item) => item.is_active ? 'Active' : 'Inactive'
     },
@@ -82,28 +86,30 @@ const RolesFeature = () => {
 
   return (
     <div className="admin-users-container">
-      <SDataTable 
+      <SDataTable
         title={t('admin.roles', 'Roles')}
-        data={roles} 
-        columns={columns} 
+        data={roles}
+        columns={columns}
         serverSideSearch={true}
         onSearch={(query) => fetchRoles(query)}
         searchPlaceholder={t('admin.searchRoles', 'Search roles...')}
         loading={loading}
-        actions={['edit', 'delete']}
+        actions={['view', 'edit', 'delete']}
         onAction={(action, row) => {
+          if (action === 'view') handleView(row);
           if (action === 'edit') handleEdit(row);
           if (action === 'delete') handleDelete(row);
         }}
         canExecuteAction={(action) => {
+          if (action === 'view') return userPermissions.includes('admin.roles.view');
           if (action === 'edit') return userPermissions.includes('admin.roles.edit');
           if (action === 'delete') return userPermissions.includes('admin.roles.delete');
           return false;
         }}
         headerActions={
           userPermissions.includes('admin.roles.create') ? (
-            <SButton 
-              onClick={handleCreate} 
+            <SButton
+              onClick={handleCreate}
               icon="add"
               text={t('admin.addRole', 'Add Role')}
               className="flex-shrink-0"
@@ -111,7 +117,7 @@ const RolesFeature = () => {
           ) : null
         }
       />
-      
+
       <SModal
         isOpen={modalState.isOpen}
         title={t('admin.deleteRole', 'Delete Role')}

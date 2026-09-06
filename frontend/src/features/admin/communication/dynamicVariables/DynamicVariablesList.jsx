@@ -119,11 +119,13 @@ const DynamicVariablesList = () => {
         data={variables}
         columns={columns}
         loading={loading}
-        actions={[
-          'view',
-          ...(userPermissions?.includes('admin.dynamic_variables.update') ? ['edit'] : []),
-          ...(userPermissions?.includes('admin.dynamic_variables.delete') ? ['delete'] : [])
-        ]}
+        actions={['view', 'edit', 'delete']}
+        canExecuteAction={(action) => {
+          if (action === 'view') return userPermissions?.includes('admin.dynamic_variables.view');
+          if (action === 'edit') return userPermissions?.includes('admin.dynamic_variables.update');
+          if (action === 'delete') return userPermissions?.includes('admin.dynamic_variables.delete');
+          return false;
+        }}
         onAction={(action, row) => {
           if (action === 'view') handleView(row);
           if (action === 'edit') handleEdit(row);
