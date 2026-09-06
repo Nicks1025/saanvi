@@ -173,8 +173,13 @@ export const AuthProvider = ({ children }) => {
     window.location.href = '/login';
   };
 
+  const hasPermission = (permission) => {
+    if (!user || !user.permissions) return false;
+    return user.permissions.includes(permission);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, setUser, supabaseToken, isAuthenticated, loading, isSessionInitializing, login, logout, fetchUser }}>
+    <AuthContext.Provider value={{ user, setUser, supabaseToken, isAuthenticated, loading, isSessionInitializing, login, logout, fetchUser, hasPermission }}>
       {children}
     </AuthContext.Provider>
   );

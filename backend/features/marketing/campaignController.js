@@ -35,6 +35,24 @@ class CampaignController extends BaseController {
     }
   }
 
+  async updateCampaign(req, res, next) {
+    try {
+      const result = await this.service.updateCampaign(req.params.uuid, req.body, req.user.uuid);
+      res.status(200).json({ success: true, data: result });
+    } catch (err) {
+      this.sendError(res, err, 400);
+    }
+  }
+
+  async deleteCampaign(req, res, next) {
+    try {
+      const result = await this.service.deleteCampaign(req.params.uuid);
+      res.status(200).json({ success: true, message: result.message });
+    } catch (err) {
+      this.sendError(res, err, 400);
+    }
+  }
+
   async sendCampaign(req, res, next) {
     try {
       const result = await this.service.sendCampaign(req.params.uuid);

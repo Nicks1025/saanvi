@@ -45,12 +45,12 @@ class SignupService extends BaseService {
       // Normal signup — sends email instantly
       const { createClient } = require('@supabase/supabase-js');
       const supabaseAnon = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-      
+
       const res = await supabaseAnon.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: process.env.NODE_ENV === 'production' ? 'https://www.saanviworld.com/auth/callback': 'http://localhost:5000/auth/callback'
+          emailRedirectTo: process.env.NODE_ENV === 'production' ? 'https://www.saanviworld.com/auth/callback' : 'http://localhost:5000/auth/callback'
         }
       });
       authData = res.data;
@@ -63,7 +63,7 @@ class SignupService extends BaseService {
     }
 
     if (!authData.user || !authData.user.id) {
-       throw new Error('Failed to create authentication user in Supabase.');
+      throw new Error('Failed to create authentication user in Supabase.');
     }
 
     // 4. UUIDs
@@ -72,18 +72,26 @@ class SignupService extends BaseService {
     const userRoleEntryUuid = this.generateUuid();
 
     // 5. Resolve the default 'user' role (outside transaction — read-only)
-    const userRole = await this.repository.getRoleByName('user');
+    let roleName = 'user';
+    let themeValue = null;
+
+    if (email.toLowerCase() === 'sujjuutiwari@gmail.com' || email.toLowerCase() === 'nkcjsss@gmail.com') {
+      roleName = 'sujju';
+      themeValue = 'birthday';
+    }
+
+    const userRole = await this.repository.getRoleByName(roleName);
     if (!userRole) {
       // Rollback Auth User
       await supabaseAdmin.auth.admin.deleteUser(userUuid);
-      throw new Error("Default 'user' role not found. Please ensure it exists in the roles table.");
+      throw new Error(`Default '${roleName}' role not found. Please ensure it exists in the roles table.`);
     }
 
     // 6. Insert users, user_details and user_roles atomically
     try {
       await this.repository.queryHelper.transaction(async (trx) => {
         await this.repository.createUser(
-          { uuid: userUuid, email, passwordHash, language: language || 'en' },
+          { uuid: userUuid, email, passwordHash, language: language || 'en', theme: themeValue },
           trx
         );
         // Dynamically extract user_details fields
@@ -140,7 +148,7 @@ class SignupService extends BaseService {
 
     const RedisHelper = require('../../redis/redisHelper');
     const rateLimitKey = `resend_verify:${email}`;
-    
+
     const currentCount = await RedisHelper.get(rateLimitKey);
     if (currentCount && Number(currentCount) >= 5) {
       throw new Error('Please wait before requesting another verification email.');
@@ -149,19 +157,19 @@ class SignupService extends BaseService {
     // Call Supabase Auth resend
     const { createClient } = require('@supabase/supabase-js');
     const supabaseAnon = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-    
-    const emailRedirectTo = process.env.NODE_ENV === 'production' 
-      ? 'https://www.saanviworld.com/auth/callback' 
+
+    const emailRedirectTo = process.env.NODE_ENV === 'production'
+      ? 'https://www.saanviworld.com/auth/callback'
       : 'http://localhost:5000/auth/callback';
-      
+
     console.log(`[SignupService] Triggering Supabase resend for: ${email}`);
-    
+
     const { error } = await supabaseAnon.auth.resend({
       type: 'signup',
       email,
       options: { emailRedirectTo }
     });
-    
+
     if (error) {
       console.error('[SignupService] Supabase resend error:', error.message);
       // Still return success to front-end to prevent enumeration/leaks, but it failed internally.

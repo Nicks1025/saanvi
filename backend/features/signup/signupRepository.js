@@ -36,21 +36,27 @@ class SignupRepository extends BaseRepository {
    * Inserts a new row into the `users` table.
    * Accepts an optional Knex transaction object (trx) for atomic operations.
    */
-  async createUser({ uuid, email, passwordHash, language }, trx = null) {
+  async createUser({ uuid, email, passwordHash, language, theme }, trx = null) {
     const db = trx || this.queryHelper.db;
-    const result = await db('users')
-      .insert({
-        uuid,
-        email,
-        password_hash: passwordHash,
+    const payload = {
+      uuid,
+      email,
+      password_hash: passwordHash,
         language: language || 'en',
         status: 'inactive',
         is_mfa_enabled: false,
         is_email_verified: false,
-        failed_login_attempts: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
+      failed_login_attempts: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
+    if (theme) {
+      payload.theme = theme;
+    }
+
+    const result = await db('users')
+      .insert(payload)
       .returning('*');
     return result[0];
   }

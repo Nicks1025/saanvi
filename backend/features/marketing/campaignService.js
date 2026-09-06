@@ -27,6 +27,8 @@ class CampaignService extends BaseService {
       html_body: data.html_body || null,
       status: 'DRAFT',
       scheduled_at: data.scheduled_at || null,
+      audience_type: data.audience_type || 'ALL',
+      target_emails: JSON.stringify(data.target_emails || []),
       created_by: userUuid
     };
     
@@ -38,22 +40,53 @@ class CampaignService extends BaseService {
     return payload;
   }
 
+  async updateCampaign(uuid, data, userUuid) {
+    const campaign = await this.getCampaign(uuid);
+
+    const payload = {
+      name: data.name,
+      subject: data.subject,
+      template_key: data.template_key || null,
+      html_body: data.html_body || null,
+      scheduled_at: data.scheduled_at || null,
+      audience_type: data.audience_type || 'ALL',
+      target_emails: JSON.stringify(data.target_emails || []),
+      updated_at: new Date().toISOString()
+    };
+
+    if (!payload.template_key && !payload.html_body) {
+      throw new Error('Either template_key or html_body must be provided.');
+    }
+
+    await this.repository.updateCampaign(uuid, payload);
+    return { ...campaign, ...payload };
+  }
+
+  async deleteCampaign(uuid) {
+    const campaign = await this.getCampaign(uuid);
+    await this.repository.deleteCampaign(uuid);
+    return { message: 'Campaign deleted successfully.' };
+  }
+
   async sendCampaign(uuid) {
     const campaign = await this.getCampaign(uuid);
     
-    if (campaign.status !== 'DRAFT') {
-      throw new Error('Only DRAFT campaigns can be sent.');
-    }
-
     // Mark as processing
     await this.repository.updateCampaign(uuid, {
       status: 'PROCESSING',
       started_at: new Date().toISOString()
     });
 
-    // Resolve Audience (for now we assume 'ALL_ACTIVE_USERS' or similar logic in repo)
-    // You could pass audience_type from campaign if it was added to the schema.
-    const audience = await this.repository.getAudience('ALL_ACTIVE_USERS');
+    // Resolve Audience based on campaign audience_type
+    let audience = [];
+    if (campaign.audience_type === 'SPECIFIC') {
+      const targetEmails = typeof campaign.target_emails === 'string' 
+        ? JSON.parse(campaign.target_emails) 
+        : (campaign.target_emails || []);
+      audience = targetEmails.map(email => ({ email, uuid: null }));
+    } else {
+      audience = await this.repository.getAudience('ALL_ACTIVE_USERS');
+    }
     
     if (audience.length === 0) {
       await this.repository.updateCampaign(uuid, {
@@ -67,7 +100,7 @@ class CampaignService extends BaseService {
     const recipients = audience.map(u => ({
       uuid: uuidv4(),
       campaign_uuid: uuid,
-      user_uuid: u.uuid,
+      user_uuid: u.uuid || null,
       email: u.email,
       status: 'PENDING'
     }));
