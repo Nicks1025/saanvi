@@ -175,13 +175,15 @@ async function poll() {
       await db('sph_email_queue').where({ id: job.id }).update({
         status: 'COMPLETED',
         completed_at: new Date(),
-        updated_at: new Date()
+        updated_at: new Date(),
+        error_details: null
       });
 
       if (job.email_log_uuid) {
         await db('sph_email_logs').where({ uuid: job.email_log_uuid }).update({
           status: 'COMPLETED',
-          sent_at: new Date()
+          sent_at: new Date(),
+          error_details: null
         });
       }
 

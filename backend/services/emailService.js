@@ -205,12 +205,12 @@ class EmailService {
       if (existingJobId) {
         await successQh.from('sph_email_logs')
           .where('job_id', 'eq', existingJobId)
-          .update({ status: 'COMPLETED', sent_at: new Date().toISOString() })
+          .update({ status: 'COMPLETED', sent_at: new Date().toISOString(), error_details: null })
           .execute();
       } else {
         await successQh.from('sph_email_logs')
           .where('uuid', 'eq', logUuid)
-          .update({ status: 'COMPLETED', sent_at: new Date().toISOString() })
+          .update({ status: 'COMPLETED', sent_at: new Date().toISOString(), error_details: null })
           .execute();
       }
 
