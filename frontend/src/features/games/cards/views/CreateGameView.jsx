@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Users, Flame, Sparkles, Clock, Check, HelpCircle } from 'lucide-react';
+import { Users, Flame, Sparkles, Clock, Check } from 'lucide-react';
 import { GAME_SCREENS, STACKING_RULES, WILD_FOUR_RULES } from '../types';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import SButton from '@/components/common/SButton';
 
 export const CreateGameView = ({ onNavigate, onCreateRoom, openRules }) => {
   const { t } = useTranslation();
@@ -45,22 +46,22 @@ export const CreateGameView = ({ onNavigate, onCreateRoom, openRules }) => {
     <div className="create-game-view animate-fadeIn" id="create-game-view">
       {/* Top Header */}
       <div className="view-top-header">
-        <button
+        <SButton
           className="back-nav-btn"
+          color="secondary"
           onClick={() => onNavigate(GAME_SCREENS.LOBBY)}
           aria-label={t('games.uno.back_to_lobby', 'Back to Lobby')}
-        >
-          <ArrowLeft size={18} />
-          <span>{t('games.uno.back_to_lobby', 'Back to Lobby')}</span>
-        </button>
-        <button
+          icon="back"
+          text={t('games.uno.back_to_lobby', 'Back to Lobby')}
+        />
+        <SButton
           className="rules-helper-btn"
+          color="secondary"
           onClick={() => openRules('stacking')}
           title={t('games.uno.rules_guide', 'Rules Guide')}
-        >
-          <HelpCircle size={16} />
-          <span>{t('games.uno.rules_guide', 'Rules Guide')}</span>
-        </button>
+          icon="help"
+          text={t('games.uno.rules_guide', 'Rules Guide')}
+        />
       </div>
 
       <div className="create-form-card">
@@ -99,14 +100,15 @@ export const CreateGameView = ({ onNavigate, onCreateRoom, openRules }) => {
 
             <div className="player-limit-stepper">
               {[2, 3, 4, 5, 6, 7, 8].map((count) => (
-                <button
+                <SButton
                   key={count}
                   type="button"
+                  color={playerLimit === count ? 'primary' : 'secondary'}
                   className={`limit-pill-btn ${playerLimit === count ? 'is-selected' : ''}`}
                   onClick={() => setPlayerLimit(count)}
                 >
                   {count} {count === 8 && <span className="default-tag">{t('common.default', 'Default')}</span>}
-                </button>
+                </SButton>
               ))}
             </div>
           </div>
@@ -128,20 +130,22 @@ export const CreateGameView = ({ onNavigate, onCreateRoom, openRules }) => {
               </div>
 
               <div className="segmented-toggle">
-                <button
+                <SButton
                   type="button"
+                  color={stacking === STACKING_RULES.ON ? 'primary' : 'secondary'}
                   className={`toggle-option ${stacking === STACKING_RULES.ON ? 'active-on' : ''}`}
                   onClick={() => setStacking(STACKING_RULES.ON)}
                 >
                   {t('common.on', 'ON')}
-                </button>
-                <button
+                </SButton>
+                <SButton
                   type="button"
+                  color={stacking === STACKING_RULES.OFF ? 'danger' : 'secondary'}
                   className={`toggle-option ${stacking === STACKING_RULES.OFF ? 'active-off' : ''}`}
                   onClick={() => setStacking(STACKING_RULES.OFF)}
                 >
                   {t('common.off', 'OFF')}
-                </button>
+                </SButton>
               </div>
             </div>
 
@@ -234,23 +238,24 @@ export const CreateGameView = ({ onNavigate, onCreateRoom, openRules }) => {
 
             <div className="timer-pills-row">
               {[15, 30, 45, 60].map((seconds) => (
-                <button
+                <SButton
                   key={seconds}
                   type="button"
+                  color={turnTimer === seconds ? 'primary' : 'secondary'}
                   className={`timer-pill ${turnTimer === seconds ? 'selected' : ''}`}
                   onClick={() => setTurnTimer(seconds)}
                 >
                   {seconds}s
-                </button>
+                </SButton>
               ))}
             </div>
           </div>
 
           {/* Create Button */}
           <div className="form-submit-actions">
-            <button type="submit" className="s-button btn-primary btn-create-submit" disabled={isCreating}>
+            <SButton type="submit" color="primary" className="btn-create-submit w-full" disabled={isCreating}>
               <span>{isCreating ? t('games.uno.creating_room', 'Creating Room...') : t('games.uno.create_game_room', 'Create Game Room')}</span>
-            </button>
+            </SButton>
           </div>
         </form>
       </div>

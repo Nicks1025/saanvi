@@ -32,10 +32,25 @@ const signup = {
   }
 };
 
+const resendVerification = {
+  path: '/resend-verification',
+  verb: 'POST',
+  auditMessage: 'resend email verification',
+  handler: {
+    controller: controller,
+    method: 'resendVerification'
+  },
+  request: {
+    body: Joi.object({
+      email: Joi.string().email().required()
+    })
+  }
+};
+
 const SignupApi = {
   name: 'Signup',
   url: '/api/signup',
-  endpoints: [signup]
+  endpoints: [signup, resendVerification]
 };
 
 module.exports = new ApiSchema(SignupApi);

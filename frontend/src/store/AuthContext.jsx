@@ -2,6 +2,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from '@/services/axios.client';
 import i18n from '../i18n';
+import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
 
 const AuthContext = createContext(null);
 
@@ -13,6 +15,7 @@ export const AuthProvider = ({ children }) => {
   const [isSessionInitializing, setIsSessionInitializing] = useState(false);
   const isFetchingMe = React.useRef(false);
 
+  // Keep fetchUser for manual re-syncs (like updating profile in settings)
   const fetchUser = async () => {
     if (isFetchingMe.current) return;
     isFetchingMe.current = true;
@@ -22,7 +25,6 @@ export const AuthProvider = ({ children }) => {
         const userData = response.data;
         setUser(userData);
         setIsAuthenticated(true);
-        sessionStorage.setItem('auth_user', JSON.stringify(userData));
 
         // Sync preferences
         if (userData.language && userData.language !== i18n.resolvedLanguage) {
@@ -47,52 +49,76 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // On initial load, decode token from cookies instead of calling /api/users/me
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
+    const token = Cookies.get('auth_token');
     if (token) {
-      const storedUser = sessionStorage.getItem('auth_user');
-      const storedSbToken = sessionStorage.getItem('supabase_token');
-      if (storedUser) {
-        try {
-          setUser(JSON.parse(storedUser));
-          setSupabaseToken(storedSbToken);
-          setIsAuthenticated(true);
+      try {
+        const decodedUser = jwtDecode(token);
+        
+        // Check if token is expired
+        if (decodedUser.exp && decodedUser.exp * 1000 < Date.now()) {
+          console.warn('Token expired on load');
+          Cookies.remove('auth_token', { path: '/' });
+          Cookies.remove('supabase_token', { path: '/' });
           setLoading(false);
-          // Stale-while-revalidate: Fetch fresh data in the background
-          fetchUser();
-        } catch (e) {
-          fetchUser();
+          return;
         }
-      } else {
-        fetchUser();
+
+        setUser(decodedUser);
+        
+        const storedSbToken = Cookies.get('supabase_token');
+        if (storedSbToken) setSupabaseToken(storedSbToken);
+
+        setIsAuthenticated(true);
+        
+        // Instantly apply preferences stored in the JWT payload
+        if (decodedUser.language && decodedUser.language !== i18n.resolvedLanguage) {
+          i18n.changeLanguage(decodedUser.language);
+        }
+        if (decodedUser.theme) {
+          localStorage.setItem('app-theme', decodedUser.theme);
+          document.documentElement.setAttribute('data-theme', decodedUser.theme === 'system' ? '' : decodedUser.theme);
+        }
+        if (decodedUser.font) {
+          localStorage.setItem('app-font', decodedUser.font);
+          document.documentElement.setAttribute('data-font', decodedUser.font);
+        }
+      } catch (e) {
+        console.error('Invalid token in cookies', e);
+        logout();
       }
-    } else {
-      setLoading(false);
     }
+    setLoading(false);
   }, []);
 
-  const login = async (token, userData, sbToken) => {
+  const login = async (token, sbToken) => {
     setIsSessionInitializing(true);
-    localStorage.setItem('auth_token', token);
+    Cookies.set('auth_token', token, { expires: 1, path: '/' }); // 1 day
     if (sbToken) {
-      sessionStorage.setItem('supabase_token', sbToken);
+      Cookies.set('supabase_token', sbToken, { expires: 1, path: '/' });
       setSupabaseToken(sbToken);
     }
-    // Set minimal user data first
-    setUser(userData);
-    setIsAuthenticated(true);
-    // Fetch full profile immediately
-    await fetchUser();
+    
+    // Decode user from the new token
+    try {
+      const decodedUser = jwtDecode(token);
+      setUser(decodedUser);
+      setIsAuthenticated(true);
+    } catch (e) {
+      console.error('Failed to decode token on login', e);
+    }
+    
+    setIsSessionInitializing(false);
   };
 
   const logout = () => {
-    localStorage.removeItem('auth_token');
-    sessionStorage.removeItem('auth_user');
-    sessionStorage.removeItem('supabase_token');
+    Cookies.remove('auth_token', { path: '/' });
+    Cookies.remove('supabase_token', { path: '/' });
     setUser(null);
     setSupabaseToken(null);
     setIsAuthenticated(false);
-    // Let the protected route handle redirect if needed, or window.location.href = '/login'
+    // Hard redirect to clear any state
     window.location.href = '/login';
   };
 

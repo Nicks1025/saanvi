@@ -112,6 +112,25 @@ class UserService extends BaseService {
     await this.repository.updatePassword(userUuid, newPasswordHash);
     return { success: true };
   }
+
+  /**
+   * Deletes the user's account permanently via Supabase Admin API.
+   * PostgreSQL ON DELETE CASCADE handles cleaning up local database tables.
+   */
+  async deleteAccount(uuid) {
+    const user = await this.repository.getUserByUuid(uuid);
+    if (!user) throw new Error('User not found.');
+
+    const { supabaseAdmin } = require('../../services/supabaseAdmin');
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(uuid);
+    
+    if (error) {
+      console.error('[UserService] Supabase self-delete error:', error.message);
+      throw new Error(`Failed to delete authentication user: ${error.message}`);
+    }
+
+    return { message: 'Account deleted successfully.' };
+  }
 }
 
 module.exports = UserService;

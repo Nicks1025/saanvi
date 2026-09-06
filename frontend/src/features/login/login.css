@@ -202,3 +202,43 @@
   text-decoration: underline;
 }
 
+
+/* ── Birthday Theme overrides for login ── */
+[data-theme="birthday"] .login-page-wrapper {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+[data-theme="birthday"] .login-card {
+  background: rgba(255, 228, 238, 0.82) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  border: 1px solid #f9c0ce !important;
+  box-shadow: 0 8px 32px rgba(160, 30, 65, 0.12) !important;
+  color: #3b0d18 !important;
+}
+[data-theme="birthday"] .login-title {
+  color: #3b0d18 !important;
+}
+[data-theme="birthday"] .login-card .s-text-field label {
+  color: #6b2737 !important;
+}
+[data-theme="birthday"] .login-card .s-input {
+  background: rgba(255, 245, 247, 0.9) !important;
+  border: 1px solid #f9c0ce !important;
+  color: #3b0d18 !important;
+}
+[data-theme="birthday"] .login-card .s-input:focus {
+  border-color: #c8416a !important;
+  box-shadow: 0 0 0 3px rgba(200, 65, 106, 0.18) !important;
+}
+[data-theme="birthday"] .login-btn-primary {
+  background: linear-gradient(135deg, #c8416a 0%, #a0334f 100%) !important;
+  box-shadow: 0 4px 14px rgba(200, 65, 106, 0.35) !important;
+  border: none !important;
+}
+[data-theme="birthday"] .login-btn-primary:hover {
+  background: linear-gradient(135deg, #a0334f 0%, #7e2540 100%) !important;
+}
+[data-theme="birthday"] .login-footer-link { color: #c8416a !important; }
+[data-theme="birthday"] .login-divider-line { background: #f9c0ce !important; }
+[data-theme="birthday"] .login-divider-text { color: #6b2737 !important; }

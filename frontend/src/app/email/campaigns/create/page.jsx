@@ -1,14 +1,14 @@
 "use client";
 import React from 'react';
+import CreateCampaignFeature from '@/features/email/campaigns/CreateCampaignFeature';
 import AppLayout from '@/components/layout/AppLayout';
 import ProtectedRoute from '@/components/common/ProtectedRoute';
-import WorkflowEditor from '@/features/admin/communication/WorkflowEditor';
 
 export default function Page() {
   return (
-    <ProtectedRoute requiredPermission="admin.workflows.edit">
+    <ProtectedRoute requiredPermission="admin.email.campaign.create">
       <AppLayout>
-        <WorkflowEditor mode="edit" />
+        <CreateCampaignFeature />
       </AppLayout>
     </ProtectedRoute>
   );

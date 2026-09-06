@@ -425,14 +425,14 @@ const EmailTemplateEditor = ({ templateUuid, isViewing = false, onClose }) => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
               <STextField
                 label="Template Key *"
-                text={form.template_key}
+                text={form.template_key || ''}
                 onChange={(e) => handleChange('template_key', e.target.value)}
                 disabled={!!templateUuid || isViewing}
                 placeholder="e.g. USER_WELCOME"
               />
               <STextField
                 label="Template Name *"
-                text={form.name}
+                text={form.name || ''}
                 onChange={(e) => handleChange('name', e.target.value)}
                 placeholder="e.g. Welcome Email"
                 disabled={isViewing}
@@ -442,7 +442,7 @@ const EmailTemplateEditor = ({ templateUuid, isViewing = false, onClose }) => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
               <STextField
                 label="Email Subject *"
-                text={form.subject}
+                text={form.subject || ''}
                 onChange={(e) => handleChange('subject', e.target.value)}
                 disabled={isViewing}
               />
@@ -459,7 +459,7 @@ const EmailTemplateEditor = ({ templateUuid, isViewing = false, onClose }) => {
             <div style={{ marginBottom: '1.5rem' }}>
               <STextField
                 label="Description"
-                text={form.description}
+                text={form.description || ''}
                 onChange={(e) => handleChange('description', e.target.value)}
                 disabled={isViewing}
               />

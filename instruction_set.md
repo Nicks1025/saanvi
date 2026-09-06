@@ -95,6 +95,7 @@ Every new feature must reside in `backend/features/<featureName>/` and contain e
 
 ## 10. Reusable Frontend Components
 - **ALWAYS** use `SButton` instead of a native `<button>` element whenever the `SButton` component supports the required behavior.
+- **Icon Support in Buttons**: Do NOT render separate icon components (like `<ArrowLeft />` or `<Copy />`) alongside text inside buttons. `SButton` has extended support for icons natively. Always pass icons via the `icon` or `leftIcon`/`rightIcon` props of `SButton`.
 - **ALWAYS** use `STextField` instead of a native `<input type="text">` or `<input type="search">` when an equivalent reusable component exists.
 - Before creating any new UI component, search the existing `/src/components/common/` directory for an equivalent.
 - Do not create duplicate versions of any reusable component.

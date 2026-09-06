@@ -9,13 +9,14 @@ const healthApi = require('./features/health/healthApi');
 const chatApi = require('./features/chat/chatApi');
 const unoApi = require('./features/uno/unoApi');
 const arrowPuzzleApi = require('./features/arrowPuzzle/arrowPuzzleApi');
+const campaignApi = require('./features/marketing/campaignApi');
 
 /**
  * Automatically registers all API endpoints to the Express app.
  * @param {import('express').Application} app 
  */
 module.exports = function(app) {
-  const apis = [loginApi, signupApi, userApi, UserFieldsApi, adminApi, wordSearchApi, mfaApi, healthApi, chatApi, unoApi, arrowPuzzleApi];
+  const apis = [loginApi, signupApi, userApi, UserFieldsApi, adminApi, wordSearchApi, mfaApi, healthApi, chatApi, unoApi, arrowPuzzleApi, campaignApi];
 
   // Declarative ApiSchema Routes
   for (const api of apis) {

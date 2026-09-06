@@ -407,7 +407,7 @@ const getEmailLogs = {
   verb: 'GET',
   auditMessage: 'getting email logs',
   handler: { controller: emailTemplateController, method: 'getEmailLogs' },
-  middleware: { requirePermission: ['admin.email_templates.view'] }
+  middleware: { requirePermission: ['admin.email.logs'] }
 };
 
 const getEmailTemplateTableColumns = {
@@ -423,128 +423,6 @@ const getEmailTemplateTableColumns = {
   }
 };
 
-const WorkflowController = require('./workflowController');
-const workflowController = new WorkflowController();
-
-const getWorkflows = {
-  path: '/workflows',
-  verb: 'GET',
-  auditMessage: 'getting workflows',
-  handler: { controller: workflowController, method: 'getWorkflows' },
-  middleware: { requirePermission: ['admin.workflows.view'] } // Reusing a standard admin permission pattern
-};
-
-const getWorkflowDetails = {
-  path: '/workflows/:id',
-  verb: 'GET',
-  auditMessage: 'getting workflow details',
-  handler: { controller: workflowController, method: 'getWorkflowDetails' },
-  middleware: { requirePermission: ['admin.workflows.view'] },
-  request: {
-    params: Joi.object({ id: Joi.string().uuid().required() })
-  }
-};
-
-const createWorkflow = {
-  path: '/workflows',
-  verb: 'POST',
-  auditMessage: 'creating workflow',
-  handler: { controller: workflowController, method: 'createWorkflow' },
-  middleware: { requirePermission: ['admin.workflows.edit'] },
-  request: {
-    body: Joi.object({
-      trigger_event_key: Joi.string().required(),
-      name: Joi.string().required(),
-      description: Joi.string().optional().allow(null, ''),
-      active: Joi.boolean().optional(),
-      conditions: Joi.array().optional(),
-      actions: Joi.array().optional()
-    })
-  }
-};
-
-const updateWorkflow = {
-  path: '/workflows/:id',
-  verb: 'PUT',
-  auditMessage: 'updating workflow',
-  handler: { controller: workflowController, method: 'updateWorkflow' },
-  middleware: { requirePermission: ['admin.workflows.edit'] },
-  request: {
-    params: Joi.object({ id: Joi.string().uuid().required() }),
-    body: Joi.object({
-      trigger_event_key: Joi.string().required(),
-      name: Joi.string().required(),
-      description: Joi.string().optional().allow(null, ''),
-      active: Joi.boolean().optional(),
-      conditions: Joi.array().optional(),
-      actions: Joi.array().optional()
-    })
-  }
-};
-
-const deleteWorkflow = {
-  path: '/workflows/:id',
-  verb: 'DELETE',
-  auditMessage: 'deleting workflow',
-  handler: { controller: workflowController, method: 'deleteWorkflow' },
-  middleware: { requirePermission: ['admin.workflows.edit'] },
-  request: {
-    params: Joi.object({ id: Joi.string().uuid().required() })
-  }
-};
-
-const getSystemEvents = {
-  path: '/system-events',
-  verb: 'GET',
-  auditMessage: 'getting system events',
-  handler: { controller: workflowController, method: 'getSystemEvents' },
-  middleware: { requirePermission: ['admin.workflows.view'] }
-};
-
-const createSystemEvent = {
-  path: '/system-events',
-  verb: 'POST',
-  auditMessage: 'creating system event',
-  handler: { controller: workflowController, method: 'createSystemEvent' },
-  middleware: { requirePermission: ['admin.workflows.edit'] },
-  request: {
-    body: Joi.object({
-      event_key: Joi.string().required(),
-      name: Joi.string().required(),
-      description: Joi.string().optional().allow(null, ''),
-      payload_schema: Joi.any().optional(),
-      active: Joi.boolean().optional()
-    })
-  }
-};
-
-const updateSystemEvent = {
-  path: '/system-events/:event_key',
-  verb: 'PUT',
-  auditMessage: 'updating system event',
-  handler: { controller: workflowController, method: 'updateSystemEvent' },
-  middleware: { requirePermission: ['admin.workflows.edit'] },
-  request: {
-    params: Joi.object({ event_key: Joi.string().required() }),
-    body: Joi.object({
-      name: Joi.string().required(),
-      description: Joi.string().optional().allow(null, ''),
-      payload_schema: Joi.any().optional(),
-      active: Joi.boolean().optional()
-    })
-  }
-};
-
-const deleteSystemEvent = {
-  path: '/system-events/:event_key',
-  verb: 'DELETE',
-  auditMessage: 'deleting system event',
-  handler: { controller: workflowController, method: 'deleteSystemEvent' },
-  middleware: { requirePermission: ['admin.workflows.edit'] },
-  request: {
-    params: Joi.object({ event_key: Joi.string().required() })
-  }
-};
 
 // ─── Dynamic Variables ────────────────────────────────────────────────────────
 
@@ -635,15 +513,6 @@ const AdminApi = {
     previewEmailTemplate,
     testEmailTemplate,
     getEmailLogs,
-    getWorkflows,
-    getWorkflowDetails,
-    createWorkflow,
-    updateWorkflow,
-    deleteWorkflow,
-    getSystemEvents,
-    createSystemEvent,
-    updateSystemEvent,
-    deleteSystemEvent,
     getDynamicVariables,
     createDynamicVariable,
     updateDynamicVariable,

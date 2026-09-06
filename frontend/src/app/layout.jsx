@@ -13,7 +13,20 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Synchronous theme initialization — runs BEFORE React hydrates, eliminates flash */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function() {
+            try {
+              var theme = localStorage.getItem('app-theme') || 'system';
+              if (theme && theme !== 'system') {
+                document.documentElement.setAttribute('data-theme', theme);
+              }
+            } catch(e) {}
+          })();
+        `}} />
+      </head>
       <body>
         <div id="root" className="app-container" style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%', minHeight: '100vh' }}>
           <Providers>{children}</Providers>

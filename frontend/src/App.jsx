@@ -28,11 +28,6 @@ import CreateEmailTemplatePage from './pages/admin/email-templates/create';
 import ViewEmailTemplatePage from './pages/admin/email-templates/view';
 import EditEmailTemplatePage from './pages/admin/email-templates/edit';
 import DynamicVariablesPage from './pages/admin/dynamic-variables';
-import WorkflowsPage from './pages/admin/workflows';
-import WorkflowCreatePage from './pages/admin/workflows/create';
-import WorkflowEditPage from './pages/admin/workflows/edit';
-import WorkflowViewPage from './pages/admin/workflows/view';
-import SystemEventsPage from './pages/admin/system-events';
 
 import ChatPage from './pages/chat';
 
@@ -73,11 +68,6 @@ const router = createBrowserRouter([
       { path: "admin/email-templates/:uuid/view", element: <ViewEmailTemplatePage /> },
       { path: "admin/email-templates/:uuid/edit", element: <EditEmailTemplatePage /> },
       { path: "admin/dynamic-variables", element: <DynamicVariablesPage /> },
-      { path: "admin/workflows", element: <WorkflowsPage /> },
-      { path: "admin/workflow/create", element: <WorkflowCreatePage /> },
-      { path: "admin/workflow/:id/edit", element: <WorkflowEditPage /> },
-      { path: "admin/workflow/:id/view", element: <WorkflowViewPage /> },
-      { path: "admin/system-events", element: <SystemEventsPage /> },
 
       { path: "games/word-search", element: <WordSearchPage /> },
       { path: "games/word-search/play", element: <WordSearchPlayPage /> },

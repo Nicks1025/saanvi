@@ -3,7 +3,7 @@ import {
   Plus, UserPlus, X, Save, Pencil, Trash2, 
   Archive, RefreshCw, ArrowLeft, Send, MoreVertical, 
   ZoomIn, ZoomOut, Check, Play, Download, Pause,
-  Lightbulb, Trophy
+  Lightbulb, Trophy, HelpCircle, CheckCircle2, Copy
 } from 'lucide-react';
 
 const ICON_MAP = {
@@ -25,7 +25,10 @@ const ICON_MAP = {
   'pause': Pause,
   'download': Download,
   'hint': Lightbulb,
-  'trophy': Trophy
+  'trophy': Trophy,
+  'help': HelpCircle,
+  'check-circle': CheckCircle2,
+  'copy': Copy
 };
 
 const SIZE_MAP = {

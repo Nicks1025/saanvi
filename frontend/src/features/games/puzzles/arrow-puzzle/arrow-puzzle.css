@@ -4,7 +4,7 @@
   height: 100%;
   width: 100%;
   padding: 1.5rem;
-  background-color: #ffffff;
+  background-color: var(--bg);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   overflow: hidden;
@@ -39,10 +39,10 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background-color: #f8fafc;
+  background-color: var(--code-bg);
   padding: 0.4rem 0.75rem;
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
   flex-wrap: wrap;
 }
 
@@ -55,7 +55,7 @@
 .arrow-puzzle-header h2 {
   margin: 0 0 0.5rem 0;
   font-size: 1.5rem;
-  color: #1e293b;
+  color: var(--text-h);
 }
 
 .difficulty-selector {
@@ -66,8 +66,8 @@
 .diff-badge {
   font-size: 0.75rem;
   padding: 0.25rem 0.5rem;
-  background-color: #f1f5f9;
-  color: #64748b;
+  background-color: var(--border);
+  color: var(--text);
   border-radius: 12px;
   cursor: pointer;
   font-weight: 600;
@@ -75,29 +75,30 @@
 }
 
 .diff-badge:hover {
-  background-color: #e2e8f0;
+  background-color: var(--accent-bg);
+  color: var(--accent);
 }
 
 .diff-badge.active {
-  background-color: #3b82f6;
+  background-color: var(--accent);
   color: white;
 }
 
 .stats-box {
-  background-color: #f8fafc;
+  background-color: var(--code-bg);
   padding: 0.5rem 1rem;
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
 }
 
 .stat {
   font-size: 0.9rem;
-  color: #475569;
+  color: var(--text);
 }
 
 .stat strong {
   font-size: 1.1rem;
-  color: #0f172a;
+  color: var(--text-h);
 }
 
 .arrow-puzzle-body {
@@ -115,7 +116,7 @@
 .completion-modal {
   text-align: center;
   padding: 3rem 2rem;
-  background: white;
+  background: var(--bg);
   border-radius: 16px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -129,11 +130,11 @@
 .completion-modal h3 {
   margin: 0 0 0.5rem 0;
   font-size: 1.5rem;
-  color: #0f172a;
+  color: var(--text-h);
 }
 
 .completion-modal p {
-  color: #64748b;
+  color: var(--text);
   margin-bottom: 2rem;
 }
 
@@ -156,12 +157,12 @@
 
 .shape-menu-header h2 {
   font-size: 2rem;
-  color: #0f172a;
+  color: var(--text-h);
   margin: 0 0 0.5rem 0;
 }
 
 .shape-menu-header p {
-  color: #64748b;
+  color: var(--text);
   margin: 0;
 }
 
@@ -173,8 +174,8 @@
 }
 
 .shape-card {
-  background: #f8fafc;
-  border: 2px solid #e2e8f0;
+  background: var(--code-bg);
+  border: 2px solid var(--border);
   border-radius: 16px;
   padding: 2rem 1rem;
   text-align: center;
