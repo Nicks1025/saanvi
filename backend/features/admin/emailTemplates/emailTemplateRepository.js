@@ -46,13 +46,9 @@ class EmailTemplateRepository extends BaseRepository {
       .execute();
   }
 
-  async getLinkedWorkflows(templateKey) {
-    const result = await this.queryHelper.from('sph_workflow_actions')
-      .select('sph_workflows.name')
-      .join('sph_workflows', null, 'sph_workflow_actions.workflow_id=sph_workflows.id')
-      .where('sph_workflow_actions.configuration', 'like', `%"template_key":"${templateKey}"%`)
-      .execute();
-    return result.map(r => r.name);
+  async getLinkedWorkflows(_templateKey) {
+    // Workflows have been removed from the system. Templates can always be deleted.
+    return [];
   }
 
   async deleteTemplate(uuid) {

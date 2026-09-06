@@ -24,7 +24,8 @@ create table public.users (
           array[
             'active'::character varying,
             'inactive'::character varying,
-            'locked'::character varying
+            'locked'::character varying,
+            'archived'::character varying
           ]
         )::text[]
       )

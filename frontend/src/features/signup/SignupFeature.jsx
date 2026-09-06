@@ -248,6 +248,7 @@ const SignupFeature = () => {
       const payload = { ...form, email: form.email.trim() };
       delete payload.confirmPassword;
       await signupUser(payload);
+      toast.success('Account created successfully. Please check your email and click the verification link to activate your account.', { duration: 6000 });
       navigate.push('/login?signup=success');
     } catch (err) {
       const data = err.response?.data;

@@ -7,12 +7,19 @@ import FinanceSection from './components/FinanceSection';
 import WhySaanviSection from './components/WhySaanviSection';
 import HomeFooter from './components/HomeFooter';
 import { ArrowPuzzleGame } from '@/features/games/puzzles/arrow-puzzle/ArrowPuzzleGame';
+import { useBirthdayTheme } from './birthday-theme/BirthdayThemeContext';
 import './home.css';
 
-const HomePage = () => {
+const HomePageInner = () => {
+  const { isBirthdayTheme } = useBirthdayTheme();
+  const [mounted, setMounted] = React.useState(false);
+
   useEffect(() => {
+    setMounted(true);
     // Ensure title is clear
-    document.title = "Saanvi — Play, Explore & Grow";
+    document.title = isBirthdayTheme 
+      ? "Happy Birthday! — Saanvi Celebration" 
+      : "Saanvi — Play, Explore & Grow";
 
     if (window.location.hash) {
       const targetId = window.location.hash.replace('#', '');
@@ -26,10 +33,12 @@ const HomePage = () => {
       }, 150);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [isBirthdayTheme]);
+
+  const themeClass = (mounted && isBirthdayTheme) ? 'saanvi-birthday-theme-active' : '';
 
   return (
-    <div className="saanvi-home-wrapper" id="saanvi-home-root">
+    <div className={`saanvi-home-wrapper ${themeClass}`} id="saanvi-home-root">
       {/* Top sticky navigation */}
       <HomeNavbar />
 
@@ -67,6 +76,10 @@ const HomePage = () => {
       <HomeFooter />
     </div>
   );
+};
+
+const HomePage = () => {
+  return <HomePageInner />;
 };
 
 export default HomePage;

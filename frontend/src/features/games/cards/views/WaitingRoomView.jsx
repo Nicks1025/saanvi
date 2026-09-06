@@ -1,15 +1,10 @@
 import React, { useState } from 'react';
 import {
-  Copy,
-  Check,
   Crown,
-  Play,
-  ArrowLeft,
   Users,
   Flame,
   Sparkles,
   Clock,
-  BookOpen,
   CheckCircle2,
   Hourglass,
   Plus,
@@ -18,6 +13,7 @@ import {
 import { GAME_SCREENS, STACKING_RULES, WILD_FOUR_RULES } from '../types';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import SButton from '@/components/common/SButton';
 
 export const WaitingRoomView = ({
   room,
@@ -77,28 +73,34 @@ export const WaitingRoomView = ({
     <div className="waiting-room-view animate-fadeIn" id="waiting-room-view">
       {/* Top Header */}
       <div className="waiting-top-bar">
-        <button className="back-nav-btn" onClick={onLeaveRoom}>
-          <ArrowLeft size={18} />
-          <span>{t('games.uno.leave_room', 'Leave Room')}</span>
-        </button>
+        <SButton 
+          className="back-nav-btn" 
+          color="secondary"
+          onClick={onLeaveRoom}
+          icon="back"
+          text={t('games.uno.leave_room', 'Leave Room')}
+        />
 
         <div className="waiting-room-code-badge">
           <span className="code-label">{t('games.uno.room_code_label', 'ROOM:')}</span>
           <span className="code-value">{roomCode}</span>
-          <button
+          <SButton
             className="copy-code-btn"
+            color="secondary"
             onClick={handleCopyLink}
             title="Copy room invite link"
-          >
-            {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
-            <span>{copied ? t('common.copied', 'Copied!') : t('common.copy_link', 'Copy Link')}</span>
-          </button>
+            icon={copied ? "check" : "copy"}
+            text={copied ? t('common.copied', 'Copied!') : t('common.copy_link', 'Copy Link')}
+          />
         </div>
 
-        <button className="rules-helper-btn" onClick={() => openRules('basics')}>
-          <BookOpen size={16} />
-          <span>{t('games.uno.view_rules', 'View Rules')}</span>
-        </button>
+        <SButton 
+          className="rules-helper-btn" 
+          color="secondary"
+          onClick={() => openRules('basics')}
+          icon="help"
+          text={t('games.uno.view_rules', 'View Rules')}
+        />
       </div>
 
       {/* Main Waiting Room Layout */}
@@ -180,22 +182,22 @@ export const WaitingRoomView = ({
           {/* Action Row */}
           <div className="waiting-actions-row">
             {isHost ? (
-              <button
-                className={`s-button btn-primary btn-start-game ${!allPlayersReady || players.length < 2 ? 'opacity-50 cursor-not-allowed' : ''}`}
+              <SButton
+                className={`btn-start-game ${!allPlayersReady || players.length < 2 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                color="primary"
                 onClick={onStartGame}
                 disabled={!allPlayersReady || players.length < 2}
-              >
-                <Play size={18} />
-                <span>Start Game ({players.length} Players)</span>
-              </button>
+                icon="play"
+                text={`Start Game (${players.length} Players)`}
+              />
             ) : (
-              <button
-                className={`s-button ${isLocalReady ? 'btn-ready-active' : 'btn-primary'}`}
+              <SButton
+                className={isLocalReady ? 'btn-ready-active' : ''}
+                color={isLocalReady ? 'secondary' : 'primary'}
                 onClick={handleToggleReady}
-              >
-                <CheckCircle2 size={18} />
-                <span>{isLocalReady ? 'Ready! (Click to Unready)' : "I'm Ready"}</span>
-              </button>
+                icon="check-circle"
+                text={isLocalReady ? 'Ready! (Click to Unready)' : "I'm Ready"}
+              />
             )}
           </div>
         </div>
@@ -252,10 +254,13 @@ export const WaitingRoomView = ({
             </p>
           </div>
 
-          <button className="rules-full-modal-btn" onClick={() => openRules('basics')}>
-            <BookOpen size={16} />
-            <span>Open Complete Rules Guide</span>
-          </button>
+          <SButton 
+            className="rules-full-modal-btn" 
+            color="secondary"
+            onClick={() => openRules('basics')}
+            icon="help"
+            text="Open Complete Rules Guide"
+          />
         </div>
       </div>
     </div>

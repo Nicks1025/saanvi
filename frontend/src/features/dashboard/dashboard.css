@@ -7,66 +7,20 @@
   gap: 2rem;
 }
 
-/* Hero Section */
-.dashboard-hero {
-  position: relative;
-  padding: 3rem 2rem;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--accent-bg), var(--bg));
-  border: 1px solid var(--accent-border);
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.dashboard-hero::before {
-  content: "";
-  position: absolute;
-  top: -50%;
-  right: -10%;
-  width: 300px;
-  height: 300px;
-  background: var(--accent);
-  filter: blur(100px);
-  opacity: 0.15;
-  border-radius: 50%;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.dashboard-hero-content {
-  position: relative;
-  z-index: 1;
-}
-
+/* Header and Date */
 .dashboard-header {
-  margin: 0;
+  margin: 0 0 1rem 0;
   color: var(--text-h);
   font-size: 2.5rem;
-  font-weight: 700;
+  font-weight: 400;
   letter-spacing: -0.5px;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .dashboard-description {
   color: var(--text);
   font-size: 1.1rem;
-  margin-top: 0.5rem;
-  margin-bottom: 0;
-}
-
-/* Layout Grid */
-.dashboard-main-layout {
-  display: grid;
-  grid-template-columns: 3fr 1fr;
-  gap: 2rem;
-}
-
-@media (max-width: 1024px) {
-  .dashboard-main-layout {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* Section Titles */
@@ -74,7 +28,7 @@
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-h);
-  margin: 0 0 1rem 0;
+  margin: 0;
 }
 
 /* Quick Links Grid */
@@ -126,61 +80,4 @@
   font-size: 0.85rem;
   margin: 0;
   line-height: 1.4;
-}
-
-/* Overview Card */
-.dashboard-overview-card {
-  background: var(--bg);
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  padding: 1.5rem;
-}
-
-.overview-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.overview-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.overview-label {
-  color: var(--text);
-  font-size: 0.9rem;
-}
-
-.overview-value {
-  color: var(--text-h);
-  font-weight: 500;
-  font-size: 0.9rem;
-  max-width: 60%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-align: right;
-}
-
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(34, 197, 94, 0.1);
-  color: #16a34a;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #16a34a;
-  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
 }

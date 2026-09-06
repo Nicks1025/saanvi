@@ -19,11 +19,10 @@ class LoginController extends BaseController {
       // 3. Return successful response
       return this.sendSuccess(res, result, 'Login successful');
     } catch (error) {
-      // Return a generic error for auth failures
-      const message = error.message === 'Invalid email or password.' 
-        ? error.message 
-        : 'Invalid email or password.';
-      return this.sendError(res, message, 401);
+      if (error.message === 'UNVERIFIED_EMAIL') {
+        return res.status(401).json({ success: false, error: 'Your email address has not been verified. Please check your inbox or request a new verification email.', code: 'UNVERIFIED_EMAIL' });
+      }
+      return this.sendError(res, error.message, 401);
     }
   }
   async googleLogin(req, res) {
@@ -33,7 +32,10 @@ class LoginController extends BaseController {
       const result = await this.loginService.processGoogleLogin(accessToken);
       return this.sendSuccess(res, result, 'Google Login successful');
     } catch (error) {
-      const message = error.message === 'Invalid email or password.'
+      if (error.message === 'UNVERIFIED_EMAIL') {
+        return res.status(401).json({ success: false, error: 'Your email address has not been verified. Please check your inbox or request a new verification email.', code: 'UNVERIFIED_EMAIL' });
+      }
+      const message = error.message
         ? error.message 
         : 'Google authentication failed.';
       return this.sendError(res, message, 401);

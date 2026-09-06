@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import STextField from './STextField';
 import './SDataTable.css';
 
-import { GripVertical, Eye, Pencil, Archive, RefreshCw, Trash2 } from 'lucide-react';
+import { GripVertical, Eye, Pencil, Archive, RefreshCw, Trash2, Send } from 'lucide-react';
 
 const SDataTable = ({
   columns = [],
@@ -90,6 +90,16 @@ const SDataTable = ({
                 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444' }}
               >
                 <Trash2 size={18} />
+              </button>
+            )}
+            {actions.includes('send') && canExecuteAction('send', row) && (
+              <button
+                className="manage-btn"
+                onClick={(e) => { e.stopPropagation(); onAction && onAction('send', row); }}
+                title="Send"
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer', color: '#3b82f6' }}
+              >
+                <Send size={18} />
               </button>
             )}
           </div>

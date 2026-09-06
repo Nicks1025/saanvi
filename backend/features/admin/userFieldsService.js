@@ -143,18 +143,6 @@ class UserFieldsService extends BaseService {
       throw err;
     }
 
-    // Check if used in workflows/triggers
-    const triggers = await this.repository.queryHelper
-      .from('sph_workflow_conditions')
-      .where('field_path', 'eq', field.field_name)
-      .execute();
-
-    if (triggers.length > 0) {
-      const err = new Error('This field cannot be deleted because it is used by one or more triggers/workflows.');
-      err.statusCode = 400;
-      throw err;
-    }
-
     await this.repository.queryHelper.transaction(async (trx) => {
       // Safely drop column
       await trx.raw(`ALTER TABLE user_details DROP COLUMN "${field.field_name}"`);

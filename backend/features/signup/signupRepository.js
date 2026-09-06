@@ -20,6 +20,19 @@ class SignupRepository extends BaseRepository {
   }
 
   /**
+   * Retrieves basic user details by email.
+   */
+  async getUserByEmail(email) {
+    const data = await this.queryHelper
+      .from('users')
+      .select('uuid, email, is_email_verified, status')
+      .where('email', 'eq', email)
+      .where('archived_at', 'is', null)
+      .execute();
+    return data && data.length > 0 ? data[0] : null;
+  }
+
+  /**
    * Inserts a new row into the `users` table.
    * Accepts an optional Knex transaction object (trx) for atomic operations.
    */
@@ -31,7 +44,7 @@ class SignupRepository extends BaseRepository {
         email,
         password_hash: passwordHash,
         language: language || 'en',
-        status: 'active',
+        status: 'inactive',
         is_mfa_enabled: false,
         is_email_verified: false,
         failed_login_attempts: 0,

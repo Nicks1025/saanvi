@@ -12,6 +12,7 @@
     "preview": "npm --prefix frontend run preview",
     "lint": "npm --prefix frontend run lint",
     "frontend": "npm --prefix frontend run dev",
-    "backend": "npm --prefix backend start"
+    "backend": "npm --prefix backend start",
+    "worker": "npm --prefix backend run worker"
   }
 }

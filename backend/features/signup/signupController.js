@@ -20,6 +20,17 @@ class SignupController extends BaseController {
       return this.sendError(res, error.message, statusCode);
     }
   }
+
+  async resendVerification(req, res) {
+    try {
+      this.validateRequiredParams(req.body, ['email']);
+      const result = await this.signupService.resendVerification(req.body.email);
+      return this.sendSuccess(res, result, result.message);
+    } catch (error) {
+      const statusCode = error.message.includes('Please wait') ? 429 : 400;
+      return this.sendError(res, error.message, statusCode);
+    }
+  }
 }
 
 module.exports = SignupController;

@@ -130,7 +130,7 @@ export const ArrowPuzzleGame = ({ initialShape, initialLevel, liteMode = false }
         {!liteMode ? (
           <SButton variant="secondary" icon="back" onClick={handleBackToMenu} title="Back to Menu" className="game-header-back" size="s" />
         ) : (
-          <div style={{ fontWeight: 600, color: '#1e293b', fontSize: '1rem', marginLeft: '0.25rem' }}>
+          <div style={{ fontWeight: 600, color: 'var(--text-h)', fontSize: '1rem', marginLeft: '0.25rem' }}>
             Arrow Puzzle
           </div>
         )}

@@ -648,3 +648,30 @@
     padding: 1.75rem 1.25rem;
   }
 }
+
+/* ── Birthday Theme overrides for signup ── */
+[data-theme="birthday"] .auth-page-layout {
+  background-color: transparent !important;
+  background-image: none !important;
+}
+[data-theme="birthday"] .signup-card {
+  background: rgba(255, 228, 238, 0.82) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  border: 1px solid #f9c0ce !important;
+  box-shadow: 0 8px 32px rgba(160, 30, 65, 0.12) !important;
+  color: #3b0d18 !important;
+}
+[data-theme="birthday"] .signup-card .s-input {
+  background: rgba(255, 245, 247, 0.9) !important;
+  border: 1px solid #f9c0ce !important;
+  color: #3b0d18 !important;
+}
+[data-theme="birthday"] .signup-card .s-input:focus {
+  border-color: #c8416a !important;
+  box-shadow: 0 0 0 3px rgba(200, 65, 106, 0.18) !important;
+}
+[data-theme="birthday"] .signup-card-brand-name,
+[data-theme="birthday"] .signup-form-title {
+  color: #3b0d18 !important;
+}

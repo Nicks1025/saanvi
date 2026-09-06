@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { ArrowLeft, KeyRound, Link as LinkIcon, Users, Loader2, AlertCircle, Sparkles, CheckCircle2 } from 'lucide-react';
+import { KeyRound, AlertCircle, Sparkles } from 'lucide-react';
 import { GAME_SCREENS } from '../types';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import SButton from '@/components/common/SButton';
 
 export const JoinGameView = ({ onNavigate, onJoinRoom }) => {
   const { t } = useTranslation();
@@ -35,14 +36,14 @@ export const JoinGameView = ({ onNavigate, onJoinRoom }) => {
     <div className="join-game-view animate-fadeIn" id="join-game-view">
       {/* Top Navigation */}
       <div className="view-top-header">
-        <button
+        <SButton
+          color="secondary"
           className="back-nav-btn"
           onClick={() => onNavigate(GAME_SCREENS.LOBBY)}
           aria-label={t('games.uno.back_to_lobby', 'Back to Lobby')}
-        >
-          <ArrowLeft size={18} />
-          <span>{t('games.uno.back_to_lobby', 'Back to Lobby')}</span>
-        </button>
+          icon="back"
+          text={t('games.uno.back_to_lobby', 'Back to Lobby')}
+        />
       </div>
 
       <div className="join-form-card">
@@ -71,13 +72,13 @@ export const JoinGameView = ({ onNavigate, onJoinRoom }) => {
               }}
             />
             {roomInput && (
-              <button
+              <SButton
+                color="secondary"
                 className="clear-code-btn"
                 onClick={() => setRoomInput('')}
                 aria-label="Clear input"
-              >
-                &times;
-              </button>
+                icon="close"
+              />
             )}
           </div>
 
@@ -88,23 +89,15 @@ export const JoinGameView = ({ onNavigate, onJoinRoom }) => {
             </div>
           )}
 
-          <button
-            className="s-button btn-primary btn-join-submit"
+          <SButton
+            color="primary"
+            className="btn-join-submit w-full"
             onClick={() => handleJoin()}
             disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 size={18} className="spin-cw" />
-                <span>{t('games.uno.connecting_room', 'Connecting to Room...')}</span>
-              </>
-            ) : (
-              <>
-                <CheckCircle2 size={18} />
-                <span>{t('games.uno.join_game', 'Join Game')}</span>
-              </>
-            )}
-          </button>
+            loading={isLoading}
+            icon={isLoading ? null : "check-circle"}
+            text={isLoading ? t('games.uno.connecting_room', 'Connecting to Room...') : t('games.uno.join_game', 'Join Game')}
+          />
         </div>
 
         {/* Quick Demo Presets */}
@@ -115,7 +108,8 @@ export const JoinGameView = ({ onNavigate, onJoinRoom }) => {
           </div>
 
           <div className="demo-chips-grid">
-            <button
+            <SButton
+              color="secondary"
               className="demo-chip-btn"
               onClick={() => {
                 handlePasteDemo('X7K29');
@@ -124,9 +118,10 @@ export const JoinGameView = ({ onNavigate, onJoinRoom }) => {
             >
               <span className="chip-code">X7K29</span>
               <span className="chip-desc">Friday Game Night (4 Players)</span>
-            </button>
+            </SButton>
 
-            <button
+            <SButton
+              color="secondary"
               className="demo-chip-btn"
               onClick={() => {
                 handlePasteDemo('ARENA8');
@@ -135,9 +130,10 @@ export const JoinGameView = ({ onNavigate, onJoinRoom }) => {
             >
               <span className="chip-code">ARENA8</span>
               <span className="chip-desc">8-Player Tabletop</span>
-            </button>
+            </SButton>
 
-            <button
+            <SButton
+              color="secondary"
               className="demo-chip-btn"
               onClick={() => {
                 handlePasteDemo('DUEL2');
@@ -146,7 +142,7 @@ export const JoinGameView = ({ onNavigate, onJoinRoom }) => {
             >
               <span className="chip-code">DUEL2</span>
               <span className="chip-desc">1v1 Speed Match</span>
-            </button>
+            </SButton>
           </div>
         </div>
       </div>

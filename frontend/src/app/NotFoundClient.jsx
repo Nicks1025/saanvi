@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertCircle } from 'lucide-react';
 import SButton from '@/components/common/SButton';
+import Cookies from 'js-cookie';
 
 export default function NotFoundClient() {
   const [countdown, setCountdown] = useState(8);
@@ -12,7 +13,7 @@ export default function NotFoundClient() {
 
   useEffect(() => {
     // Detect auth state client-side without relying on AuthContext
-    const token = localStorage.getItem('auth_token');
+    const token = Cookies.get('auth_token');
     if (token) {
       setTargetPath('/dashboard');
       setTargetLabel('Dashboard');

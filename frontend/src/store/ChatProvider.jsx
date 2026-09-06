@@ -4,6 +4,7 @@ import { chatService } from '@/features/chat/chat.service';
 import socketService from '@/services/socket.client';
 import { useAuth } from './AuthContext';
 import { chatStorage } from '@/features/chat/chatStorage';
+import Cookies from 'js-cookie';
 
 const ChatContext = createContext(null);
 
@@ -19,7 +20,7 @@ export const ChatProvider = ({ children }) => {
 
   // 1. Manage Socket Connection tied to Auth
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
+    const token = Cookies.get('auth_token');
     if (isAuthenticated && user && token) {
       socketService.connect(token);
     } else if (!isAuthenticated) {

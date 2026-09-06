@@ -25,7 +25,7 @@ export const ThemeProvider = ({ children }) => {
     localStorage.setItem('app-font', font);
     
     const root = document.documentElement;
-    
+
     if (theme === 'system') {
       root.removeAttribute('data-theme');
     } else {

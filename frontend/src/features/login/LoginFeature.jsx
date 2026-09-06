@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import STextField from '@/components/common/STextField';
 import SButton from '@/components/common/SButton';
 import { loginUser, loginWithGoogle } from './service/loginService';
+import { resendVerification } from '../signup/service/signupService';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import MfaVerificationFeature from './MfaVerificationFeature';
 import './login.css';
@@ -16,6 +17,9 @@ const LoginFeatureContent = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [mfaData, setMfaData] = useState(null);
+  const [isUnverified, setIsUnverified] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState('');
   
   const navigate = useRouter();
   const { login } = useAuth();
@@ -23,6 +27,8 @@ const LoginFeatureContent = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
+    setIsUnverified(false);
+    setResendSuccess('');
 
     if (!email || !password) {
       setError('Please fill in all fields.');
@@ -43,13 +49,31 @@ const LoginFeatureContent = () => {
       if (data.mfaRequired) {
         setMfaData({ email: data.email, supabaseToken: data.supabaseToken });
       } else if (data.token) {
-        login(data.token, data.user, data.supabaseToken);
+        login(data.token, data.supabaseToken);
         navigate.push('/dashboard');
       }
     } catch (err) {
+      const errCode = err.response?.data?.code;
+      if (errCode === 'UNVERIFIED_EMAIL') {
+        setIsUnverified(true);
+      }
       setError(err.response?.data?.error || err.message || 'Login failed.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setResending(true);
+    setError('');
+    setResendSuccess('');
+    try {
+      const data = await resendVerification(email);
+      setResendSuccess(data.message || 'A new verification email has been sent. Please check your inbox.');
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || 'Failed to resend verification email.');
+    } finally {
+      setResending(false);
     }
   };
 
@@ -62,10 +86,14 @@ const LoginFeatureContent = () => {
         if (data.mfaRequired) {
           setMfaData({ email: data.email, supabaseToken: data.supabaseToken });
         } else if (data.token) {
-          login(data.token, data.user, data.supabaseToken);
+          login(data.token, data.supabaseToken);
           navigate.push('/dashboard');
         }
       } catch (err) {
+        const errCode = err.response?.data?.code;
+        if (errCode === 'UNVERIFIED_EMAIL') {
+          setIsUnverified(true);
+        }
         setError(err.response?.data?.error || err.message || 'Google authentication failed.');
       } finally {
         setLoading(false);
@@ -83,7 +111,7 @@ const LoginFeatureContent = () => {
           email={mfaData.email}
           supabaseToken={mfaData.supabaseToken}
           onVerifySuccess={(data) => {
-            login(data.token, data.user, data.supabaseToken);
+            login(data.token, data.supabaseToken);
             navigate.push('/dashboard');
           }}
           onCancel={() => {
@@ -102,6 +130,25 @@ const LoginFeatureContent = () => {
       {error && (
         <div className="login-error">
           {typeof error === 'string' ? error : (error.message || JSON.stringify(error))}
+        </div>
+      )}
+
+      {resendSuccess && (
+        <div className="login-success" style={{ color: 'green', background: '#e8f5e9', padding: '10px', borderRadius: '4px', marginBottom: '16px' }}>
+          {resendSuccess}
+        </div>
+      )}
+
+      {isUnverified && (
+        <div style={{ marginBottom: '16px', textAlign: 'center' }}>
+          <button
+            type="button"
+            onClick={handleResendVerification}
+            disabled={resending}
+            style={{ padding: '8px 16px', background: '#f0f0f0', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer' }}
+          >
+            {resending ? 'Sending...' : 'Resend verification email'}
+          </button>
         </div>
       )}
 

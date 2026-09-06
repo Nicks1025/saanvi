@@ -172,6 +172,134 @@ html, body {
   --shadow: rgba(255, 0, 255, 0.2) 0 10px 15px -3px, rgba(0, 255, 255, 0.1) 0 4px 6px -2px;
 }
 
+/* ────────────────────────────────────────────────────
+   Birthday Celebration Theme
+   Warm blush-rose palette — complements the balloon arch
+   ──────────────────────────────────────────────────── */
+:root[data-theme="birthday"] {
+  /* Text: extremely dark, near-black maroon for maximum contrast */
+  --text: #2a0b14;
+  --text-h: #0f0307;
+
+  /* Background: very light blush-white, translucent panels feel warm */
+  --bg: rgba(255, 246, 248, 0.88);
+
+  /* Borders: soft dusty rose — enough contrast to distinguish components */
+  --border: #f0b8c6;
+
+  /* Code / subtle area: slightly deeper blush */
+  --code-bg: rgba(255, 232, 238, 0.9);
+
+  /* Accent: rose gold */
+  --accent: #d4547a;
+  --accent-bg: rgba(212, 84, 122, 0.12);
+  --accent-border: rgba(212, 84, 122, 0.4);
+
+  /* Social buttons */
+  --social-bg: rgba(255, 232, 238, 0.6);
+
+  /* Shadows: warm rose tint */
+  --shadow:
+    rgba(180, 40, 80, 0.10) 0 10px 15px -3px,
+    rgba(180, 40, 80, 0.05) 0 4px 6px -2px;
+}
+
+/* Add a glowing white halo to all text in the birthday theme 
+   so it is perfectly legible over dark/busy background balloons */
+:root[data-theme="birthday"] body {
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8), 0 0 12px rgba(255, 255, 255, 0.6);
+}
+
+:root[data-theme="birthday"] h1,
+:root[data-theme="birthday"] h2,
+:root[data-theme="birthday"] h3,
+:root[data-theme="birthday"] h4,
+:root[data-theme="birthday"] h5,
+:root[data-theme="birthday"] h6,
+:root[data-theme="birthday"] .header-logo,
+:root[data-theme="birthday"] .header-user-name,
+:root[data-theme="birthday"] .s-table th {
+  text-shadow: 0 1px 4px rgba(255, 255, 255, 1), 0 0 15px rgba(255, 255, 255, 0.8);
+}
+
+/* Thicker borders for the birthday theme to help transparent components stand out */
+:root[data-theme="birthday"] .quick-link-card,
+:root[data-theme="birthday"] .s-card,
+:root[data-theme="birthday"] .app-sidebar,
+:root[data-theme="birthday"] .app-header,
+/* :root[data-theme="birthday"] .s-input, */
+:root[data-theme="birthday"] .page-container,
+:root[data-theme="birthday"] .content-container,
+:root[data-theme="birthday"] .dashboard-container,
+:root[data-theme="birthday"] .admin-container,
+/* :root[data-theme="birthday"] .s-button, */
+/* :root[data-theme="birthday"] .s-select, */
+/* :root[data-theme="birthday"] .s-textarea, */
+/* :root[data-theme="birthday"] .s-dropdown-select, */
+:root[data-theme="birthday"] .s-table th,
+:root[data-theme="birthday"] .s-table td,
+:root[data-theme="birthday"] .s-modal,
+:root[data-theme="birthday"] .s-image-upload-container {
+  border-width: 3px !important;
+}
+
+/* Bold sidebar text for better visibility over transparent backgrounds */
+:root[data-theme="birthday"] .app-sidebar .sidebar-link-text,
+:root[data-theme="birthday"] .app-sidebar .sidebar-group-btn {
+  font-weight: 600 !important;
+}
+
+/* Make the active/selected sidebar item much less transparent */
+/* :root[data-theme="birthday"] .app-sidebar .sidebar-link.active {
+  background-color: rgba(212, 84, 122, 0.45) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+} */
+
+/* UNO Game Theme Overrides - Ensure UI text is visible in all themes (especially light ones) */
+.uno-game-container .lobby-hero-title,
+.uno-game-container .highlight-box h3,
+.uno-game-container .recent-header h2,
+.uno-game-container .room-preset-card h4,
+.uno-game-container .player-name,
+.uno-game-container .seat-name,
+.uno-game-container .panel-title,
+.uno-game-container .stat-val,
+.uno-game-container .log-msg,
+.uno-game-container .log-timestamp,
+.uno-game-container .event-toast {
+  color: var(--text-h) !important;
+}
+
+.uno-game-container .lobby-hero-tagline,
+.uno-game-container .highlight-box p,
+.uno-game-container .room-preset-badge,
+.uno-game-container .toggle-option,
+.uno-game-container .timer-pill,
+.uno-game-container .seat-cards-count,
+.uno-game-container .empty-discard-slot {
+  color: var(--text) !important;
+}
+
+/* Force UNO navigation and guide buttons to follow the active theme */
+:root[data-theme="birthday"] .uno-game-container .back-nav-btn,
+:root[data-theme="birthday"] .uno-game-container .rules-helper-btn,
+:root[data-theme="birthday"] .uno-game-container .btn-hero-secondary {
+  background: var(--code-bg) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+}
+
+/* Remove the global white text-shadow from UNO text as it makes dark text blurry */
+:root[data-theme="birthday"] .uno-game-container {
+  text-shadow: none !important;
+}
+
+/* Make arrow puzzle transparent in birthday theme */
+:root[data-theme="birthday"] .arrow-puzzle-feature {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
 [data-theme="dark"] #social .button-icon,
 [data-theme="forest"] #social .button-icon,
 [data-theme="midnight"] #social .button-icon,

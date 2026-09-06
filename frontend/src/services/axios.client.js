@@ -1,5 +1,6 @@
 import $axios from 'axios';
 import { generateRequestId } from '../common/general-utils';
+import Cookies from 'js-cookie';
 
 // Mocks for missing Vue/Nuxt infrastructure in this React app
 const toast = {
@@ -64,10 +65,10 @@ $axios.interceptors.response.use(
   (response) => {
     handleNuxtLoadingProgress();
     
-    if (response.headers['maxage']) {
+    if (response?.headers?.['maxage']) {
       setCookie('sessionTimeout', new Date().getTime() + Number(response.headers['maxage']));
     }
-    if (response.headers['session-expired']) {
+    if (response?.headers?.['session-expired']) {
       if (responseCount === 0) {
         window.location.href = '/login?reason=invalidsession';
       }
@@ -75,7 +76,7 @@ $axios.interceptors.response.use(
       return Promise.resolve(response.data);
     }
 
-    if (response.headers['saml-logged-out'] && window.location.pathname !== '/login') {
+    if (response?.headers?.['saml-logged-out'] && window.location.pathname !== '/login') {
       if (responseCount === 0) {
         window.location.href = '/login?isSamlUser=1';
       }
@@ -83,7 +84,7 @@ $axios.interceptors.response.use(
       return Promise.resolve(response.data);
     }
 
-    if (response.config.url === '/api/users/forceLogoutCheck' && response.data !== 'Authorized') {
+    if (response?.config?.url === '/api/users/forceLogoutCheck' && response.data !== 'Authorized') {
       const path = window.location.pathname;
       if (
         path !== '/login' &&
@@ -147,7 +148,7 @@ $axios.interceptors.response.use(
         !path.startsWith('/forgot-password') &&
         !path.startsWith('/reset-password')
       ) {
-        window.location.href = '/not-authorized';
+        window.location.href = '/login?reason=session_expired';
         return Promise.reject(er);
       }
     }
@@ -171,7 +172,7 @@ $axios.interceptors.response.use(
 $axios.interceptors.request.use((config) => {
   config.headers['request-id'] = config.headers['request-id'] || generateRequestId();
   
-  const token = localStorage.getItem('auth_token');
+  const token = Cookies.get('auth_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
