@@ -17,11 +17,9 @@ class LoginRepository extends BaseRepository {
       .field('u.language')
       .field('u.theme')
       .field('u.font')
-      .leftJoin('user_details', 'ud', 'u.uuid = ud.user_uuid')
-      .field('ud.first_name')
-      .field('ud.last_name')
-      .field('ud.display_name')
-      .field('ud.profile_image_url')
+      .leftJoin('user_roles', 'ur', 'u.uuid = ur.user_uuid')
+      .leftJoin('roles', 'r', 'ur.role_uuid = r.uuid')
+      .field('r.name as role_name')
       .where('u.email', 'eq', email)
       .execute();
 

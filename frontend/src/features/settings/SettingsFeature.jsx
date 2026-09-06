@@ -16,7 +16,7 @@ import './settings.css';
 
 const SettingsFeature = () => {
   const { user, setUser } = useAuth();
-  const { theme, setTheme, font, setFont } = useTheme();
+  const { theme, setTheme, font, setFont, persistTheme } = useTheme();
   const { t, i18n } = useTranslation();
   const changeImageRef = React.useRef(null);
 
@@ -81,6 +81,9 @@ const SettingsFeature = () => {
     }
   };
 
+  const [previewTheme, setPreviewTheme] = React.useState(theme);
+  const [previewFont, setPreviewFont] = React.useState(font);
+
   React.useEffect(() => {
     if (user) {
       setProfileForm({
@@ -95,8 +98,34 @@ const SettingsFeature = () => {
     }
   }, [user]);
 
+  // Sync initial preview state when global context loads
+  React.useEffect(() => {
+    setPreviewTheme(theme);
+    setPreviewFont(font);
+  }, [theme, font]);
+
+  // Apply preview to DOM and revert on unmount
+  React.useEffect(() => {
+    const root = document.documentElement;
+    if (previewTheme === 'system') root.removeAttribute('data-theme');
+    else root.setAttribute('data-theme', previewTheme);
+
+    if (previewFont) root.setAttribute('data-font', previewFont);
+
+    return () => {
+      if (theme === 'system') root.removeAttribute('data-theme');
+      else root.setAttribute('data-theme', theme);
+      
+      if (font) root.setAttribute('data-font', font);
+    };
+  }, [previewTheme, previewFont, theme, font]);
+
   const handleThemeChange = (newTheme) => {
-    setTheme(newTheme);
+    setPreviewTheme(newTheme);
+  };
+
+  const handleFontChange = (newFont) => {
+    setPreviewFont(newFont);
   };
 
   const handleSaveSettings = async () => {
@@ -104,8 +133,8 @@ const SettingsFeature = () => {
     try {
       // 1. Save UI Settings
       const settingsResponse = await settingsService.updateSettings({
-        theme,
-        font,
+        theme: previewTheme,
+        font: previewFont,
         language: i18n.resolvedLanguage || 'en'
       });
 
@@ -156,13 +185,14 @@ const SettingsFeature = () => {
         const updatedUser = { 
           ...user, 
           ...(hasProfileChanges ? profileResponse.data : {}), 
-          theme, 
-          font, 
+          theme: previewTheme, 
+          font: previewFont, 
           language: i18n.resolvedLanguage || 'en' 
         };
         setUser(updatedUser);
-        sessionStorage.setItem('auth_user', JSON.stringify(updatedUser));
         setRemoveImage(false);
+        // Persist theme/font to localStorage and update global context
+        persistTheme(previewTheme, previewFont);
       }
     } catch (error) {
       toast.error(error.message || t('settings.saveError'));
@@ -330,14 +360,14 @@ const SettingsFeature = () => {
                 />
                 <SDropdown
                   label={t('settings.appTheme')}
-                  value={theme}
+                  value={previewTheme}
                   onChange={handleThemeChange}
                   options={[...themeOptions, { label: 'Birthday Celebration 🎈', value: 'birthday' }]}
                 />
                 <SDropdown
                   label={t('settings.textStyle')}
-                  value={font}
-                  onChange={setFont}
+                  value={previewFont}
+                  onChange={handleFontChange}
                   options={fontOptions}
                 />
               </div>
@@ -450,7 +480,7 @@ const SettingsFeature = () => {
             <SButton 
               onClick={handleSaveSettings} 
               disabled={
-                isSaving ||
+                isSaving || 
                 !!validateRequired(profileForm.firstName, 'First name') ||
                 !!validateRequired(profileForm.lastName, 'Last name') ||
                 !!validateRequired(profileForm.displayName, 'Display name') ||

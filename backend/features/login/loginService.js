@@ -44,7 +44,7 @@ class LoginService extends BaseService {
       throw new Error('UNVERIFIED_EMAIL');
     }
 
-    // 4. Generate token
+    // 4. Generate token — only include auth essentials; profile is fetched via /api/users/me
     const tokenPayload = {
       uuid: user.uuid,
       email: user.email,
@@ -52,10 +52,7 @@ class LoginService extends BaseService {
       language: user.language,
       theme: user.theme,
       font: user.font,
-      firstName: user.first_name,
-      lastName: user.last_name,
-      displayName: user.display_name,
-      profileImageUrl: user.profile_image_url,
+      roles: user.role_name || null,
       permissions: user.permissions || []
     };
 
@@ -125,7 +122,7 @@ class LoginService extends BaseService {
       throw new Error('Account is locked. Please try again later.');
     }
 
-    // 2. Generate token
+    // 2. Generate token — only include auth essentials; profile is fetched via /api/users/me
     const tokenPayload = {
       uuid: user.uuid,
       email: user.email,
@@ -133,10 +130,7 @@ class LoginService extends BaseService {
       language: user.language,
       theme: user.theme,
       font: user.font,
-      firstName: user.first_name,
-      lastName: user.last_name,
-      displayName: user.display_name,
-      profileImageUrl: user.profile_image_url,
+      roles: user.role_name || null,
       permissions: user.permissions || []
     };
 
@@ -244,7 +238,7 @@ class LoginService extends BaseService {
       throw new Error('Invalid MFA code.');
     }
 
-    // Generate final token
+    // Generate final token — only include auth essentials; profile is fetched via /api/users/me
     const tokenPayload = {
       uuid: user.uuid,
       email: user.email,
@@ -252,10 +246,7 @@ class LoginService extends BaseService {
       language: user.language,
       theme: user.theme,
       font: user.font,
-      firstName: user.first_name,
-      lastName: user.last_name,
-      displayName: user.display_name,
-      profileImageUrl: user.profile_image_url,
+      roles: user.role_name || null,
       permissions: user.permissions || []
     };
     const secret = process.env.JWT_SECRET || 'fallback_secret';
