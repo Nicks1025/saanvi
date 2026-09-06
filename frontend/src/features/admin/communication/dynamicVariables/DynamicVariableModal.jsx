@@ -23,7 +23,7 @@ const DynamicVariableModal = ({ isOpen, onClose, variable, mode = 'add', onSucce
   useEffect(() => {
     if ((isEditing || isView) && variable) {
       setFormData({
-        variable_name: variable.variable_name || '',
+        variable_name: (variable.variable_name || '').replace(/(^\$\$|\$\$$)/g, ''),
         label: variable.label || '',
         description: variable.description || '',
         value: variable.value || ''
@@ -45,6 +45,7 @@ const DynamicVariableModal = ({ isOpen, onClose, variable, mode = 'add', onSucce
   const handleSubmit = async () => {
     setError(null);
     
+    // Only validate name on add (edit name is disabled, but we still construct payload)
     if (!isEditing) {
       const nameError = validateName(formData.variable_name);
       if (nameError) {
@@ -63,13 +64,18 @@ const DynamicVariableModal = ({ isOpen, onClose, variable, mode = 'add', onSucce
       return;
     }
 
+    const payload = {
+      ...formData,
+      variable_name: `$$${formData.variable_name}$$`
+    };
+
     setLoading(true);
     try {
       if (isEditing) {
-        await axios.put(`/api/admin/dynamic-variables/${variable.uuid}`, formData);
+        await axios.put(`/api/admin/dynamic-variables/${variable.uuid}`, payload);
         toast.success('Dynamic variable updated');
       } else {
-        await axios.post('/api/admin/dynamic-variables', formData);
+        await axios.post('/api/admin/dynamic-variables', payload);
         toast.success('Dynamic variable created');
       }
       onSuccess();

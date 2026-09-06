@@ -56,7 +56,7 @@ class DynamicVariablesRepository extends BaseRepository {
   async delete(uuid) {
     await this.queryHelper.from('sph_dynamic_variables')
       .where('uuid', 'eq', uuid)
-      .del()
+      .delete()
       .execute();
   }
 }
