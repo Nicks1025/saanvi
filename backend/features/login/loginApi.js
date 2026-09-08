@@ -59,13 +59,35 @@ const mfaVerifyApi = {
   }
 };
 
+const refreshTokenApi = {
+  path: '/refresh-token',
+  verb: 'POST',
+  auditMessage: 'refresh access token',
+  handler: {
+    controller: controller,
+    method: 'refreshToken'
+  }
+};
+
+const logoutApi = {
+  path: '/logout',
+  verb: 'POST',
+  auditMessage: 'user logout',
+  handler: {
+    controller: controller,
+    method: 'logout'
+  }
+};
+
 const LoginApi = {
   name: 'Login',
   url: '/api/login',
   endpoints: [
     login,
     googleLogin,
-    mfaVerifyApi
+    mfaVerifyApi,
+    refreshTokenApi,
+    logoutApi
   ]
 };
 

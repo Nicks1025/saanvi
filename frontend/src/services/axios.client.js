@@ -61,6 +61,20 @@ const checkLoginRedir = (response) => {
   }
 };
 
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 $axios.interceptors.response.use(
   (response) => {
     handleNuxtLoadingProgress();
@@ -142,14 +156,57 @@ $axios.interceptors.response.use(
         return Promise.reject(er);
       }
 
+      if (er.config.url === '/api/login/refresh-token') {
+         Cookies.remove('auth_token');
+         window.location.href = '/login?reason=session_expired';
+         return Promise.reject(er);
+      }
+
       if (
         !path.startsWith('/login') &&
         !path.startsWith('/verify-otp') &&
         !path.startsWith('/forgot-password') &&
         !path.startsWith('/reset-password')
       ) {
-        window.location.href = '/login?reason=session_expired';
-        return Promise.reject(er);
+        const originalRequest = er.config;
+        if (!originalRequest._retry) {
+          if (isRefreshing) {
+            return new Promise(function(resolve, reject) {
+              failedQueue.push({ resolve, reject });
+            }).then(token => {
+              originalRequest.headers['Authorization'] = 'Bearer ' + token;
+              return $axios(originalRequest);
+            }).catch(err => Promise.reject(err));
+          }
+
+          originalRequest._retry = true;
+          isRefreshing = true;
+
+          return new Promise(function (resolve, reject) {
+            $axios.post('/api/login/refresh-token', {}, { withCredentials: true })
+              .then((responseData) => {
+                const token = responseData?.data?.token;
+                if (token) {
+                  Cookies.set('auth_token', token);
+                  $axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+                  originalRequest.headers['Authorization'] = 'Bearer ' + token;
+                  processQueue(null, token);
+                  resolve($axios(originalRequest));
+                } else {
+                  throw new Error('No token returned');
+                }
+              })
+              .catch((err) => {
+                processQueue(err, null);
+                Cookies.remove('auth_token');
+                window.location.href = '/login?reason=session_expired';
+                reject(err);
+              })
+              .finally(() => {
+                isRefreshing = false;
+              });
+          });
+        }
       }
     }
     

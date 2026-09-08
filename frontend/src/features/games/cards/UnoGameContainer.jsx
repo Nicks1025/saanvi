@@ -183,7 +183,7 @@ export const UnoGameContainer = () => {
             openRules={openRules}
             isHost={game.isHost}
             onToggleReady={(isReady) => {
-              game.socketService.emit('uno:toggle_ready', { roomCode: room.code, isReady });
+              game.handleToggleReady(isReady);
             }}
           />
         );
@@ -192,7 +192,10 @@ export const UnoGameContainer = () => {
         return (
           <GameTableView
             game={game}
-            onLeaveGame={() => navigate.push('/games/uno')}
+            onLeaveGame={() => {
+              game.executeLeaveRoom();
+              navigate.push('/games/uno');
+            }}
           />
         );
 

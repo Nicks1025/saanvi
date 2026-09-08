@@ -129,19 +129,8 @@ export const useUnoVoice = (room, user) => {
   // Actually, a simpler mesh pattern: when ROOM_UPDATED happens, see if there are new peers
   useEffect(() => {
     if (!room || !user) return;
-    
-    room.players.forEach(async (p) => {
-      if (p.id !== user.uuid && !peerConnectionsRef.current[p.id] && p.connectionStatus === 'connected') {
-        // I will initiate offer to them. To prevent race conditions, only higher string id initiates
-        if (user.uuid > p.id) {
-          const pc = createPeerConnection(p.id);
-          const offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
-          socketService.emit('webrtc:offer', { to: p.id, offer });
-        }
-      }
-    });
 
+    // Define BEFORE the forEach that calls it
     const createPeerConnection = (peerId) => {
       if (peerConnectionsRef.current[peerId]) return peerConnectionsRef.current[peerId];
       const pc = new RTCPeerConnection(ICE_SERVERS);
@@ -171,7 +160,18 @@ export const useUnoVoice = (room, user) => {
 
       return pc;
     };
-  }, [room?.players]);
+
+    room.players.forEach(async (p) => {
+      if (p.id !== user.uuid && !peerConnectionsRef.current[p.id] && p.connectionStatus === 'connected') {
+        if (user.uuid > p.id) {
+          const pc = createPeerConnection(p.id);
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          socketService.emit('webrtc:offer', { to: p.id, offer });
+        }
+      }
+    });
+  }, [room?.players, isSpeakerMuted]);
 
   const toggleMic = useCallback(() => {
     if (localStreamRef.current) {

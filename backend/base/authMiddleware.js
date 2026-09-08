@@ -29,19 +29,15 @@ const requirePermission = (permission) => {
     }
 
     try {
-      // Get effective permissions dynamically (checks Redis first, falls back to DB)
-      const permissions = await rbacService.getEffectivePermissions(req.user.uuid);
+      const permissions = req.user.permissions || [];
 
-      if (!permissions || permissions.length === 0) {
+      if (permissions.length === 0) {
         return res.status(403).json({ success: false, error: 'Forbidden: No permissions loaded' });
       }
       
       if (!permissions.includes(permission)) {
         return res.status(403).json({ success: false, error: 'You are not authorized to perform this action' });
       }
-      
-      // Update req.user.permissions for downstream use just in case
-      req.user.permissions = permissions;
       
       return next();
     } catch (err) {

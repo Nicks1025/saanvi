@@ -8,17 +8,6 @@ export const GameResultView = ({ gameResult, onLeaveGame }) => {
   const winner = gameResult?.winner || { name: t('games.uno.you_fallback', 'You (Nikhil)'), isLocal: true, score: 320 };
   const isLocalWinner = gameResult?.isLocalWinner ?? true;
   const scores = gameResult?.scores || [];
-  
-  const [timeLeft, setTimeLeft] = React.useState(10);
-  
-  React.useEffect(() => {
-    if (timeLeft <= 0) {
-      onLeaveGame();
-      return;
-    }
-    const timer = setTimeout(() => setTimeLeft(prev => prev - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [timeLeft, onLeaveGame]);
 
   return (
     <div className="game-result-view animate-fadeIn" id="game-result-view">
@@ -124,7 +113,7 @@ export const GameResultView = ({ gameResult, onLeaveGame }) => {
         <div className="result-actions-row">
           <button className="s-button btn-hero-secondary" onClick={onLeaveGame}>
             <LogOut size={18} />
-            <span>{t('games.uno.back_to_lobby_timer', 'Back to Lobby ({{timeLeft}}s)', { timeLeft })}</span>
+            <span>{t('games.uno.back_to_lobby', 'Back to Lobby')}</span>
           </button>
         </div>
       </div>

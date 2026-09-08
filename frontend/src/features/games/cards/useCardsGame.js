@@ -32,7 +32,7 @@ export const useCardsGame = () => {
   const [players, setPlayers] = useState([]);
   const [deckCount, setDeckCount] = useState(108);
   const [discardPile, setDiscardPile] = useState([]);
-  const [activeColor, setActiveColor] = useState('RED');
+  const [activeColor, setActiveColor] = useState('red');
   const [turnDirection, setTurnDirection] = useState(1);
   const [currentTurnIndex, setCurrentTurnIndex] = useState(0); // Index in players array
   const [drawStack, setDrawStack] = useState(0); // Cumulative draw penalty
@@ -164,8 +164,8 @@ export const useCardsGame = () => {
       }));
       setCurrentScreen(GAME_SCREENS.WAITING_ROOM);
       
-      // Update URL to match room
-      navigate.replace(`/games/uno/${roomCode}`);
+      // Update URL to match room code
+      navigate.push(`/games/uno/${roomData.code}`);
 
       socketService.emit('uno:join', { roomCode: roomData.code });
     } catch (err) {
@@ -210,7 +210,9 @@ export const useCardsGame = () => {
       setRoom(roomData);
       setPlayers(prev => roomData.players.map(p => {
         const existing = prev.find(ep => ep.id === p.id);
-        return { ...p, hand: p.hand !== undefined ? p.hand : (existing?.hand || []), isLocal: p.id === user?.uuid };
+        // If server sent a hand (local player), use it. Otherwise preserve existing hand.
+        const hand = Array.isArray(p.hand) && p.hand.length > 0 ? p.hand : (existing?.hand || []);
+        return { ...p, hand, isLocal: p.id === user?.uuid };
       }));
       setActiveColor(roomData.activeColor);
       setTurnDirection(roomData.turnDirection);
@@ -264,6 +266,7 @@ export const useCardsGame = () => {
         summary: 'Game finished', 
         duration: 'Unknown' 
       });
+      
       setCurrentScreen(GAME_SCREENS.RESULT);
       navigate.replace(`/games/uno/${roomId}/winner`);
     };
