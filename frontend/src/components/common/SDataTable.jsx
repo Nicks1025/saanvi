@@ -229,7 +229,7 @@ const SDataTable = ({
       )}
 
       <div className="sdt-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', gap: '1rem' }}>
-        <div>
+        <div className="sdt-title">
           {title && <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600, color: 'var(--text)' }}>{title}</h2>}
         </div>
         <div className="sdt-controls-row" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', justifyContent: 'flex-end', flex: 1 }}>

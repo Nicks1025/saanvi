@@ -111,7 +111,7 @@ export const PlayerHand = ({
                   size="hand"
                   onClick={() => {
                     if (isPlayable && onCardClick) {
-                      onCardClick(card, isPlayable);
+                      onCardClick(card.id);
                     }
                   }}
                   showAura={isPlayable}

@@ -69,12 +69,12 @@ class UnoEngine {
     };
   }
 
-  static validatePlay(card, activeColor, topDiscard, roomRules, playerHand) {
+  static validatePlay(card, activeColor, topDiscard, roomState, playerHand) {
     // Basic verification: player actually has the card
     if (!playerHand.find(c => c.id === card.id)) return false;
 
     // Check Stacking
-    if (roomRules.stacking === 'on' && roomRules.drawStack && roomRules.drawStack > 0) {
+    if (roomState.rules.stacking === 'on' && roomState.drawStack && roomState.drawStack > 0) {
       if (topDiscard.type === 'draw_two' && card.type === 'draw_two') return true;
       if (topDiscard.type === 'wild_draw_four' && card.type === 'wild_draw_four') return true;
       if (topDiscard.type === 'draw_two' && card.type === 'wild_draw_four') return true;
@@ -85,7 +85,7 @@ class UnoEngine {
 
     if (card.color === 'wild') {
       if (card.type === 'wild_draw_four') {
-        if (roomRules.wildDrawFour === 'classic') {
+        if (roomState.rules.wildDrawFour === 'classic') {
           // Can only play +4 if no cards of activeColor match
           const hasMatchingColor = playerHand.some(c => c.color === activeColor);
           if (hasMatchingColor) return false;

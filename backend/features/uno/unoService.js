@@ -1,11 +1,11 @@
 const BaseService = require('../../base/baseService');
-const RedisHelper = require('../../redis/redisHelper');
+const { rooms, userActiveRooms, userCreatedRooms } = require('./unoStore');
 const { getIo } = require('../../socket');
 
 class UnoService extends BaseService {
   
   constructor() {
-    super(null); // No repository, using Redis
+    super(null); // No repository
   }
 
   generateRoomCode() {
@@ -24,7 +24,7 @@ class UnoService extends BaseService {
     // Ensure collision-safe room code
     while (exists) {
       roomCode = this.generateRoomCode();
-      exists = await RedisHelper.exists(`uno:room:${roomCode}`);
+      exists = rooms.has(roomCode);
     }
 
     const newPlayer = {
@@ -57,7 +57,7 @@ class UnoService extends BaseService {
       createdAt: new Date().toISOString()
     };
 
-    await RedisHelper.set(`uno:room:${roomCode}`, roomState, 60 * 60 * 24); // 24 hour TTL
+    rooms.set(roomCode, roomState);
     
     // Broadcast creation to ensure anyone listening gets it immediately
     const io = getIo();
@@ -69,21 +69,24 @@ class UnoService extends BaseService {
     }
     
     // Add to user's active rooms set
-    await RedisHelper.setAdd(`uno:user_rooms:${creator.uuid}`, roomCode);
+    if (!userCreatedRooms.has(creator.uuid)) {
+      userCreatedRooms.set(creator.uuid, new Set());
+    }
+    userCreatedRooms.get(creator.uuid).add(roomCode);
     
     // Set the player's active room lock
-    await RedisHelper.set(`uno:player_active_room:${creator.uuid}`, roomCode, 60 * 60 * 24);
+    userActiveRooms.set(creator.uuid, roomCode);
     
     return roomCode;
   }
 
   async getUserRooms(userId) {
-    const roomCodes = await RedisHelper.setMembers(`uno:user_rooms:${userId}`);
-    if (!roomCodes || roomCodes.length === 0) return [];
+    const roomCodesSet = userCreatedRooms.get(userId);
+    if (!roomCodesSet || roomCodesSet.size === 0) return [];
     
     const activeRooms = [];
-    for (const code of roomCodes) {
-      const roomState = await RedisHelper.get(`uno:room:${code}`);
+    for (const code of roomCodesSet) {
+      const roomState = rooms.get(code);
       if (roomState && (roomState.status === 'WAITING' || roomState.status === 'PLAYING')) {
         // Only return rooms where this user is the host/creator
         if (roomState.hostId === userId) {
@@ -96,11 +99,11 @@ class UnoService extends BaseService {
           });
         } else {
           // Cleanup from their personal list if they aren't the host
-          await RedisHelper.setRemove(`uno:user_rooms:${userId}`, code);
+          userCreatedRooms.get(userId).delete(code);
         }
       } else {
         // Cleanup expired or finished rooms
-        await RedisHelper.setRemove(`uno:user_rooms:${userId}`, code);
+        userCreatedRooms.get(userId).delete(code);
       }
     }
     
@@ -109,21 +112,23 @@ class UnoService extends BaseService {
   }
 
   async deleteRoom(roomCode, userId) {
-    const roomState = await RedisHelper.get(`uno:room:${roomCode}`);
+    const roomState = rooms.get(roomCode);
     if (roomState && roomState.hostId === userId) {
       const io = getIo();
       if (io) {
         io.to(`uno:${roomCode}`).emit('ROOM_DELETED', { roomCode });
       }
-      await RedisHelper.delete(`uno:room:${roomCode}`);
-      await RedisHelper.setRemove(`uno:user_rooms:${userId}`, roomCode);
+      rooms.delete(roomCode);
+      if (userCreatedRooms.has(userId)) {
+        userCreatedRooms.get(userId).delete(roomCode);
+      }
       return true;
     }
     return false;
   }
 
   async joinRoom(roomCode, user) {
-    const roomState = await RedisHelper.get(`uno:room:${roomCode}`);
+    const roomState = rooms.get(roomCode);
     
     if (!roomState) {
       throw new Error('ROOM_NOT_FOUND');
@@ -175,12 +180,10 @@ class UnoService extends BaseService {
       hand: []
     };
     roomState.players.push(newPlayer);
-    await RedisHelper.set(`uno:room:${roomCode}`, roomState, 60 * 60 * 24);
+    rooms.set(roomCode, roomState);
       
-    // Only the creator tracks this in their user_rooms set, so we do not add it for joining players.
-
     // Lock the player's active room
-    await RedisHelper.set(`uno:player_active_room:${user.uuid}`, roomCode, 60 * 60 * 24);
+    userActiveRooms.set(user.uuid, roomCode);
 
     // Strip hands before returning for privacy
     const safePlayers = roomState.players.map(p => {

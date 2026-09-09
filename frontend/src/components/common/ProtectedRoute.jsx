@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/store/AuthContext';
+import FullScreenLoader from '@/components/common/FullScreenLoader';
 
 const ProtectedRoute = ({ children, requiredPermission }) => {
   const { user, isAuthenticated, loading } = useAuth();
@@ -20,7 +21,7 @@ const ProtectedRoute = ({ children, requiredPermission }) => {
   }, [loading, isAuthenticated, requiredPermission, user, router]);
 
   if (loading) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading session...</div>;
+    return <FullScreenLoader message="Loading session..." />;
   }
 
   if (!isAuthenticated) {

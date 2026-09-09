@@ -153,7 +153,6 @@ class AdminService extends BaseService {
       is_active: data.is_active !== undefined ? data.is_active : role.is_active
     };
     await this.repository.updateRole(uuid, payload);
-    await this.rbacService.invalidateRoleCache(uuid);
     return { ...role, ...payload };
   }
 
@@ -162,7 +161,6 @@ class AdminService extends BaseService {
     if (!role) throw new Error('Role not found.');
     
     await this.repository.deleteRole(uuid);
-    await this.rbacService.invalidateRoleCache(uuid);
     return { uuid };
   }
 
@@ -192,7 +190,6 @@ class AdminService extends BaseService {
     }));
 
     await this.repository.updateRolePermissions(roleUuid, payload);
-    await this.rbacService.invalidateRoleCache(roleUuid);
     return { assigned_permissions: uniqueUuids };
   }
 
@@ -222,7 +219,6 @@ class AdminService extends BaseService {
     }));
 
     await this.repository.updateUserRoles(userUuid, payload);
-    await this.rbacService.invalidateUserCache(userUuid);
     return { assigned_roles: uniqueUuids };
   }
 }

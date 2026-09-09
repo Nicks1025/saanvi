@@ -15,6 +15,7 @@ const ICON_MAP = {
   'delete': Trash2,
   'archive': Archive,
   'restore': RefreshCw,
+  'refresh': RefreshCw,
   'back': ArrowLeft,
   'send': Send,
   'more': MoreVertical,

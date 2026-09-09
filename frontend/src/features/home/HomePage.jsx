@@ -17,8 +17,8 @@ const HomePageInner = () => {
   useEffect(() => {
     setMounted(true);
     // Ensure title is clear
-    document.title = isBirthdayTheme 
-      ? "Happy Birthday! — Saanvi Celebration" 
+    document.title = isBirthdayTheme
+      ? "Happy Birthday! — Saanvi Celebration"
       : "Saanvi — Play, Explore & Grow";
 
     if (window.location.hash) {
@@ -53,7 +53,7 @@ const HomePageInner = () => {
             <h2 className="section-main-heading" style={{ fontSize: '1.75rem', marginBottom: '0.25rem' }}>Quick Play</h2>
             <p className="section-sub-heading" style={{ marginBottom: 0 }}>Jump right into our daily mini-games. No menus, no waiting.</p>
           </div>
-          <div style={{ width: '100%', maxWidth: '450px', height: '480px', display: 'flex' }}>
+          <div style={{ width: '100%', maxWidth: '450px', height: '480px', display: 'flex', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden' }}>
             <ArrowPuzzleGame initialShape="Square" initialLevel={1} liteMode={true} />
           </div>
         </section>

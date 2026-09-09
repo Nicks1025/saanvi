@@ -1540,18 +1540,32 @@
    ========================================================================== */
 
 .uno-controls-layer {
-  position: relative;
+  position: absolute;
+  bottom: 200px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.call-uno-action-container {
+  pointer-events: auto;
 }
 
 .call-uno-massive-btn {
   background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-  border: 3px solid #ffffff;
-  border-radius: 50px;
+  border: 2px solid #ffffff;
+  border-radius: 30px;
   color: #ffffff;
-  padding: 12px 28px;
+  padding: 8px 20px;
   cursor: pointer;
-  box-shadow: 0 0 30px rgba(239, 68, 68, 0.8), 0 8px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.8), 0 4px 12px rgba(0, 0, 0, 0.5);
   transition: transform 0.15s ease;
+  pointer-events: auto;
 }
 
 .call-uno-massive-btn:hover {
@@ -1565,13 +1579,13 @@
 }
 
 .uno-text-call {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 900;
   letter-spacing: 1px;
 }
 
 .uno-sub-timer {
-  font-size: 10px;
+  font-size: 9px;
   color: #fecaca;
   font-weight: 600;
 }
@@ -1580,6 +1594,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  pointer-events: auto;
 }
 
 .catch-uno-prompt-btn {
@@ -2291,19 +2306,23 @@
 .player-limit-stepper {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
+  overflow: hidden;
 }
 
 .limit-pill-btn {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 36px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #cbd5e1;
-  padding: 8px 0;
+  padding: 8px 4px;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   position: relative;
+  text-align: center;
 }
 
 .limit-pill-btn.is-selected {

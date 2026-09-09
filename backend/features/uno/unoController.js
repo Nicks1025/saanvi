@@ -1,5 +1,5 @@
 const BaseController = require('../../base/baseController');
-const RedisHelper = require('../../redis/redisHelper');
+const { userActiveRooms } = require('./unoStore');
 const UnoService = require('./unoService');
 
 const unoService = new UnoService();
@@ -12,9 +12,8 @@ class UnoController extends BaseController {
       const { uuid } = req.user;
 
       // Clear any stuck lock to prevent permanent lockouts
-      const activeLock = await RedisHelper.get(`uno:player_active_room:${uuid}`);
-      if (activeLock) {
-        await RedisHelper.delete(`uno:player_active_room:${uuid}`);
+      if (userActiveRooms.has(uuid)) {
+        userActiveRooms.delete(uuid);
       }
 
       const userObj = {
@@ -36,9 +35,8 @@ class UnoController extends BaseController {
       const { uuid } = req.user;
 
       // Clear any stuck lock to prevent permanent lockouts
-      const activeLock = await RedisHelper.get(`uno:player_active_room:${uuid}`);
-      if (activeLock) {
-        await RedisHelper.delete(`uno:player_active_room:${uuid}`);
+      if (userActiveRooms.has(uuid)) {
+        userActiveRooms.delete(uuid);
       }
 
       const userObj = {

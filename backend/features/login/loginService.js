@@ -44,20 +44,8 @@ class LoginService extends BaseService {
       throw new Error('UNVERIFIED_EMAIL');
     }
 
-    // 4. Generate token — only include auth essentials; profile is fetched via /api/users/me
-    const tokenPayload = {
-      uuid: user.uuid,
-      email: user.email,
-      is_mfa_enabled: user.is_mfa_enabled,
-      language: user.language,
-      theme: user.theme,
-      font: user.font,
-      roles: user.role_name || null,
-      permissions: user.permissions || []
-    };
-
-    const secret = process.env.JWT_SECRET || 'fallback_secret';
-    const token = jwt.sign(tokenPayload, secret, { expiresIn: '1h' });
+    // 4. Generate tokens
+    const { accessToken, refreshToken } = await this.generateTokens(user);
 
     // 4. Sync with Supabase Auth to get an access token for MFA
     let supabaseToken = null;
@@ -77,7 +65,8 @@ class LoginService extends BaseService {
 
     // 5. Return success result
     return {
-      token,
+      token: accessToken,
+      refreshToken,
       supabaseToken
     };
   }
@@ -85,11 +74,11 @@ class LoginService extends BaseService {
   /**
    * Processes Google login logic: exchanges code for token, verifies, checks email against users.
    */
-  async processGoogleLogin(accessToken) {
+  async processGoogleLogin(googleAccessToken) {
     let payload;
     try {
       const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-        headers: { Authorization: `Bearer ${accessToken}` }
+        headers: { Authorization: `Bearer ${googleAccessToken}` }
       });
       if (!response.ok) {
         throw new Error('Failed to fetch user info from Google.');
@@ -122,20 +111,8 @@ class LoginService extends BaseService {
       throw new Error('Account is locked. Please try again later.');
     }
 
-    // 2. Generate token — only include auth essentials; profile is fetched via /api/users/me
-    const tokenPayload = {
-      uuid: user.uuid,
-      email: user.email,
-      is_mfa_enabled: user.is_mfa_enabled,
-      language: user.language,
-      theme: user.theme,
-      font: user.font,
-      roles: user.role_name || null,
-      permissions: user.permissions || []
-    };
-
-    const secret = process.env.JWT_SECRET || 'fallback_secret';
-    const token = jwt.sign(tokenPayload, secret, { expiresIn: '1h' });
+    // 2. Generate tokens
+    const { accessToken, refreshToken } = await this.generateTokens(user);
 
     // 3. Sync with Supabase Auth to get an access token for MFA
     let supabaseToken = null;
@@ -155,7 +132,8 @@ class LoginService extends BaseService {
 
     // 4. Return success result
     return {
-      token,
+      token: accessToken,
+      refreshToken,
       supabaseToken
     };
   }
@@ -238,7 +216,16 @@ class LoginService extends BaseService {
       throw new Error('Invalid MFA code.');
     }
 
-    // Generate final token — only include auth essentials; profile is fetched via /api/users/me
+    // Generate final tokens
+    const { accessToken, refreshToken } = await this.generateTokens(user);
+
+    return {
+      token: accessToken,
+      refreshToken,
+      supabaseToken
+    };
+  }
+  async generateTokens(user) {
     const tokenPayload = {
       uuid: user.uuid,
       email: user.email,
@@ -249,13 +236,52 @@ class LoginService extends BaseService {
       roles: user.role_name || null,
       permissions: user.permissions || []
     };
-    const secret = process.env.JWT_SECRET || 'fallback_secret';
-    const token = jwt.sign(tokenPayload, secret, { expiresIn: '1h' });
 
-    return {
-      token,
-      supabaseToken
-    };
+    const secret = process.env.JWT_SECRET || 'fallback_secret';
+    const accessToken = jwt.sign(tokenPayload, secret, { expiresIn: '15m' });
+
+    const refreshToken = crypto.randomBytes(40).toString('hex');
+    const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+    
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiration
+
+    await this.repository.saveRefreshToken(user.uuid, tokenHash, expiresAt.toISOString());
+
+    return { accessToken, refreshToken };
+  }
+
+  async processRefreshToken(refreshToken) {
+    if (!refreshToken) {
+      throw new Error('Refresh token is required');
+    }
+
+    const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+    
+    const tokenRecord = await this.repository.getValidRefreshToken(tokenHash);
+
+    if (!tokenRecord) {
+      // Possible token reuse attack or simply expired
+      throw new Error('Invalid or expired refresh token');
+    }
+
+    // Revoke the old token (Refresh Token Rotation)
+    await this.repository.revokeRefreshTokenById(tokenRecord.uuid);
+
+    // Fetch latest user details to get fresh permissions
+    const user = await this.repository.getUserByUuid(tokenRecord.user_uuid);
+    if (!user || user.status !== 'active') {
+      throw new Error('User is inactive or deleted');
+    }
+
+    // Generate new token pair
+    return await this.generateTokens(user);
+  }
+
+  async logout(refreshToken) {
+    if (!refreshToken) return;
+    const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+    await this.repository.revokeRefreshTokenByHash(tokenHash);
   }
 }
 
