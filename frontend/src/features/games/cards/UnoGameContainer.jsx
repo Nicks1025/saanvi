@@ -203,7 +203,10 @@ export const UnoGameContainer = () => {
         return (
           <GameResultView
             gameResult={gameResult}
-            onLeaveGame={game.handleLeaveRoom}
+            onLeaveGame={() => {
+              game.executeLeaveRoom();
+              window.location.href = '/games/uno';
+            }}
           />
         );
 

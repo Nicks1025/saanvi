@@ -16,6 +16,14 @@
   letter-spacing: -0.5px;
   word-break: break-word;
   overflow-wrap: break-word;
+  line-height: 1.2;
+}
+
+@media (max-width: 600px) {
+  .dashboard-header {
+    font-size: 1.75rem;
+    letter-spacing: -0.25px;
+  }
 }
 
 .dashboard-description {

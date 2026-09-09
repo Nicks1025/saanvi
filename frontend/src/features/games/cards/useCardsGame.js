@@ -46,8 +46,10 @@ export const useCardsGame = () => {
   const [selectedCardId, setSelectedCardId] = useState(null);
 
   // UNO Mechanics State
-  const [showUnoCallButton, setShowUnoCallButton] = useState(false);
-  const [hasCalledUno, setHasCalledUno] = useState(false);
+  // UNO Mechanics State
+  const localPlayer = players.find(p => p.isLocal);
+  const showUnoCallButton = localPlayer && localPlayer.cardCount === 1 && !localPlayer.hasCalledUno;
+  const hasCalledUno = localPlayer ? localPlayer.hasCalledUno : false;
 
   // Animations & Flight
   const [flyingCard, setFlyingCard] = useState(null);
@@ -382,7 +384,7 @@ export const useCardsGame = () => {
   
   const handleCallUno = () => {
     if (!room) return;
-    socketService.emit('uno:call_uno', { roomCode: room.code });
+    socketService.emit('uno:say_uno', { roomCode: room.code });
   };
 
   const handleCatchOpponentUno = (opponent) => {

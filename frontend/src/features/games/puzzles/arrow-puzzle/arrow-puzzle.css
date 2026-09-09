@@ -11,6 +11,13 @@
   box-sizing: border-box;
 }
 
+/* Shape selection menu should be scrollable on mobile */
+.arrow-puzzle-feature.shape-menu {
+  overflow-y: auto;
+  height: auto;
+  min-height: 100%;
+}
+
 .arrow-puzzle-header {
   display: flex;
   justify-content: space-between;

@@ -290,6 +290,13 @@ module.exports = (io, socket) => {
       // Valid play
       currentPlayer.hand.splice(cardIndex, 1);
       currentPlayer.cardCount = currentPlayer.hand.length;
+      
+      // Reset Uno state if they no longer have 1 card
+      if (currentPlayer.cardCount !== 1) {
+        currentPlayer.hasCalledUno = false;
+        currentPlayer.missedUno = false;
+      }
+      
       roomState.discardPile.push(card);
 
       const effect = UnoEngine.applyCardEffect(roomState, card, selectedColor);
@@ -396,6 +403,8 @@ module.exports = (io, socket) => {
     const drawnCards = roomState.deck.splice(0, drawCount);
     currentPlayer.hand.push(...drawnCards);
     currentPlayer.cardCount = currentPlayer.hand.length;
+    currentPlayer.hasCalledUno = false;
+    currentPlayer.missedUno = false;
 
     // Advance turn
     roomState.currentTurnIndex = UnoEngine.getNextTurnIndex(roomState.currentTurnIndex, roomState.turnDirection, roomState.players.length, 1);
@@ -415,6 +424,69 @@ module.exports = (io, socket) => {
     });
 
     // Broadcast new state
+    roomState.players.forEach(p => {
+      io.to(`user:${p.id}`).emit('GAME_STATE_UPDATED', {
+        ...roomState,
+        players: roomState.players.map(op => {
+          if (op.id === p.id) return op;
+          const { hand, ...safeOp } = op;
+          return safeOp;
+        })
+      });
+    });
+  });
+
+  socket.on('uno:say_uno', async ({ roomCode }) => {
+    let roomState = rooms.get(roomCode);
+    if (!roomState || roomState.status !== 'PLAYING') return;
+
+    const player = roomState.players.find(p => p.id === userUuid);
+    if (!player || player.cardCount !== 1) return;
+
+    player.hasCalledUno = true;
+    player.missedUno = false;
+    rooms.set(roomCode, roomState);
+
+    io.to(`uno:${roomCode}`).emit('UNO_CALLED', { playerId: userUuid });
+
+    const safePlayers = roomState.players.map(p => {
+      const { hand, ...safeP } = p;
+      return safeP;
+    });
+    io.to(`uno:${roomCode}`).emit('ROOM_UPDATED', { ...roomState, players: safePlayers });
+  });
+
+  socket.on('uno:catch_uno', async ({ roomCode, targetId }) => {
+    let roomState = rooms.get(roomCode);
+    if (!roomState || roomState.status !== 'PLAYING') return;
+
+    const target = roomState.players.find(p => p.id === targetId);
+    if (!target || target.cardCount !== 1 || target.hasCalledUno || target.missedUno) return;
+
+    target.missedUno = true;
+
+    // Draw 2 cards penalty
+    if (roomState.deck.length < 2) {
+      const topDiscard = roomState.discardPile.pop();
+      roomState.deck = UnoEngine.shuffle([...roomState.deck, ...roomState.discardPile]);
+      roomState.discardPile = [topDiscard];
+    }
+
+    const drawnCards = roomState.deck.splice(0, 2);
+    target.hand.push(...drawnCards);
+    target.cardCount = target.hand.length;
+    target.hasCalledUno = false;
+
+    rooms.set(roomCode, roomState);
+
+    io.to(`uno:${roomCode}`).emit('UNO_CAUGHT', { catcherId: userUuid, targetId: targetId });
+    io.to(`uno:${roomCode}`).emit('CARD_DRAWN', {
+      roomId: roomCode,
+      playerId: targetId,
+      count: 2,
+      eventId: Date.now().toString()
+    });
+
     roomState.players.forEach(p => {
       io.to(`user:${p.id}`).emit('GAME_STATE_UPDATED', {
         ...roomState,
