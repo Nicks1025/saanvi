@@ -10,8 +10,6 @@ const FullScreenLoader = ({ message = "Initializing your workspace..." }) => {
           <img src="/saanvi_logo.png" alt="Saanvi Logo" style={styles.logo} />
         </div>
         <Loader2 size={36} color="#4f46e5" style={styles.spinner} className="animate-spin" />
-        <h3 style={styles.message}>{message}</h3>
-        <p style={styles.subMessage}>Securely connecting your profile and variables.</p>
       </div>
 
       <style>
@@ -62,7 +60,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '1.5rem',
+    gap: '0.75rem',
   },
   logoWrapper: {
     width: '64px',
@@ -70,7 +68,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: '1rem',
+    marginBottom: '0.25rem',
   },
   logo: {
     width: '100%',

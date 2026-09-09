@@ -6,6 +6,7 @@ class SocketService {
   constructor() {
     this.socket = null;
     this.listeners = new Map();
+    this._tokenGetter = null; // function that returns the latest access token
   }
 
   connect(token) {
@@ -13,9 +14,17 @@ class SocketService {
       return; // Already connecting or connected
     }
 
+    // token can be a string or a function that returns the current token
+    if (typeof token === 'function') {
+      this._tokenGetter = token;
+    } else {
+      this._tokenGetter = () => token;
+    }
+
     this.socket = io(SOCKET_URL, {
-      auth: {
-        token: `Bearer ${token}`
+      auth: (cb) => {
+        // Called on every connection/reconnection attempt — always uses fresh token
+        cb({ token: `Bearer ${this._tokenGetter()}` });
       },
       reconnection: true,
       reconnectionAttempts: 10,

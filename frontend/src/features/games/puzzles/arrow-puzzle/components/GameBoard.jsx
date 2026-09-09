@@ -3,7 +3,7 @@ import './GameBoard.css';
 import { isMoveValid, DIRECTIONS } from '../engine/PuzzleEngine.js';
 
 const STROKE_WIDTH = 5;
-const PATH_COLOR = '#0f172a'; // slate-900
+const PATH_COLOR = 'var(--text-h)';
 
 const calculatePathLength = (points) => {
   let len = 0;

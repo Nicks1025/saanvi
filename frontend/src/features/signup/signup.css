@@ -9,11 +9,8 @@
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
-  background-color: #f8fafc;
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.05) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(37, 99, 235, 0.05) 0px, transparent 50%),
-    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  background-color: var(--bg);
+  background-image: none;
   background-attachment: fixed;
   position: relative;
   overflow-x: hidden;
@@ -87,7 +84,7 @@
 .signup-branding-name {
   font-size: 1.4rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-h);
   letter-spacing: -0.02em;
 }
 
@@ -95,7 +92,7 @@
   font-size: 2.6rem;
   font-weight: 800;
   line-height: 1.15;
-  color: #0f172a;
+  color: var(--text-h);
   margin: 0 0 0.85rem;
   letter-spacing: -0.025em;
 }
@@ -103,7 +100,7 @@
 .signup-branding-desc {
   font-size: 1rem;
   line-height: 1.65;
-  color: #475569;
+  color: var(--text);
   margin: 0 0 1.75rem;
 }
 
@@ -113,12 +110,12 @@
   align-items: center;
   gap: 0;
   margin-bottom: 1.75rem;
-  background: linear-gradient(180deg, #ffffff 0%, #fcfcfd 100%);
+  background: var(--code-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid #e2e8f0;
+  border: 1px solid #000;
   border-radius: 14px;
   padding: 1rem 1.25rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
@@ -135,13 +132,13 @@
 .signup-stat-value {
   font-size: 1.35rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-h);
   line-height: 1;
 }
 
 .signup-stat-label {
   font-size: 0.75rem;
-  color: #64748b;
+  color: var(--text);
   text-align: center;
   font-weight: 500;
 }
@@ -165,8 +162,8 @@
   display: flex;
   align-items: flex-start;
   gap: 0.85rem;
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: var(--code-bg);
+  border: 1px solid #000;
   border-radius: 12px;
   padding: 0.85rem 1rem;
   box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.05);
@@ -188,12 +185,12 @@
 .signup-feature-card strong {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--text-h);
 }
 
 .signup-feature-card span {
   font-size: 0.85rem;
-  color: #475569;
+  color: var(--text);
 }
 
 /* Pills */
@@ -206,13 +203,13 @@
 }
 
 .signup-branding-pill {
-  background: rgba(37, 99, 235, 0.08);
-  color: #2563eb;
+  background: var(--accent-bg);
+  color: var(--accent);
   font-size: 0.76rem;
   font-weight: 600;
   padding: 0.3rem 0.8rem;
   border-radius: 100px;
-  border: 1px solid rgba(37, 99, 235, 0.2);
+  border: 1px solid var(--accent-border);
   letter-spacing: 0.02em;
 }
 
@@ -226,7 +223,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #64748b;
+  color: var(--text);
   margin: 0 0 0.75rem;
 }
 
@@ -247,9 +244,9 @@
   width: 1.6rem;
   height: 1.6rem;
   border-radius: 50%;
-  background: rgba(37, 99, 235, 0.1);
-  border: 1px solid rgba(37, 99, 235, 0.25);
-  color: #2563eb;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
   font-size: 0.75rem;
   font-weight: 700;
   display: flex;
@@ -281,14 +278,14 @@
   padding: 1rem 1.15rem;
   background: rgba(0, 0, 0, 0.02);
   border: 1px solid rgba(0, 0, 0, 0.05);
-  border-left: 3px solid #2563eb;
+  border-left: 3px solid var(--accent);
   border-radius: 10px;
 }
 
 .signup-testimonial-text {
   font-size: 0.88rem;
   line-height: 1.55;
-  color: #334155;
+  color: var(--text);
   font-style: italic;
   margin: 0 0 0.5rem;
 }
@@ -296,7 +293,7 @@
 .signup-testimonial-author {
   font-size: 0.78rem;
   font-weight: 600;
-  color: #2563eb;
+  color: var(--accent);
 }
 
 /* =========================================================================
@@ -313,12 +310,12 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  background: linear-gradient(180deg, #ffffff 0%, #fcfcfd 100%);
+  background: var(--code-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid #e2e8f0;
+  border: 1px solid #000;
   border-radius: 16px;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   padding: 2.25rem 2rem 2rem;
@@ -331,7 +328,7 @@
   gap: 0.75rem;
   margin-bottom: 1.5rem;
   padding-bottom: 1.25rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border);
 }
 
 .signup-card-logo {
@@ -351,19 +348,19 @@
 .signup-card-brand-name {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-h);
   letter-spacing: -0.02em;
   line-height: 1.1;
 }
 
 .signup-card-tagline {
   font-size: 0.74rem;
-  color: #64748b;
+  color: var(--text);
   letter-spacing: 0.02em;
 }
 
 .signup-form-title {
-  color: #0f172a;
+  color: var(--text-h);
   font-size: 1.4rem;
   font-weight: 700;
   margin: 0 0 0.3rem;
@@ -371,7 +368,7 @@
 }
 
 .signup-form-subtitle {
-  color: #475569;
+  color: var(--text);
   font-size: 0.88rem;
   margin: 0 0 1.5rem;
 }
@@ -398,7 +395,7 @@
 /* Common inputs inside signup-card */
 .signup-card .s-text-field label,
 .signup-card .s-dropdown-container label {
-  color: #475569 !important;
+  color: var(--text) !important;
   font-size: 0.85rem;
   font-weight: 500;
   margin-bottom: 0.4rem;
@@ -406,9 +403,9 @@
 
 .signup-card .s-input,
 .signup-card .s-dropdown-btn {
-  background: #f8fafc !important;
-  border: 1px solid #cbd5e1 !important;
-  color: #0f172a !important;
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
   border-radius: 8px;
   padding: 0.7rem 0.9rem;
   font-size: 0.92rem;
@@ -417,34 +414,36 @@
 
 .signup-card .s-input:focus,
 .signup-card .s-dropdown-btn:focus {
-  border-color: #2563eb !important;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
-  background: #ffffff !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-bg) !important;
+  background: var(--code-bg) !important;
 }
 
 .signup-card .s-input::placeholder {
-  color: #94a3b8 !important;
+  color: var(--text) !important;
+  opacity: 0.6;
 }
 
 .signup-card .s-text-field-toggle {
-  color: #64748b !important;
+  color: var(--text) !important;
+  opacity: 0.7;
 }
 
 .signup-card .s-dropdown-menu {
-  background: #ffffff !important;
-  border: 1px solid #cbd5e1 !important;
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
   border-radius: 8px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
 }
 
 .signup-card .s-dropdown-item {
-  color: #334155 !important;
+  color: var(--text) !important;
   padding: 0.6rem 0.9rem !important;
 }
 
 .signup-card .s-dropdown-item:hover {
-  background: rgba(0, 0, 0, 0.05) !important;
-  color: #0f172a !important;
+  background: var(--accent-bg) !important;
+  color: var(--text-h) !important;
 }
 
 .signup-dropdown-field {
@@ -534,19 +533,19 @@
   font-weight: 600;
   justify-content: center;
   border-radius: 8px;
-  background: #2563eb !important;
+  background: var(--accent) !important;
   color: white !important;
-  border: 1px solid rgba(0, 0, 0, 0.05) !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid var(--accent-border) !important;
+  box-shadow: 0 1px 2px var(--shadow) !important;
   transition: all 0.2s ease !important;
   cursor: pointer;
 }
 
 .signup-actions .s-button:hover:not(:disabled),
 .signup-actions button:hover:not(:disabled) {
-  background: #1d4ed8 !important;
+  background: var(--accent) !important;
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 4px 12px var(--accent-bg) !important;
 }
 
 .signup-actions .s-button:disabled,
@@ -574,14 +573,14 @@
 }
 
 .signup-footer-link {
-  color: #2563eb;
+  color: var(--accent);
   text-decoration: none;
   font-weight: 600;
   transition: color 0.2s ease;
 }
 
 .signup-footer-link:hover {
-  color: #1d4ed8;
+  color: var(--accent);
   text-decoration: underline;
 }
 

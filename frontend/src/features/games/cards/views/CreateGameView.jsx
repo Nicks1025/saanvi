@@ -107,7 +107,7 @@ export const CreateGameView = ({ onNavigate, onCreateRoom, openRules }) => {
                   className={`limit-pill-btn ${playerLimit === count ? 'is-selected' : ''}`}
                   onClick={() => setPlayerLimit(count)}
                 >
-                  {count} {count === 8 && <span className="default-tag">{t('common.default', 'Default')}</span>}
+                  {count}
                 </SButton>
               ))}
             </div>

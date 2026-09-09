@@ -16,10 +16,10 @@ const UserDetailsFeature = () => {
   const { t } = useTranslation();
   const { user: authUser } = useAuth();
   const userPermissions = authUser?.permissions || [];
-  
+
   const queryParams = new URLSearchParams(location.search);
   const initialMode = queryParams.get('mode');
-  
+
   const [user, setUser] = useState(null);
   const [editForm, setEditForm] = useState({ status: 'active' });
   const [allRoles, setAllRoles] = useState([]);
@@ -58,10 +58,10 @@ const UserDetailsFeature = () => {
       setEditForm({
         status: userData.status || 'active'
       });
-      
+
       const rolesData = await rolesService.getRoles();
       setAllRoles(rolesData || []);
-      
+
       const userRolesData = await usersService.getUserRoles(uuid);
       setSelectedRoles(userRolesData || []);
     } catch (err) {
@@ -77,7 +77,7 @@ const UserDetailsFeature = () => {
   const handleSave = async () => {
     try {
       setSaving(true);
-      
+
       // Save basic details
       await usersService.updateUser(uuid, {
         status: editForm.status
@@ -85,15 +85,15 @@ const UserDetailsFeature = () => {
 
       // Save roles
       await usersService.updateUserRoles(uuid, selectedRoles);
-      
+
       toast.success(t('admin.userUpdated', 'User updated successfully'));
-      
+
       // Update local view state
       setUser(prev => ({
         ...prev,
         status: editForm.status
       }));
-      
+
       navigate.push('/admin/users');
     } catch (err) {
       toast.error(err?.response?.data?.error || t('admin.updateUserFailed', 'Failed to update user'));
@@ -114,7 +114,7 @@ const UserDetailsFeature = () => {
     <div className="admin-users-container page-container">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
         <div>
-          <button 
+          <button
             onClick={() => navigate.push('/admin/users')}
             style={{ background: 'none', border: 'none', color: 'var(--text)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: 0, marginBottom: '0.5rem' }}
           >
@@ -132,32 +132,32 @@ const UserDetailsFeature = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2rem' }}>
           <div>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text)' }}>{t('admin.firstName', 'First Name')}</label>
-            <input 
-              type="text" 
-              readOnly 
-              disabled 
+            <input
+              type="text"
+              readOnly
+              disabled
               value={user.first_name || '-'}
               style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--border)', outline: 'none', background: 'var(--code-bg)', color: 'var(--text)', cursor: 'not-allowed' }}
             />
           </div>
-          
+
           <div>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text)' }}>{t('admin.lastName', 'Last Name')}</label>
-            <input 
-              type="text" 
-              readOnly 
-              disabled 
+            <input
+              type="text"
+              readOnly
+              disabled
               value={user.last_name || '-'}
               style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--border)', outline: 'none', background: 'var(--code-bg)', color: 'var(--text)', cursor: 'not-allowed' }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text)' }}>{t('admin.email', 'Email')}</label>
-            <input 
-              type="text" 
-              readOnly 
-              disabled 
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text)' }}>{t('admin.email.title', 'Email')}</label>
+            <input
+              type="text"
+              readOnly
+              disabled
               value={user.email || '-'}
               style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--border)', outline: 'none', background: 'var(--code-bg)', color: 'var(--text)', cursor: 'not-allowed' }}
             />
@@ -166,9 +166,9 @@ const UserDetailsFeature = () => {
           <div>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text)' }}>{t('admin.status', 'Account Status')}</label>
             {isEditMode ? (
-              <select 
+              <select
                 value={editForm.status}
-                onChange={(e) => setEditForm(prev => ({...prev, status: e.target.value}))}
+                onChange={(e) => setEditForm(prev => ({ ...prev, status: e.target.value }))}
                 style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--border)', outline: 'none', background: 'transparent', color: 'var(--text)' }}
               >
                 <option value="active">{t('admin.statusActive', 'Active')}</option>
@@ -177,10 +177,10 @@ const UserDetailsFeature = () => {
                 <option value="archived">{t('admin.statusArchived', 'Archived')}</option>
               </select>
             ) : (
-              <input 
-                type="text" 
-                readOnly 
-                disabled 
+              <input
+                type="text"
+                readOnly
+                disabled
                 value={user.status || 'active'}
                 style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--border)', outline: 'none', background: 'var(--code-bg)', color: 'var(--text)', cursor: 'not-allowed', textTransform: 'capitalize' }}
               />
@@ -190,7 +190,7 @@ const UserDetailsFeature = () => {
           <div>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text)' }}>{t('admin.roles', 'Role')}</label>
             {isEditMode ? (
-              <select 
+              <select
                 value={selectedRoles.length > 0 ? selectedRoles[0] : ''}
                 onChange={(e) => setSelectedRoles(e.target.value ? [e.target.value] : [])}
                 style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--border)', outline: 'none', background: 'transparent', color: 'var(--text)' }}
@@ -201,10 +201,10 @@ const UserDetailsFeature = () => {
                 ))}
               </select>
             ) : (
-              <input 
-                type="text" 
-                readOnly 
-                disabled 
+              <input
+                type="text"
+                readOnly
+                disabled
                 value={selectedRoles.length > 0 ? allRoles.filter(r => selectedRoles.includes(r.uuid)).map(r => r.name).join(', ') : '-'}
                 style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--border)', outline: 'none', background: 'var(--code-bg)', color: 'var(--text)', cursor: 'not-allowed' }}
               />
@@ -216,13 +216,13 @@ const UserDetailsFeature = () => {
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1.5rem', paddingBottom: '2rem' }}>
         {isEditMode ? (
           <>
-            <SButton 
+            <SButton
               onClick={cancelEdit}
               color="danger"
               icon="close"
               text={t('common.cancel', 'Cancel')}
             />
-            <SButton 
+            <SButton
               onClick={handleSave}
               disabled={saving}
               icon="save"
@@ -231,11 +231,11 @@ const UserDetailsFeature = () => {
             />
           </>
         ) : (
-          <SButton 
-              onClick={() => navigate.push('/admin/users')}
-              color="danger"
-              icon="close"
-              text={t('common.close', 'Close')}
+          <SButton
+            onClick={() => navigate.push('/admin/users')}
+            color="danger"
+            icon="close"
+            text={t('common.close', 'Close')}
           />
         )}
       </div>

@@ -22,7 +22,8 @@ export const ChatProvider = ({ children }) => {
   useEffect(() => {
     const token = Cookies.get('auth_token');
     if (isAuthenticated && user && token) {
-      socketService.connect(token);
+      // Pass a getter function so every reconnect attempt uses the latest token from the cookie
+      socketService.connect(() => Cookies.get('auth_token') || token);
     } else if (!isAuthenticated) {
       // Disconnect and clear cache on logout
       socketService.disconnect();

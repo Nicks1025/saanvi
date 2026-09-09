@@ -1,8 +1,20 @@
 @keyframes sdt-indeterminate {
-  0% { left: -30%; width: 30%; }
-  50% { left: 30%; width: 70%; }
-  100% { left: 100%; width: 30%; }
+  0% {
+    left: -30%;
+    width: 30%;
+  }
+
+  50% {
+    left: 30%;
+    width: 70%;
+  }
+
+  100% {
+    left: 100%;
+    width: 30%;
+  }
 }
+
 .sdt-progress-bar {
   position: absolute;
   top: 0;
@@ -11,6 +23,7 @@
   background-color: var(--primary, #007bff);
   animation: sdt-indeterminate 1.5s infinite linear;
 }
+
 .sdt-progress-container {
   position: absolute;
   top: 0;
@@ -21,37 +34,70 @@
   overflow: hidden;
   z-index: 10;
 }
+
 .sdt-show-mobile {
   display: none;
 }
+
+/* Global Header Row Layout */
+/* Header row wraps naturally element by element */
+.sdt-header-row {
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 1rem !important;
+}
+
+/* Title on the left, margin-right: auto pushes all controls to the right on large screens */
+.sdt-title {
+  flex: 0 0 auto;
+  margin-right: auto !important;
+}
+
+/* Flatten the controls row so its children (dropdown, search, buttons)
+   become direct flex items of the header row. This allows them to 
+   wrap individually one by one across all screen sizes! */
+.sdt-controls-row {
+  display: contents !important;
+}
+
+/* Search bar on desktop: doesn't grow infinitely (keeps controls grouped) */
+.sdt-search-wrapper {
+  flex: 0 1 300px !important;
+  min-width: 150px !important;
+}
+
+.status-dropdown-wrapper {
+  flex-shrink: 0;
+}
+
 @media (max-width: 600px) {
-  .sdt-header-row {
-    flex-direction: column;
-    align-items: flex-start !important;
-  }
-  .sdt-controls-row {
-    width: 100%;
-    justify-content: space-between !important;
-  }
+  /* On mobile, let the search bar grow to fill the row if it wraps */
   .sdt-search-wrapper {
-    flex: 1;
+    flex: 1 1 100px !important;
+    min-width: 100px !important;
     width: auto !important;
   }
   .sdt-action-text {
     display: none;
   }
+
   .s-button .s-button-icon {
     margin-right: 0 !important;
   }
+
   .sdt-hide-mobile {
     display: none !important;
   }
+
   .sdt-show-mobile {
     display: inline-block !important;
   }
+
   .sdt-pagination-container {
     padding: 0.75rem !important;
   }
+
   .sdt-pagination-controls {
     gap: 0.5rem !important;
   }
@@ -62,15 +108,19 @@
   cursor: pointer;
   transition: opacity 0.2s;
 }
+
 .sdt-action-icon:hover {
   opacity: 0.7;
 }
+
 .sdt-action-view {
   color: var(--text-muted, #888);
 }
+
 .sdt-action-edit {
   color: var(--primary, #007bff);
 }
+
 .sdt-action-delete {
   color: var(--danger, #dc3545);
 }

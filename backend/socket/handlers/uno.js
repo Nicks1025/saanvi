@@ -1,7 +1,8 @@
-const RedisHelper = require('../../redis/redisHelper');
+const { rooms, userActiveRooms, userCreatedRooms } = require('../../features/uno/unoStore');
 const UnoEngine = require('../../features/uno/unoEngine');
 
 const roomTimers = new Map();
+const disconnectTimers = new Map(); // grace-period timers keyed by userUuid
 
 function clearTurnTimer(roomCode) {
   if (roomTimers.has(roomCode)) {
@@ -21,7 +22,7 @@ function startTurnTimer(roomCode, io) {
 }
 
 async function handleTurnTimeout(roomCode, io) {
-  let roomState = await RedisHelper.get(`uno:room:${roomCode}`);
+  let roomState = rooms.get(roomCode);
   if (!roomState || roomState.status !== 'PLAYING') {
     clearTurnTimer(roomCode);
     return;
@@ -36,7 +37,7 @@ async function handleTurnTimeout(roomCode, io) {
     // Kick player
     roomState.kickedPlayers = [...(roomState.kickedPlayers || []), currentPlayer];
     roomState.players.splice(roomState.currentTurnIndex, 1);
-    await RedisHelper.delete(`uno:player_active_room:${currentPlayer.id}`);
+    userActiveRooms.delete(currentPlayer.id);
     
     if (roomState.players.length === 1) {
        roomState.status = 'GAME_OVER';
@@ -52,8 +53,10 @@ async function handleTurnTimeout(roomCode, io) {
        }));
 
        io.to(`uno:${roomCode}`).emit('GAME_OVER', { winnerId: roomState.players[0].id, roomId: roomCode, scores });
-       await RedisHelper.delete(`uno:room:${roomCode}`);
-       await RedisHelper.setRemove(`uno:user_rooms:${roomState.hostId}`, roomCode);
+       rooms.delete(roomCode);
+       if (userCreatedRooms.has(roomState.hostId)) {
+         userCreatedRooms.get(roomState.hostId).delete(roomCode);
+       }
        clearTurnTimer(roomCode);
        return;
     } else {
@@ -91,7 +94,7 @@ async function handleTurnTimeout(roomCode, io) {
   }
   
   roomState.turnExpiresAt = Date.now() + 30000;
-  await RedisHelper.set(`uno:room:${roomCode}`, roomState, 60 * 60 * 24);
+  rooms.set(roomCode, roomState);
   
   // Broadcast state
   roomState.players.forEach(p => {
@@ -113,13 +116,20 @@ module.exports = (io, socket) => {
 
   socket.on('uno:join', async ({ roomCode }) => {
     socket.join(`uno:${roomCode}`);
-    const roomState = await RedisHelper.get(`uno:room:${roomCode}`);
+    const roomState = rooms.get(roomCode);
     if (roomState) {
+      // Cancel any pending disconnect grace-period timer for this player
+      const pendingTimer = disconnectTimers.get(userUuid);
+      if (pendingTimer) {
+        clearTimeout(pendingTimer);
+        disconnectTimers.delete(userUuid);
+      }
+
       // Connect player
       const pIndex = roomState.players.findIndex(p => p.id === userUuid);
       if (pIndex !== -1) {
         roomState.players[pIndex].connectionStatus = 'connected';
-        await RedisHelper.set(`uno:room:${roomCode}`, roomState, 60 * 60 * 24);
+        rooms.set(roomCode, roomState);
         
         // Broadcast sanitized state
         const safePlayers = roomState.players.map(p => {
@@ -147,14 +157,14 @@ module.exports = (io, socket) => {
   });
 
   socket.on('uno:start_game', async ({ roomCode }) => {
-    let roomState = await RedisHelper.get(`uno:room:${roomCode}`);
+    let roomState = rooms.get(roomCode);
     if (roomState && roomState.hostId === userUuid && roomState.status === 'WAITING') {
       if (roomState.players.length < 2) return;
       if (!roomState.players.every(p => p.isReady)) return;
 
       roomState = UnoEngine.startGameState(roomState);
       roomState.turnExpiresAt = Date.now() + 30000;
-      await RedisHelper.set(`uno:room:${roomCode}`, roomState, 60 * 60 * 24);
+      rooms.set(roomCode, roomState);
       
       startTurnTimer(roomCode, io);
 
@@ -177,7 +187,7 @@ module.exports = (io, socket) => {
 
   socket.on('uno:leave', async ({ roomCode }) => {
     socket.leave(`uno:${roomCode}`); // Leave immediately so they don't receive GAME_OVER broadcast
-    let roomState = await RedisHelper.get(`uno:room:${roomCode}`);
+    let roomState = rooms.get(roomCode);
     if (roomState) {
       if (roomState.status === 'PLAYING') {
         const pIndex = roomState.players.findIndex(p => p.id === userUuid);
@@ -188,6 +198,7 @@ module.exports = (io, socket) => {
           if (roomState.players.length === 1) {
             // Only one player left - declare winner and end game
             roomState.status = 'GAME_OVER';
+            userActiveRooms.delete(userUuid); // clean up leaving player
             
             const allPlayers = [...roomState.players, ...(roomState.kickedPlayers || [])];
             const scores = allPlayers.map(p => ({
@@ -200,8 +211,10 @@ module.exports = (io, socket) => {
             }));
             
             io.to(`uno:${roomCode}`).emit('GAME_OVER', { winnerId: roomState.players[0].id, roomId: roomCode, scores });
-            await RedisHelper.delete(`uno:room:${roomCode}`);
-            await RedisHelper.setRemove(`uno:user_rooms:${roomState.hostId}`, roomCode);
+            rooms.delete(roomCode);
+            if (userCreatedRooms.has(roomState.hostId)) {
+              userCreatedRooms.get(roomState.hostId).delete(roomCode);
+            }
             clearTurnTimer(roomCode);
             return;
           } else if (roomState.players.length > 1) {
@@ -216,19 +229,21 @@ module.exports = (io, socket) => {
       } else {
         roomState.players = roomState.players.filter(p => p.id !== userUuid);
       }
-      await RedisHelper.delete(`uno:player_active_room:${userUuid}`);
+      userActiveRooms.delete(userUuid);
 
       if (roomState.players.length === 0) {
         // delete room if empty
-        await RedisHelper.delete(`uno:room:${roomCode}`);
-        await RedisHelper.setRemove(`uno:user_rooms:${roomState.hostId}`, roomCode);
+        rooms.delete(roomCode);
+        if (userCreatedRooms.has(roomState.hostId)) {
+          userCreatedRooms.get(roomState.hostId).delete(roomCode);
+        }
         io.to(`uno:${roomCode}`).emit('ROOM_DELETED', { roomId: roomCode });
         clearTurnTimer(roomCode);
       } else {
         if (roomState.status === 'PLAYING') {
           roomState.turnExpiresAt = Date.now() + 30000;
         }
-        await RedisHelper.set(`uno:room:${roomCode}`, roomState, 60 * 60 * 24);
+        rooms.set(roomCode, roomState);
         
         if (roomState.status === 'PLAYING') {
           startTurnTimer(roomCode, io);
@@ -258,7 +273,7 @@ module.exports = (io, socket) => {
   });
 
   socket.on('uno:play_card', async ({ roomCode, cardId, selectedColor }) => {
-    let roomState = await RedisHelper.get(`uno:room:${roomCode}`);
+    let roomState = rooms.get(roomCode);
     if (!roomState || roomState.status !== 'PLAYING') return;
 
     const currentPlayer = roomState.players[roomState.currentTurnIndex];
@@ -270,10 +285,18 @@ module.exports = (io, socket) => {
     const card = currentPlayer.hand[cardIndex];
     const topDiscard = roomState.discardPile[roomState.discardPile.length - 1];
 
-    if (UnoEngine.validatePlay(card, roomState.activeColor, topDiscard, roomState.rules, currentPlayer.hand)) {
+    if (UnoEngine.validatePlay(card, roomState.activeColor, topDiscard, roomState, currentPlayer.hand)) {
+      console.log(`[UNO] Valid play by ${userUuid}:`, card.value, card.color);
       // Valid play
       currentPlayer.hand.splice(cardIndex, 1);
       currentPlayer.cardCount = currentPlayer.hand.length;
+      
+      // Reset Uno state if they no longer have 1 card
+      if (currentPlayer.cardCount !== 1) {
+        currentPlayer.hasCalledUno = false;
+        currentPlayer.missedUno = false;
+      }
+      
       roomState.discardPile.push(card);
 
       const effect = UnoEngine.applyCardEffect(roomState, card, selectedColor);
@@ -316,8 +339,10 @@ module.exports = (io, socket) => {
         }));
         
         io.to(`uno:${roomCode}`).emit('GAME_OVER', { winnerId: currentPlayer.id, roomId: roomCode, scores });
-        await RedisHelper.delete(`uno:room:${roomCode}`);
-        await RedisHelper.setRemove(`uno:user_rooms:${roomState.hostId}`, roomCode);
+        rooms.delete(roomCode);
+        if (userCreatedRooms.has(roomState.hostId)) {
+          userCreatedRooms.get(roomState.hostId).delete(roomCode);
+        }
         clearTurnTimer(roomCode);
         return;
       } else {
@@ -325,7 +350,7 @@ module.exports = (io, socket) => {
         roomState.turnExpiresAt = Date.now() + 30000;
       }
 
-      await RedisHelper.set(`uno:room:${roomCode}`, roomState, 60 * 60 * 24);
+      rooms.set(roomCode, roomState);
       
       if (roomState.status === 'PLAYING') {
         startTurnTimer(roomCode, io);
@@ -350,11 +375,13 @@ module.exports = (io, socket) => {
           })
         });
       });
+    } else {
+      console.log(`[UNO] Invalid play attempt by ${userUuid}:`, card, 'Active Color:', roomState.activeColor, 'Top Discard:', topDiscard);
     }
   });
 
   socket.on('uno:draw_card', async ({ roomCode }) => {
-    let roomState = await RedisHelper.get(`uno:room:${roomCode}`);
+    let roomState = rooms.get(roomCode);
     if (!roomState || roomState.status !== 'PLAYING') return;
 
     const currentPlayer = roomState.players[roomState.currentTurnIndex];
@@ -376,6 +403,8 @@ module.exports = (io, socket) => {
     const drawnCards = roomState.deck.splice(0, drawCount);
     currentPlayer.hand.push(...drawnCards);
     currentPlayer.cardCount = currentPlayer.hand.length;
+    currentPlayer.hasCalledUno = false;
+    currentPlayer.missedUno = false;
 
     // Advance turn
     roomState.currentTurnIndex = UnoEngine.getNextTurnIndex(roomState.currentTurnIndex, roomState.turnDirection, roomState.players.length, 1);
@@ -383,7 +412,7 @@ module.exports = (io, socket) => {
     currentPlayer.missedTurns = 0;
     roomState.turnExpiresAt = Date.now() + 30000;
 
-    await RedisHelper.set(`uno:room:${roomCode}`, roomState, 60 * 60 * 24);
+    rooms.set(roomCode, roomState);
     
     startTurnTimer(roomCode, io);
 
@@ -395,6 +424,69 @@ module.exports = (io, socket) => {
     });
 
     // Broadcast new state
+    roomState.players.forEach(p => {
+      io.to(`user:${p.id}`).emit('GAME_STATE_UPDATED', {
+        ...roomState,
+        players: roomState.players.map(op => {
+          if (op.id === p.id) return op;
+          const { hand, ...safeOp } = op;
+          return safeOp;
+        })
+      });
+    });
+  });
+
+  socket.on('uno:say_uno', async ({ roomCode }) => {
+    let roomState = rooms.get(roomCode);
+    if (!roomState || roomState.status !== 'PLAYING') return;
+
+    const player = roomState.players.find(p => p.id === userUuid);
+    if (!player || player.cardCount !== 1) return;
+
+    player.hasCalledUno = true;
+    player.missedUno = false;
+    rooms.set(roomCode, roomState);
+
+    io.to(`uno:${roomCode}`).emit('UNO_CALLED', { playerId: userUuid });
+
+    const safePlayers = roomState.players.map(p => {
+      const { hand, ...safeP } = p;
+      return safeP;
+    });
+    io.to(`uno:${roomCode}`).emit('ROOM_UPDATED', { ...roomState, players: safePlayers });
+  });
+
+  socket.on('uno:catch_uno', async ({ roomCode, targetId }) => {
+    let roomState = rooms.get(roomCode);
+    if (!roomState || roomState.status !== 'PLAYING') return;
+
+    const target = roomState.players.find(p => p.id === targetId);
+    if (!target || target.cardCount !== 1 || target.hasCalledUno || target.missedUno) return;
+
+    target.missedUno = true;
+
+    // Draw 2 cards penalty
+    if (roomState.deck.length < 2) {
+      const topDiscard = roomState.discardPile.pop();
+      roomState.deck = UnoEngine.shuffle([...roomState.deck, ...roomState.discardPile]);
+      roomState.discardPile = [topDiscard];
+    }
+
+    const drawnCards = roomState.deck.splice(0, 2);
+    target.hand.push(...drawnCards);
+    target.cardCount = target.hand.length;
+    target.hasCalledUno = false;
+
+    rooms.set(roomCode, roomState);
+
+    io.to(`uno:${roomCode}`).emit('UNO_CAUGHT', { catcherId: userUuid, targetId: targetId });
+    io.to(`uno:${roomCode}`).emit('CARD_DRAWN', {
+      roomId: roomCode,
+      playerId: targetId,
+      count: 2,
+      eventId: Date.now().toString()
+    });
+
     roomState.players.forEach(p => {
       io.to(`user:${p.id}`).emit('GAME_STATE_UPDATED', {
         ...roomState,
@@ -421,12 +513,12 @@ module.exports = (io, socket) => {
   });
 
   socket.on('uno:voice_status', async ({ roomCode, isMuted }) => {
-    let roomState = await RedisHelper.get(`uno:room:${roomCode}`);
+    let roomState = rooms.get(roomCode);
     if (roomState) {
       const pIndex = roomState.players.findIndex(p => p.id === userUuid);
       if (pIndex !== -1) {
         roomState.players[pIndex].isMuted = isMuted;
-        await RedisHelper.set(`uno:room:${roomCode}`, roomState, 60 * 60 * 24);
+        rooms.set(roomCode, roomState);
         
         io.to(`uno:${roomCode}`).emit('VOICE_STATUS_UPDATED', { playerId: userUuid, isMuted });
       }
@@ -434,12 +526,12 @@ module.exports = (io, socket) => {
   });
 
   socket.on('uno:toggle_ready', async ({ roomCode, isReady }) => {
-    let roomState = await RedisHelper.get(`uno:room:${roomCode}`);
+    let roomState = rooms.get(roomCode);
     if (roomState) {
       const pIndex = roomState.players.findIndex(p => p.id === userUuid);
       if (pIndex !== -1) {
         roomState.players[pIndex].isReady = isReady;
-        await RedisHelper.set(`uno:room:${roomCode}`, roomState, 60 * 60 * 24);
+        rooms.set(roomCode, roomState);
         
         const safePlayers = roomState.players.map(p => {
           const { hand, ...safePlayer } = p;
@@ -451,41 +543,102 @@ module.exports = (io, socket) => {
   });
 
   socket.on('disconnect', async () => {
-    // If the socket drops without explicit leave, we just mark them as disconnected.
-    // They can reconnect within the TTL. Only explicit 'uno:leave' removes them.
-    const activeRoomCode = await RedisHelper.get(`uno:player_active_room:${userUuid}`);
-    if (activeRoomCode) {
-      let roomState = await RedisHelper.get(`uno:room:${activeRoomCode}`);
-      if (roomState) {
-        const pIndex = roomState.players.findIndex(p => p.id === userUuid);
-        if (pIndex !== -1) {
-          roomState.players[pIndex].connectionStatus = 'disconnected';
-          await RedisHelper.set(`uno:room:${activeRoomCode}`, roomState, 60 * 60 * 24);
-          
-          const safePlayers = roomState.players.map(p => {
-            const { hand, ...safePlayer } = p;
-            return safePlayer;
+    const activeRoomCode = userActiveRooms.get(userUuid);
+    if (!activeRoomCode) return;
+
+    let roomState = rooms.get(activeRoomCode);
+    if (!roomState) return;
+
+    const pIndex = roomState.players.findIndex(p => p.id === userUuid);
+    if (pIndex === -1) return;
+
+    // Mark player as disconnected immediately so others can see it
+    roomState.players[pIndex].connectionStatus = 'disconnected';
+    rooms.set(activeRoomCode, roomState);
+
+    // Notify others of disconnection
+    const safePlayers = roomState.players.map(p => { const { hand, ...s } = p; return s; });
+    io.to(`uno:${activeRoomCode}`).emit('ROOM_UPDATED', { ...roomState, players: safePlayers });
+
+    // Give the player 8 seconds to reconnect before removing them
+    const GRACE_MS = 8000;
+    const existingTimer = disconnectTimers.get(userUuid);
+    if (existingTimer) clearTimeout(existingTimer);
+
+    const timer = setTimeout(() => {
+      disconnectTimers.delete(userUuid);
+
+      // Re-read room state — it may have changed during the grace period
+      let currentRoomState = rooms.get(activeRoomCode);
+      if (!currentRoomState) return; // Room already gone
+
+      const currentPIndex = currentRoomState.players.findIndex(p => p.id === userUuid);
+      if (currentPIndex === -1) return; // Already removed (e.g. by explicit leave)
+
+      // Still disconnected after grace period — remove them
+      const disconnectedPlayer = currentRoomState.players[currentPIndex];
+      if (disconnectedPlayer.connectionStatus !== 'disconnected') return; // Reconnected in time
+
+      currentRoomState.players.splice(currentPIndex, 1);
+      userActiveRooms.delete(userUuid);
+
+      if (currentRoomState.status === 'PLAYING') {
+        if (currentRoomState.players.length === 1) {
+          // Only one player left — end the game
+          currentRoomState.status = 'GAME_OVER';
+
+          const allPlayers = [...currentRoomState.players, ...(currentRoomState.kickedPlayers || []),
+            { id: userUuid, name: disconnectedPlayer.name, avatar: disconnectedPlayer.avatar, cardCount: disconnectedPlayer.cardCount || 0 }];
+          const scores = allPlayers.map(p => ({
+            id: p.id,
+            name: p.name,
+            avatar: p.avatar || null,
+            cardsLeft: p.cardCount || 0,
+            score: (p.id === currentRoomState.players[0].id) ? 100 : 0,
+            isKicked: false
+          }));
+
+          io.to(`uno:${activeRoomCode}`).emit('GAME_OVER', {
+            winnerId: currentRoomState.players[0].id,
+            roomId: activeRoomCode,
+            scores
           });
-          
-          if (roomState.status === 'PLAYING') {
-            roomState.players.forEach(p => {
-              if (p.connectionStatus === 'connected') {
-                io.to(`user:${p.id}`).emit('GAME_STATE_UPDATED', {
-                  ...roomState,
-                  players: roomState.players.map(op => {
-                    if (op.id === p.id) return op;
-                    const { hand, ...safeOp } = op;
-                    return safeOp;
-                  })
-                });
-              }
-            });
-            io.to(`uno:${activeRoomCode}`).emit('ROOM_UPDATED', { ...roomState, players: safePlayers });
-          } else {
-             io.to(`uno:${activeRoomCode}`).emit('ROOM_UPDATED', { ...roomState, players: safePlayers });
+          rooms.delete(activeRoomCode);
+          if (userCreatedRooms.has(currentRoomState.hostId)) {
+            userCreatedRooms.get(currentRoomState.hostId).delete(activeRoomCode);
           }
+          clearTurnTimer(activeRoomCode);
+          return;
+        } else {
+          // Multiple players remain — adjust turn and continue
+          if (currentRoomState.currentTurnIndex === currentPIndex) {
+            currentRoomState.currentTurnIndex = currentPIndex % currentRoomState.players.length;
+          } else if (currentRoomState.currentTurnIndex > currentPIndex) {
+            currentRoomState.currentTurnIndex -= 1;
+          }
+          currentRoomState.turnExpiresAt = Date.now() + 30000;
+          rooms.set(activeRoomCode, currentRoomState);
+          startTurnTimer(activeRoomCode, io);
+
+          currentRoomState.players.forEach(p => {
+            io.to(`user:${p.id}`).emit('GAME_STATE_UPDATED', {
+              ...currentRoomState,
+              players: currentRoomState.players.map(op => {
+                if (op.id === p.id) return op;
+                const { hand, ...safeOp } = op;
+                return safeOp;
+              })
+            });
+          });
         }
+      } else {
+        // Waiting room: just remove them
+        rooms.set(activeRoomCode, currentRoomState);
+        const safe = currentRoomState.players.map(p => { const { hand, ...s } = p; return s; });
+        io.to(`uno:${activeRoomCode}`).emit('ROOM_UPDATED', { ...currentRoomState, players: safe });
       }
-    }
+    }, GRACE_MS);
+
+    disconnectTimers.set(userUuid, timer);
   });
 };
