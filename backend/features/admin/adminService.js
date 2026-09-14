@@ -16,6 +16,10 @@ class AdminService extends BaseService {
     return await this.repository.getAllUsers(searchQuery, showArchived, page, limit);
   }
 
+  async getAuditLogs(page = 1, limit = 50) {
+    return await this.repository.getAuditLogs(page, limit);
+  }
+
   async getAllPermissions() {
     return await this.repository.getAllPermissions();
   }

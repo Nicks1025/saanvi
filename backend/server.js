@@ -28,6 +28,10 @@ const cors = require('cors');
 app.use(cors());
 app.use(express.json());
 
+// Global Audit Logging
+const auditMiddleware = require('./base/auditMiddleware');
+app.use(auditMiddleware);
+
 // Load Routes
 require('./routes')(app);
 
@@ -42,6 +46,20 @@ initRedis();
 // Health Check Route
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Backend Server is running with valid configuration.' });
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error('[Global Error Handler]', err);
+
+  // Pass error details to the global audit middleware via res.locals
+  res.locals.is_error = true;
+  res.locals.error_message = err.message || 'Unknown Error';
+
+  res.status(err.status || 500).json({
+    success: false,
+    error: err.message || 'Internal Server Error'
+  });
 });
 
 const { initSocket } = require('./socket');

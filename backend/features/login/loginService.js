@@ -33,9 +33,12 @@ class LoginService extends BaseService {
       const isPasswordValid = await argon2.verify(user.password_hash, password);
       
       if (!isPasswordValid) {
+        await this.repository.recordFailedLogin(user.uuid);
         throw new Error('Invalid email or password.');
       }
     } catch (err) {
+      if (err.message === 'Invalid email or password.') throw err;
+      await this.repository.recordFailedLogin(user.uuid);
       throw new Error('Invalid email or password.');
     }
 
@@ -56,18 +59,23 @@ class LoginService extends BaseService {
     }
 
     if (user.is_mfa_enabled) {
+      // MFA required - login is not complete until MFA is verified, but we can update last login
+      await this.repository.recordSuccessfulLogin(user.uuid);
       return {
         mfaRequired: true,
         email: user.email,
-        supabaseToken
+        supabaseToken,
+        user
       };
     }
 
     // 5. Return success result
+    await this.repository.recordSuccessfulLogin(user.uuid);
     return {
       token: accessToken,
       refreshToken,
-      supabaseToken
+      supabaseToken,
+      user
     };
   }
 
@@ -123,18 +131,23 @@ class LoginService extends BaseService {
     }
 
     if (user.is_mfa_enabled) {
+      // MFA required
+      await this.repository.recordSuccessfulLogin(user.uuid);
       return {
         mfaRequired: true,
         email: user.email,
-        supabaseToken
+        supabaseToken,
+        user
       };
     }
 
     // 4. Return success result
+    await this.repository.recordSuccessfulLogin(user.uuid);
     return {
       token: accessToken,
       refreshToken,
-      supabaseToken
+      supabaseToken,
+      user
     };
   }
 
@@ -222,13 +235,15 @@ class LoginService extends BaseService {
     return {
       token: accessToken,
       refreshToken,
-      supabaseToken
+      supabaseToken,
+      user
     };
   }
   async generateTokens(user) {
     const tokenPayload = {
       uuid: user.uuid,
       email: user.email,
+      name: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
       is_mfa_enabled: user.is_mfa_enabled,
       language: user.language,
       theme: user.theme,

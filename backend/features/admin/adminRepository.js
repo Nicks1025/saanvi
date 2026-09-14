@@ -13,6 +13,7 @@ class AdminRepository extends BaseRepository {
           .field('u.email')
           .field('u.status')
           .field('u.created_at')
+          .field('u.last_login_at')
           .field('ud.first_name')
           .field('ud.last_name');
       }
@@ -55,6 +56,7 @@ class AdminRepository extends BaseRepository {
           email: row.email,
           status: row.status,
           created_at: row.created_at,
+          last_login_at: row.last_login_at,
           first_name: row.first_name || null,
           last_name: row.last_name || null
         };
@@ -65,6 +67,25 @@ class AdminRepository extends BaseRepository {
       data: Object.values(uniqueUsersMap),
       total
     };
+  }
+
+  async getAuditLogs(page = 1, limit = 50) {
+    const builder = this.queryHelper.from('audit_logs');
+    
+    // Count
+    const countQuery = this.queryHelper.from('audit_logs');
+    countQuery.count('*', 'total');
+    const countResult = await countQuery.execute();
+    const total = countResult && countResult.length > 0 ? parseInt(countResult[0].total || 0, 10) : 0;
+
+    // Data
+    builder.select('*');
+    builder.orderBy('created_at', false);
+    builder.limit(limit);
+    builder.offset((page - 1) * limit);
+    
+    const data = await builder.execute();
+    return { data, total };
   }
 
   async getAllPermissions() {

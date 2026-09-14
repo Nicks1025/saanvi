@@ -159,6 +159,7 @@
     "saveError": "Failed to save settings"
   },
   "admin": {
+    "lastLogin": "Last Login At",
     "searchPermissions": "Search permissions...",
     "expandAll": "Expand All",
     "collapseAll": "Collapse All",

@@ -19,8 +19,12 @@ class LoginRepository extends BaseRepository {
       .field('u.font')
       .leftJoin('user_roles', 'ur', 'u.uuid = ur.user_uuid')
       .leftJoin('roles', 'r', 'ur.role_uuid = r.uuid')
+      .leftJoin('user_details', 'ud', 'u.uuid = ud.user_uuid')
       .field('r.name as role_name')
+      .field('ud.first_name')
+      .field('ud.last_name')
       .where('u.email', 'eq', email)
+      .where('u.archived_at', 'is', null)
       .execute();
 
     if (!data || data.length === 0) {
@@ -138,6 +142,19 @@ class LoginRepository extends BaseRepository {
     await this.queryHelper.queryRaw(
       'UPDATE refresh_tokens SET revoked_at = NOW() WHERE token_hash = ?',
       [tokenHash]
+    );
+  }
+  async recordFailedLogin(uuid) {
+    await this.queryHelper.queryRaw(
+      'UPDATE users SET failed_login_attempts = COALESCE(failed_login_attempts, 0) + 1, updated_at = NOW() WHERE uuid = ?',
+      [uuid]
+    );
+  }
+
+  async recordSuccessfulLogin(uuid) {
+    await this.queryHelper.queryRaw(
+      'UPDATE users SET failed_login_attempts = 0, last_login_at = NOW(), updated_at = NOW() WHERE uuid = ?',
+      [uuid]
     );
   }
 }

@@ -20,6 +20,18 @@ class AdminController extends BaseController {
     }
   }
 
+  async getAuditLogs(req, res) {
+    try {
+      const { page, limit } = req.query;
+      const pageNum = parseInt(page) || 1;
+      const limitNum = parseInt(limit) || 50;
+      const result = await this.adminService.getAuditLogs(pageNum, limitNum);
+      return this.sendSuccess(res, result, 'Audit logs retrieved successfully');
+    } catch (error) {
+      return this.sendError(res, error.message, 500);
+    }
+  }
+
   async getPermissions(req, res) {
     try {
       const permissions = await this.adminService.getAllPermissions();

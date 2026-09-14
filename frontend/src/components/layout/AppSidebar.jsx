@@ -19,7 +19,9 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
   const [isEmailOpen, setIsEmailOpen] = useState(location.pathname.startsWith('/email'));
 
 
-  const handleAdminClick = () => {
+  const handleAdminClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!isOpen && setSidebarOpen) {
       setSidebarOpen(true);
       setIsAdminOpen(true);
@@ -28,7 +30,11 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
     }
   };
 
-  const handleEmailClick = () => {
+  const handleEmailClick = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (!isOpen && setSidebarOpen) {
       setSidebarOpen(true);
       setIsEmailOpen(true);
@@ -37,7 +43,11 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
     }
   };
 
-  const handleGamesClick = () => {
+  const handleGamesClick = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (!isOpen && setSidebarOpen) {
       setSidebarOpen(true);
       setIsGamesOpen(true);
@@ -61,7 +71,7 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
           </Link>
         )}
 
-        {(userPermissions.includes('admin.users.view') || userPermissions.includes('admin.roles.view') || userPermissions.includes('admin.system.health') || userPermissions.includes('admin.sql_editor') || userPermissions.includes('admin.email_templates.view') || userPermissions.includes('admin.dynamic_variables.view') || userPermissions.includes('admin.email_logs.view')) && (
+        {(userPermissions.includes('admin.users.view') || userPermissions.includes('admin.roles.view') || userPermissions.includes('admin.system.health') || userPermissions.includes('admin.sql_editor') || userPermissions.includes('admin.email_templates.view') || userPermissions.includes('admin.dynamic_variables.view') || userPermissions.includes('admin.email_logs.view') || userPermissions.includes('admin.audit_logs.view')) && (
           <div className="sidebar-group">
             <button
               className={`sidebar-link sidebar-group-btn ${location.pathname.startsWith('/admin') ? 'active-parent' : ''}`}
@@ -107,6 +117,11 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
                 {userPermissions.includes('admin.dynamic_variables.view') && (
                   <Link href="/admin/dynamic-variables" className={pathname.startsWith("/admin/dynamic-variables") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.dynamic_variables', 'Dynamic Variables')} onClick={onNavClick}>
                     <span className="sidebar-link-text">{t('navigation.dynamic_variables', 'Dynamic Variables')}</span>
+                  </Link>
+                )}
+                {userPermissions.includes('admin.audit_logs.view') && (
+                  <Link href="/admin/audit-logs" className={pathname.startsWith("/admin/audit-logs") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.audit_logs', 'Audit Logs')} onClick={onNavClick}>
+                    <span className="sidebar-link-text">{t('navigation.audit_logs', 'Audit Logs')}</span>
                   </Link>
                 )}
               </div>

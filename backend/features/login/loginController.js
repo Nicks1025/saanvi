@@ -25,7 +25,14 @@ class LoginController extends BaseController {
         });
         delete result.refreshToken;
       }
-
+      if (result.user) {
+        req.user = { 
+          uuid: result.user.uuid, 
+          email: result.user.email, 
+          name: `${result.user.first_name || ''} ${result.user.last_name || ''}`.trim() 
+        };
+        delete result.user;
+      }
       // 3. Return successful response
       return this.sendSuccess(res, result, 'Login successful');
     } catch (error) {
@@ -48,6 +55,14 @@ class LoginController extends BaseController {
           maxAge: 7 * 24 * 60 * 60 * 1000
         });
         delete result.refreshToken;
+      }
+      if (result.user) {
+        req.user = { 
+          uuid: result.user.uuid, 
+          email: result.user.email, 
+          name: `${result.user.first_name || ''} ${result.user.last_name || ''}`.trim() 
+        };
+        delete result.user;
       }
       return this.sendSuccess(res, result, 'Google Login successful');
     } catch (error) {
@@ -74,6 +89,14 @@ class LoginController extends BaseController {
           maxAge: 7 * 24 * 60 * 60 * 1000
         });
         delete result.refreshToken;
+      }
+      if (result.user) {
+        req.user = { 
+          uuid: result.user.uuid, 
+          email: result.user.email, 
+          name: `${result.user.first_name || ''} ${result.user.last_name || ''}`.trim() 
+        };
+        delete result.user;
       }
       return this.sendSuccess(res, result, 'MFA Verification successful');
     } catch (error) {

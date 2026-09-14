@@ -115,6 +115,12 @@ const UsersFeature = () => {
     { key: 'last_name', label: t('admin.lastName'), sortable: true },
     { key: 'email', label: t('admin.email.title'), sortable: true },
     { key: 'status', label: t('admin.status'), sortable: true },
+    { 
+      key: 'last_login_at', 
+      label: t('admin.lastLogin', 'Last Login'), 
+      sortable: true,
+      render: (row) => row.last_login_at ? new Date(row.last_login_at).toLocaleString() : 'Never'
+    },
   ];
 
   const handleTabChange = (archived) => {

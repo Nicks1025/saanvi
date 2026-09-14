@@ -58,7 +58,7 @@ export default function RootLayout({ children }) {
           })();
         `}} />
       </head>
-      <body>
+      <body suppressHydrationWarning={true}>
         <div id="root" className="app-container" style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%', minHeight: '100vh' }}>
           <Providers>{children}</Providers>
         </div>

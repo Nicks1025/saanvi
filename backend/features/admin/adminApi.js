@@ -42,6 +42,14 @@ const getUsers = {
   middleware: { requirePermission: ['admin.users.view'] }
 };
 
+const getAuditLogs = {
+  path: '/audit-logs',
+  verb: 'GET',
+  auditMessage: 'getting audit logs',
+  handler: { controller: adminController, method: 'getAuditLogs' },
+  middleware: { requirePermission: ['admin.audit_logs.view'] }
+};
+
 const createUser = {
   path: '/users',
   verb: 'POST',
@@ -516,7 +524,8 @@ const AdminApi = {
     getDynamicVariables,
     createDynamicVariable,
     updateDynamicVariable,
-    deleteDynamicVariable
+    deleteDynamicVariable,
+    getAuditLogs
   ]
 };
 
