@@ -30,6 +30,7 @@
     "react-dom": "^19.2.8",
     "react-easy-crop": "^6.2.3",
     "react-email-editor": "^2.1.2",
+    "react-hook-form": "^7.88.0",
     "react-hot-toast": "^2.6.0",
     "react-i18next": "^17.0.11",
     "react-image-crop": "^11.1.2",

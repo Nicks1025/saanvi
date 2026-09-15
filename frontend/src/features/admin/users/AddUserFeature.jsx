@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import STextField from '@/components/common/STextField';
+import { useForm, Controller } from 'react-hook-form';
 import SButton from '@/components/common/SButton';
 import DynamicFormRenderer from '@/components/common/DynamicFormRenderer';
 import { createUser, getFormConfig } from './usersService';
-import { validateEmail } from '../../../common/validations';
 import toast from 'react-hot-toast';
 import { Loader2, UserPlus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -12,9 +11,12 @@ import { useTranslation } from 'react-i18next';
 const AddUserFeature = () => {
   const { t } = useTranslation();
   const navigate = useRouter();
-  const [form, setForm] = useState({ email: '' });
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+
+  const { control, handleSubmit, formState: { errors, isValid, isSubmitting }, setError, clearErrors } = useForm({
+    mode: 'onChange',
+    defaultValues: { email: '' }
+  });
+
   const [formConfig, setFormConfig] = useState([]);
   const [configLoading, setConfigLoading] = useState(true);
 
@@ -23,12 +25,6 @@ const AddUserFeature = () => {
       try {
         const config = await getFormConfig('admin_create');
         setFormConfig(config);
-
-        const initialForm = { email: '' };
-        config.forEach(f => {
-          initialForm[f.field_name] = '';
-        });
-        setForm(initialForm);
       } catch (err) {
         toast.error('Failed to load user fields configuration.');
       } finally {
@@ -38,64 +34,24 @@ const AddUserFeature = () => {
     fetchConfig();
   }, []);
 
-  const handleChange = (field, value) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-
-    if (field === 'email') {
-      const err = validateEmail(value);
-      setErrors((prev) => ({ ...prev, email: err || undefined }));
-      return;
-    }
-
-    if (errors[field]) {
-      setErrors((prev) => { const n = { ...prev }; delete n[field]; return n; });
-    }
-  };
-
-  const validate = () => {
-    const e = {};
-    const emailErr = validateEmail(form.email);
-    if (emailErr) e.email = emailErr;
-
-    // Validate dynamic required fields
-    formConfig.forEach(field => {
-      if (field.is_required && (!form[field.field_name] || String(form[field.field_name]).trim() === '')) {
-        e[field.field_name] = `${field.label} is required`;
-      }
-    });
-
-    return e;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      toast.error(Object.values(validationErrors)[0]);
-      return;
-    }
-
-    setLoading(true);
+  const onSubmit = async (data) => {
     try {
-      const payload = { ...form, email: form.email.trim() };
+      const payload = { ...data, email: data.email.trim() };
       const result = await createUser(payload);
 
       toast.success(result?.message || 'User created successfully. A welcome email has been queued for delivery.');
       navigate.push('/admin/users');
     } catch (err) {
-      const data = err.response?.data;
+      const respData = err.response?.data;
       let msg = 'Something went wrong. Please try again.';
-      if (data?.details && Array.isArray(data.details) && data.details.length > 0) {
-        msg = data.details[0];
-      } else if (data?.error) {
-        msg = data.error;
+      if (respData?.details && Array.isArray(respData.details) && respData.details.length > 0) {
+        msg = respData.details[0];
+      } else if (respData?.error) {
+        msg = respData.error;
       } else if (err.message) {
         msg = err.message;
       }
       toast.error(msg);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -105,7 +61,7 @@ const AddUserFeature = () => {
     <div className="admin-users-container page-container">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
         <div>
-          <button 
+          <button
             onClick={() => navigate.push('/admin/users')}
             style={{ background: 'none', border: 'none', color: 'var(--text)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: 0, marginBottom: '0.5rem' }}
           >
@@ -124,50 +80,44 @@ const AddUserFeature = () => {
             <Loader2 className="spin" size={32} />
           </div>
         ) : (
-            <form onSubmit={handleSubmit} noValidate autoComplete="off">
+          <form onSubmit={handleSubmit(onSubmit)} noValidate autoComplete="off">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <DynamicFormRenderer fields={formConfig} control={control} />
+            </div>
 
+            {/* Info box: password is auto-generated */}
+            <div style={{
+              marginTop: '1.5rem',
+              marginBottom: '1.5rem',
+              padding: '0.75rem 1rem',
+              background: 'var(--accent-bg, rgba(170,59,255,0.08))',
+              border: '1px solid var(--accent-border, rgba(170,59,255,0.3))',
+              borderRadius: '8px',
+              fontSize: '0.85rem',
+              color: 'var(--text)',
+              lineHeight: '1.5'
+            }}>
+              🔐 {t('admin.passwordGenDesc', "Password will be randomly generated and securely sent to the user's email address.")}
+            </div>
 
-
-              <DynamicFormRenderer
-                fields={formConfig}
-                form={form}
-                errors={errors}
-                onChange={handleChange}
+            {/* Actions — Submit + Cancel at bottom right */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem', paddingBottom: '2rem' }}>
+              <SButton
+                type="button"
+                color="danger"
+                text={t('common.cancel', 'Cancel')}
+                onClick={handleCancel}
               />
-
-              {/* Info box: password is auto-generated */}
-              <div style={{
-                marginTop: '1.5rem',
-                marginBottom: '1.5rem',
-                padding: '0.75rem 1rem',
-                background: 'var(--accent-bg, rgba(170,59,255,0.08))',
-                border: '1px solid var(--accent-border, rgba(170,59,255,0.3))',
-                borderRadius: '8px',
-                fontSize: '0.85rem',
-                color: 'var(--text)',
-                lineHeight: '1.5'
-              }}>
-                🔐 {t('admin.passwordGenDesc', "Password will be randomly generated and securely sent to the user's email address.")}
-              </div>
-
-              {/* Actions — Submit + Cancel at bottom right */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem', paddingBottom: '2rem' }}>
-                <SButton
-                  type="button"
-                  color="danger"
-                  text={t('common.cancel', 'Cancel')}
-                  onClick={handleCancel}
-                />
-                <SButton
-                  type="submit"
-                  color="primary"
-                  disabled={loading}
-                  icon={loading ? <Loader2 className="signup-spinner" size={16} /> : null}
-                  text={loading ? t('common.creating', 'Creating...') : t('admin.createUser', 'Create User')}
-                  style={{ background: 'var(--accent)', color: 'white', border: 'none', fontWeight: 600 }}
-                />
-              </div>
-            </form>
+              <SButton
+                type="submit"
+                color="primary"
+                disabled={!isValid || isSubmitting}
+                icon={isSubmitting ? <Loader2 className="spin" size={16} /> : null}
+                text={isSubmitting ? t('common.creating', 'Creating...') : t('admin.createUser', 'Create User')}
+                style={!isValid ? undefined : { background: 'var(--accent)', color: 'white', border: 'none', fontWeight: 600 }}
+              />
+            </div>
+          </form>
         )}
       </div>
     </div>

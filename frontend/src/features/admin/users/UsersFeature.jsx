@@ -71,7 +71,7 @@ const UsersFeature = () => {
   };
 
   const handleEdit = (user) => {
-    navigate.push(`/admin/users/${user.uuid}?mode=edit`);
+    navigate.push(`/admin/users/${user.uuid}/edit`);
   };
 
   const handleArchive = (user) => {
@@ -148,26 +148,14 @@ const UsersFeature = () => {
     </div>
   );
 
-  const tabs = (
-    <div className="admin-users-tabs" style={{ margin: 0, padding: '0 1rem', borderBottom: '1px solid var(--border)' }}>
-      <button 
-        className={`admin-tab ${activeTab === 'records' ? 'active' : ''}`}
-        onClick={() => setActiveTab('records')}
-      >
-        Records
-      </button>
-      <button 
-        className={`admin-tab ${activeTab === 'fields' ? 'active' : ''}`}
-        onClick={() => setActiveTab('fields')}
-      >
-        Fields
-      </button>
-    </div>
-  );
+  const tabsConfig = [
+    { id: 'records', label: 'Records' },
+    { id: 'fields', label: 'Fields' }
+  ];
 
   const renderContent = () => {
     if (activeTab === 'fields') {
-      return <UserFieldsFeature topTabs={tabs} />;
+      return <UserFieldsFeature tabs={tabsConfig} activeTab={activeTab} onTabChange={setActiveTab} />;
     }
 
 
@@ -198,7 +186,9 @@ const UsersFeature = () => {
             return false;
           }}
           headerLeftActions={headerLeftActions}
-          topTabs={tabs}
+          tabs={tabsConfig}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
           headerActions={
             userPermissions?.includes('admin.users.create') ? (
               <SButton

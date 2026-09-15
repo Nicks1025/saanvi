@@ -91,7 +91,12 @@ class ApiSchema {
         const method = endpoint.handler.method;
         await controller[method](req, res);
       } catch (error) {
-        next(error);
+        const statusCode = error.statusCode || 500;
+        // Only log true server errors — business rule errors (4xx) are expected
+        if (statusCode >= 500) {
+          console.error(`[${endpoint.handler.method}]`, error);
+        }
+        return res.status(statusCode).json({ success: false, error: error.message || 'Internal Server Error' });
       }
     };
     routeArguments.push(handlerFn);

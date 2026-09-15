@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/store/AuthContext';
 import { Pencil, Trash2, Plus } from 'lucide-react';
 
-const UserFieldsFeature = ({ disableContainer = false, topTabs }) => {
+const UserFieldsFeature = ({ disableContainer = false, tabs, activeTab, onTabChange }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const userPermissions = user?.permissions || [];
@@ -170,7 +170,9 @@ const UserFieldsFeature = ({ disableContainer = false, topTabs }) => {
         data={fields} 
         columns={columns}
         loading={loading || isProcessing}
-        topTabs={topTabs}
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={onTabChange}
         actions={['edit', 'delete']}
         onAction={(action, row) => {
           if (action === 'edit') handleOpenEdit(row);
