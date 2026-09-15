@@ -17,8 +17,7 @@ const UserDetailsFeature = () => {
   const { user: authUser } = useAuth();
   const userPermissions = authUser?.permissions || [];
 
-  const queryParams = new URLSearchParams(location.search);
-  const initialMode = queryParams.get('mode');
+  const initialMode = pathname.includes('/edit') ? 'edit' : 'view';
 
   const [user, setUser] = useState(null);
   const [editForm, setEditForm] = useState({ status: 'active' });
@@ -27,18 +26,20 @@ const UserDetailsFeature = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isEditMode, setIsEditMode] = useState(
-    initialMode === 'edit' && userPermissions.includes('admin.users.edit')
+    initialMode === 'edit'
   );
 
   useEffect(() => {
-    const mode = new URLSearchParams(location.search).get('mode');
-    setIsEditMode(mode === 'edit' && userPermissions.includes('admin.users.edit'));
-  }, [location.search, userPermissions]);
+    const mode = pathname.includes('/edit') ? 'edit' : 'view';
+    setIsEditMode(mode === 'edit');
+  }, [pathname]);
 
   const updateModeInUrl = (mode) => {
-    const params = new URLSearchParams(location.search);
-    params.set('mode', mode);
-    navigate.replace("?" + params.toString());
+    if (mode === 'edit') {
+      navigate.push(`/admin/users/${uuid}/edit`);
+    } else {
+      navigate.push(`/admin/users/${uuid}`);
+    }
   };
 
   const isFetched = React.useRef(false);

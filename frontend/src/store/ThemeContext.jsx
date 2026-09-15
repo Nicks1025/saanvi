@@ -20,9 +20,9 @@ export const ThemeProvider = ({ children }) => {
   // Load the last *saved* value from localStorage as the initial state
   const [theme, setThemeState] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('app-theme') || 'birthday';
+      return localStorage.getItem('app-theme') || 'light';
     }
-    return 'birthday';
+    return 'light';
   });
 
   const [font, setFontState] = useState(() => {

@@ -3,7 +3,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/store/AuthContext';
-import { LayoutDashboard, MessageSquare, Shield, ChevronDown, ChevronRight, Gamepad2, Mail, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, MessageSquare, Shield, ChevronDown, ChevronRight, Gamepad2, Mail, Settings, LogOut, FileText, Box, ClipboardList } from 'lucide-react';
 import SButton from '../common/SButton';
 import './layout.css';
 
@@ -182,6 +182,19 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
               </div>
             )}
           </div>
+        )}
+
+        {userPermissions.includes('objects.view') && (
+          <Link href="/objects" className={pathname.startsWith("/objects") ? "sidebar-link active" : "sidebar-link"} title={t('navigation.objects', 'Objects')} onClick={onNavClick}>
+            <Box size={20} style={{ flexShrink: 0 }} />
+            <span className="sidebar-link-text">{t('navigation.objects', 'Objects')}</span>
+          </Link>
+        )}
+        {userPermissions.includes('form_wizards.view') && (
+          <Link href="/form-wizards" className={pathname.startsWith("/form-wizards") ? "sidebar-link active" : "sidebar-link"} title={t('navigation.formWizards', 'Form Wizards')} onClick={onNavClick}>
+            <ClipboardList size={20} style={{ flexShrink: 0 }} />
+            <span className="sidebar-link-text">{t('navigation.formWizards', 'Form Wizards')}</span>
+          </Link>
         )}
 
         <Link href="/settings" className={pathname.startsWith("/settings") ? "sidebar-link active" : "sidebar-link"} title={t('navigation.settings')} onClick={onNavClick}>
