@@ -11,12 +11,15 @@ const unoApi = require('./features/uno/unoApi');
 const arrowPuzzleApi = require('./features/arrowPuzzle/arrowPuzzleApi');
 const campaignApi = require('./features/marketing/campaignApi');
 
+const objectsApi = require('./features/objects/objectsApi');
+const formWizardsApi = require('./features/form_wizards/formWizardsApi');
+
 /**
  * Automatically registers all API endpoints to the Express app.
  * @param {import('express').Application} app 
  */
 module.exports = function(app) {
-  const apis = [loginApi, signupApi, userApi, UserFieldsApi, adminApi, wordSearchApi, mfaApi, healthApi, chatApi, unoApi, arrowPuzzleApi, campaignApi];
+  const apis = [loginApi, signupApi, userApi, UserFieldsApi, adminApi, wordSearchApi, mfaApi, healthApi, chatApi, unoApi, arrowPuzzleApi, campaignApi, objectsApi, formWizardsApi];
 
   // Declarative ApiSchema Routes
   for (const api of apis) {
