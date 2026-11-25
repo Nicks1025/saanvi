@@ -3,9 +3,8 @@ const { rooms, userActiveRooms, userCreatedRooms } = require('./unoStore');
 const { getIo } = require('../../socket');
 
 class UnoService extends BaseService {
-  
-  constructor() {
-    super(null); // No repository
+  constructor(context = null) {
+    super(context);
   }
 
   generateRoomCode() {
@@ -48,128 +47,60 @@ class UnoService extends BaseService {
       status: 'WAITING',
       hostId: creator.uuid,
       players: [newPlayer],
-      playerLimit: 8,
-      rules: {
-        stacking: 'on',
-        wildDrawFour: 'always_allowed',
-        turnTimer: 30
-      },
-      createdAt: new Date().toISOString()
+      currentTurn: null,
+      topDiscard: null,
+      currentColor: null,
+      direction: 1,
+      drawStack: 0,
+      drawPile: [],
+      discardPile: [],
+      winner: null,
+      lastAction: null,
+      messages: [],
+      createdAt: Date.now()
     };
 
     rooms.set(roomCode, roomState);
-    
-    // Broadcast creation to ensure anyone listening gets it immediately
-    const io = getIo();
-    if (io) {
-      io.to(`uno:${roomCode}`).emit('ROOM_UPDATED', {
-        ...roomState,
-        players: roomState.players.map(({ hand, ...p }) => p)
-      });
-    }
-    
-    // Add to user's active rooms set
+    userActiveRooms.set(creator.uuid, roomCode);
+
+    // Track rooms created by this user
     if (!userCreatedRooms.has(creator.uuid)) {
       userCreatedRooms.set(creator.uuid, new Set());
     }
     userCreatedRooms.get(creator.uuid).add(roomCode);
-    
-    // Set the player's active room lock
-    userActiveRooms.set(creator.uuid, roomCode);
-    
+
     return roomCode;
   }
 
-  async getUserRooms(userId) {
-    const roomCodesSet = userCreatedRooms.get(userId);
-    if (!roomCodesSet || roomCodesSet.size === 0) return [];
-    
-    const activeRooms = [];
-    for (const code of roomCodesSet) {
-      const roomState = rooms.get(code);
-      if (roomState && (roomState.status === 'WAITING' || roomState.status === 'PLAYING')) {
-        // Only return rooms where this user is the host/creator
-        if (roomState.hostId === userId) {
-          activeRooms.push({
-            code: roomState.code,
-            status: roomState.status,
-            players: roomState.players.length,
-            playerLimit: roomState.playerLimit,
-            createdAt: roomState.createdAt
-          });
-        } else {
-          // Cleanup from their personal list if they aren't the host
-          userCreatedRooms.get(userId).delete(code);
-        }
-      } else {
-        // Cleanup expired or finished rooms
-        userCreatedRooms.get(userId).delete(code);
-      }
-    }
-    
-    // Sort by most recent
-    return activeRooms.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  }
-
-  async deleteRoom(roomCode, userId) {
-    const roomState = rooms.get(roomCode);
-    if (roomState && roomState.hostId === userId) {
-      const io = getIo();
-      if (io) {
-        io.to(`uno:${roomCode}`).emit('ROOM_DELETED', { roomCode });
-      }
-      rooms.delete(roomCode);
-      if (userCreatedRooms.has(userId)) {
-        userCreatedRooms.get(userId).delete(roomCode);
-      }
-      return true;
-    }
-    return false;
-  }
-
   async joinRoom(roomCode, user) {
-    const roomState = rooms.get(roomCode);
+    const room = rooms.get(roomCode);
+
+    if (!room) {
+      throw new Error('Room not found');
+    }
+
+    if (room.status !== 'WAITING') {
+      throw new Error('Game already in progress');
+    }
+
+    if (room.players.length >= 10) {
+      throw new Error('Room is full (max 10 players)');
+    }
+
+    // Check if player is already in this room
+    const existingPlayer = room.players.find(p => p.id === user.uuid);
     
-    if (!roomState) {
-      throw new Error('ROOM_NOT_FOUND');
+    if (existingPlayer) {
+      userActiveRooms.set(user.uuid, roomCode);
+      return { roomCode, isHost: existingPlayer.isHost };
     }
 
-    if (roomState.status === 'GAME_OVER') {
-      throw new Error('This game has already concluded.');
-    }
-
-    // Check if player already in room
-    const existingPlayerIndex = roomState.players.findIndex(p => p.id === user.uuid);
-
-    if (existingPlayerIndex !== -1) {
-      // Player is already in the room, let them rejoin regardless of status
-      const safePlayers = roomState.players.map(p => {
-        const { hand, ...safePlayer } = p;
-        return safePlayer;
-      });
-
-      return {
-        ...roomState,
-        players: safePlayers
-      };
-    }
-
-    if (roomState.status !== 'WAITING') {
-      throw new Error('GAME_ALREADY_STARTED');
-    }
-
-    if (roomState.players.length >= roomState.playerLimit) {
-      throw new Error('ROOM_FULL');
-    }
-
-    // We already returned early if the player was in the room, so we know they are not
     const newPlayer = {
       id: user.uuid,
       name: user.name,
       avatar: user.avatar,
-      isHost: user.uuid === roomState.hostId,
+      isHost: false,
       cardCount: 0,
-
       isSpeaking: false,
       isMuted: false,
       connectionStatus: 'disconnected',
@@ -179,27 +110,97 @@ class UnoService extends BaseService {
       isReady: true,
       hand: []
     };
-    roomState.players.push(newPlayer);
-    rooms.set(roomCode, roomState);
-      
-    // Lock the player's active room
+
+    room.players.push(newPlayer);
     userActiveRooms.set(user.uuid, roomCode);
 
-    // Strip hands before returning for privacy
-    const safePlayers = roomState.players.map(p => {
-      const { hand, ...safePlayer } = p;
-      return safePlayer;
-    });
-
+    // Broadcast updated player list
     const io = getIo();
     if (io) {
-      io.to(`uno:${roomCode}`).emit('ROOM_UPDATED', { ...roomState, players: safePlayers });
+      const publicPlayers = room.players.map(p => ({
+        id: p.id,
+        name: p.name,
+        avatar: p.avatar,
+        isHost: p.isHost,
+        cardCount: p.cardCount,
+        isSpeaking: p.isSpeaking,
+        isMuted: p.isMuted,
+        connectionStatus: p.connectionStatus,
+        hasCalledUno: p.hasCalledUno,
+        missedUno: p.missedUno,
+        score: p.score,
+        isReady: p.isReady
+      }));
+      io.to(roomCode).emit('uno:player_joined', { players: publicPlayers });
     }
 
-    return {
-      ...roomState,
-      players: safePlayers
-    };
+    return { roomCode, isHost: false };
+  }
+
+  async getUserRooms(userUuid) {
+    const createdRoomCodes = userCreatedRooms.get(userUuid);
+    if (!createdRoomCodes || createdRoomCodes.size === 0) {
+      return [];
+    }
+
+    const activeRooms = [];
+    for (const code of createdRoomCodes) {
+      const room = rooms.get(code);
+      if (room) {
+        activeRooms.push({
+          code: room.code,
+          status: room.status,
+          playerCount: room.players.length,
+          maxPlayers: 10,
+          createdAt: room.createdAt,
+          players: room.players.map(p => ({
+            name: p.name,
+            avatar: p.avatar,
+            isHost: p.isHost
+          }))
+        });
+      } else {
+        // Clean up stale reference
+        createdRoomCodes.delete(code);
+      }
+    }
+
+    return activeRooms;
+  }
+
+  async closeRoom(roomCode, userUuid) {
+    const room = rooms.get(roomCode);
+    if (!room) {
+      throw new Error('Room not found');
+    }
+
+    if (room.hostId !== userUuid) {
+      throw new Error('Only the host can close this room');
+    }
+
+    // Notify all connected players that the room was closed
+    const io = getIo();
+    if (io) {
+      io.to(roomCode).emit('uno:room_closed', { reason: 'Host closed the room' });
+    }
+
+    // Clean up active room mappings for all players in this room
+    for (const player of room.players) {
+      if (userActiveRooms.get(player.id) === roomCode) {
+        userActiveRooms.delete(player.id);
+      }
+    }
+
+    // Clean up creator's tracked rooms
+    const createdRooms = userCreatedRooms.get(userUuid);
+    if (createdRooms) {
+      createdRooms.delete(roomCode);
+    }
+
+    // Delete the room from memory
+    rooms.delete(roomCode);
+
+    return true;
   }
 }
 

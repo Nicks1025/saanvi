@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from '@/store/AuthContext';
 import SDataTable from '@/components/common/SDataTable';
 import SModal from '@/components/common/SModal';
+import SDeleteConfirmation from '@/components/common/SDeleteConfirmation';
 import SButton from '@/components/common/SButton';
 import SDropdown from '@/components/common/SDropdown';
 import * as usersService from './usersService';
@@ -100,7 +101,8 @@ const UsersFeature = () => {
         await usersService.deleteUser(user.uuid);
       }
       setModalState({ isOpen: false, type: null, user: null });
-      toast.success(t(`admin.${type}UserSuccess`, `User ${type}d successfully`));
+      const toastKey = type === 'archive' ? 'archiveUserSuccess' : type === 'restore' ? 'restoreUserSuccess' : 'deleteUserSuccess';
+      toast.success(t(`common.toaster.${toastKey}`));
       fetchUsers(searchQuery, showArchived, page, limit);
     } catch (err) {
       console.error(`Failed to ${type} user`, err);
@@ -111,10 +113,16 @@ const UsersFeature = () => {
   };
 
   const columns = [
-    { key: 'first_name', label: t('admin.firstName'), sortable: true },
-    { key: 'last_name', label: t('admin.lastName'), sortable: true },
-    { key: 'email', label: t('admin.email.title'), sortable: true },
-    { key: 'status', label: t('admin.status'), sortable: true },
+    { key: 'firstName', label: t('admin.user.firstName'), sortable: true },
+    { key: 'lastName', label: t('admin.user.lastName'), sortable: true },
+    { key: 'email', label: t('admin.user.email'), sortable: true },
+    { key: 'status', label: t('admin.user.status'), sortable: true },
+    {
+      key: 'lastLoginAt',
+      label: t('admin.user.lastLoginAt'),
+      sortable: true,
+      render: (row) => row.lastLoginAt ? new Date(row.lastLoginAt).toLocaleString() : '-'
+    },
   ];
 
   const handleTabChange = (archived) => {
@@ -130,9 +138,9 @@ const UsersFeature = () => {
   };
 
   const statusOptions = [
-    { label: t('admin.activeUsers', 'Active Users'), value: false },
-    { label: t('admin.archivedUsers', 'Archived Users'), value: true },
-    { label: t('admin.allUsers', 'All Users'), value: 'all' }
+    { label: t('admin.user.activeUsers'), value: false },
+    { label: t('admin.user.archivedUsers'), value: true },
+    { label: t('admin.user.allUsers'), value: 'all' }
   ];
 
   const headerLeftActions = (
@@ -167,7 +175,7 @@ const UsersFeature = () => {
           columns={columns}
           serverSideSearch={true}
           onSearch={handleSearch}
-          searchPlaceholder={t('admin.searchUsers')}
+          searchPlaceholder={t('admin.user.searchUsers')}
           loading={loading}
           actions={showArchived ? ['view', 'restore', 'delete'] : ['view', 'edit', 'archive', 'delete']}
           onAction={(action, row) => {
@@ -192,7 +200,7 @@ const UsersFeature = () => {
           headerActions={
             userPermissions?.includes('admin.users.create') ? (
               <SButton
-                text={t('admin.addUser', 'Add User')}
+                text={t('admin.user.addUser')}
                 icon="add-user"
                 onClick={() => navigate.push('/admin/users/add')}
                 style={{ background: 'var(--accent)', color: 'white', whiteSpace: 'nowrap' }}
@@ -216,30 +224,35 @@ const UsersFeature = () => {
         />
 
         <SModal
-          isOpen={modalState.isOpen}
+          isOpen={modalState.isOpen && (modalState.type === 'archive' || modalState.type === 'restore')}
           title={
-            modalState.type === 'archive' ? t('admin.archiveUser', 'Archive User') :
-              modalState.type === 'restore' ? t('admin.restoreUser', 'Restore User') :
-                t('admin.deleteUser', 'Delete User')
+            modalState.type === 'archive' ? t('admin.user.archiveUser') :
+              t('admin.user.restoreUser')
           }
           onConfirm={confirmAction}
           onCancel={() => setModalState({ isOpen: false, type: null, user: null })}
           isProcessing={isProcessing}
           confirmText={
-            modalState.type === 'archive' ? t('common.archive', 'Archive') :
-              modalState.type === 'restore' ? t('common.restore', 'Restore') :
-                t('common.delete', 'Delete')
+            modalState.type === 'archive' ? t('common.archive') :
+              t('common.restore')
           }
-          confirmColor={modalState.type === 'delete' || modalState.type === 'archive' ? 'danger' : 'primary'}
+          confirmColor={modalState.type === 'archive' ? 'danger' : 'primary'}
           text={
-            modalState.type === 'delete' && modalState.user ? (
-              t('admin.deleteUserConfirm', 'Are you sure you want to PERMANENTLY delete user {{email}}? This cannot be undone.', { email: modalState.user.email })
-            ) : modalState.type === 'archive' && modalState.user ? (
-              t('admin.archiveUserConfirm', 'Are you sure you want to archive user {{email}}?', { email: modalState.user.email })
+            modalState.type === 'archive' && modalState.user ? (
+              t('common.confirmationModal.archiveUserConfirm', { email: modalState.user.email })
             ) : modalState.type === 'restore' && modalState.user ? (
-              t('admin.restoreUserConfirm', 'Are you sure you want to restore user {{email}}?', { email: modalState.user.email })
+              t('common.confirmationModal.restoreUserConfirm', { email: modalState.user.email })
             ) : ''
           }
+        />
+
+        <SDeleteConfirmation
+          isOpen={modalState.isOpen && modalState.type === 'delete'}
+          title={t('admin.user.deleteUser')}
+          onConfirm={confirmAction}
+          onCancel={() => setModalState({ isOpen: false, type: null, user: null })}
+          isProcessing={isProcessing}
+          text={modalState.user ? t('common.confirmationModal.deleteUserConfirm', { email: modalState.user.email }) : undefined}
         />
       </div>
     );

@@ -1,27 +1,50 @@
 const BaseService = require('../../base/baseService');
+const AdminRepository = require('./adminRepository');
 const RbacService = require('../rbac/rbacService');
 const crypto = require('crypto');
-const SignupRepository = require('../signup/signupRepository');
 const SignupService = require('../signup/signupService');
 const EmailService = require('../../services/emailService');
 const { encrypt } = require('../../services/cryptoService');
 
 class AdminService extends BaseService {
-  constructor(adminRepository) {
-    super(adminRepository);
-    this.rbacService = new RbacService(adminRepository);
+  constructor(context = null) {
+    super(context);
+    this.repository = new AdminRepository(context);
+    this.rbacService = new RbacService(context);
   }
 
   async getAllUsers(searchQuery, showArchived = false, page = 1, limit = 10) {
-    return await this.repository.getAllUsers(searchQuery, showArchived, page, limit);
+    const result = await this.repository.getAllUsers(searchQuery, showArchived, page, limit);
+    return {
+      data: (result.data || []).map(u => ({
+        uuid: u.uuid,
+        email: u.email,
+        status: u.status,
+        createdAt: u.created_at,
+        lastLoginAt: u.last_login_at || null,
+        firstName: u.first_name,
+        lastName: u.last_name
+      })),
+      total: result.total
+    };
   }
 
   async getAllPermissions() {
     return await this.repository.getAllPermissions();
   }
 
-  async getUser(uuid) {
-    return await this.repository.getUserByUuid(uuid);
+  async getUser(uuid, includeArchived = false) {
+    const u = await this.repository.getUserByUuid(uuid, includeArchived);
+    if (!u) return null;
+    return {
+      uuid: u.uuid,
+      email: u.email,
+      status: u.status,
+      createdAt: u.created_at,
+      lastLoginAt: u.last_login_at || null,
+      firstName: u.first_name,
+      lastName: u.last_name
+    };
   }
 
   async updateUser(uuid, data) {
@@ -36,14 +59,14 @@ class AdminService extends BaseService {
     }
 
     const detailsPayload = {};
-    if (data.first_name !== undefined) detailsPayload.first_name = data.first_name;
-    if (data.last_name !== undefined) detailsPayload.last_name = data.last_name;
+    if (data.firstName !== undefined) detailsPayload.first_name = data.firstName;
+    if (data.lastName !== undefined) detailsPayload.last_name = data.lastName;
 
     if (Object.keys(detailsPayload).length > 0) {
       await this.repository.updateUserDetails(uuid, detailsPayload);
     }
 
-    return await this.repository.getUserByUuid(uuid);
+    return await this.getUser(uuid);
   }
 
   async archiveUser(uuid) {
@@ -51,32 +74,30 @@ class AdminService extends BaseService {
     if (!user) throw new Error('User not found.');
 
     await this.repository.archiveUser(uuid);
-    return await this.repository.getUserByUuid(uuid);
+    return true;
   }
 
   async restoreUser(uuid) {
-    // Note: We bypass the getUserByUuid check since it ignores archived users,
-    // or we can just call it if we change how getUserByUuid works. But it's easier
-    // to just run the restore query directly since UUIDs are unique.
-    await this.repository.restoreUser(uuid);
-    return await this.repository.getUserByUuid(uuid);
-  }
-
-  async deleteUser(uuid) {
     const user = await this.repository.getUserByUuid(uuid, true);
     if (!user) throw new Error('User not found.');
 
-    const { supabaseAdmin } = require('../../services/supabaseAdmin');
+    await this.repository.restoreUser(uuid);
+    return true;
+  }
+
+  async deleteUserPermanently(uuid) {
+    const supabaseAdmin = require('../../services/supabaseAdmin');
     const { error } = await supabaseAdmin.auth.admin.deleteUser(uuid);
-    
     if (error) {
-      console.error('[AdminService] Supabase delete user error:', error.message);
-      throw new Error(`Failed to delete authentication user: ${error.message}`);
+      throw new Error(`Failed to delete user from authentication provider: ${error.message}`);
     }
 
-    // Do NOT call this.repository.deleteUser(uuid) anymore.
     // PostgreSQL ON DELETE CASCADE will handle deleting the public records automatically.
     return true;
+  }
+
+  async deleteUser(uuid) {
+    return await this.deleteUserPermanently(uuid);
   }
 
   async createUser(userData) {
@@ -88,8 +109,7 @@ class AdminService extends BaseService {
 
     // Delegate entirely to SignupService
     // We pass suppressSupabaseEmail: true to prevent Supabase from sending the verification instantly
-    const signupRepo = new SignupRepository(this.repository.queryHelper);
-    const signupService = new SignupService(signupRepo);
+    const signupService = new SignupService(this.context);
     await signupService.processSignup({ ...userData, password: temporaryPassword }, null, true);
 
     try {

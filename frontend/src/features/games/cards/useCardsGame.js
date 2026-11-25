@@ -119,18 +119,18 @@ export const useCardsGame = () => {
   // Handle real API room creation
   const handleCreateRoom = async (roomConfig) => {
     try {
-      toast.loading(t('games.uno.creating_room', 'Creating room...'), { id: 'create-room' });
+      toast.loading(t('games.uno.creating_room'), { id: 'create-room' });
       const userData = {
         name: user?.name || user?.firstName || user?.username || 'Player',
         avatar: user?.avatar || user?.display_picture
       };
       
       const { roomCode } = await createUnoRoom(roomConfig, userData);
-      toast.success(t('games.uno.room_created', 'Room created!'), { id: 'create-room' });
+      toast.success(t('games.uno.room_created'), { id: 'create-room' });
       
       await handleJoinRoom(roomCode);
     } catch (err) {
-      toast.error(t('games.uno.create_failed', 'Failed to create room'), { id: 'create-room' });
+      toast.error(t('games.uno.create_failed'), { id: 'create-room' });
       console.error(err);
     }
   };
@@ -171,7 +171,7 @@ export const useCardsGame = () => {
 
       socketService.emit('uno:join', { roomCode: roomData.code });
     } catch (err) {
-      toast.error(err.response?.data?.error || t('games.uno.join_failed', 'Failed to join room'), { id: 'join-room' });
+      toast.error(err.response?.data?.error || t('games.uno.join_failed'), { id: 'join-room' });
       console.error(err);
       throw err;
     }
@@ -186,7 +186,7 @@ export const useCardsGame = () => {
   const handleUpdateRules = (newRules) => {
     if (room?.hostId === user?.uuid && room) {
       socketService.emit('uno:update_rules', { roomCode: room.code, rules: newRules });
-      toast.success(t('games.uno.rules_updated', 'Room rules updated!'));
+      toast.success(t('games.uno.rules_updated'));
     }
   };
 
@@ -251,7 +251,7 @@ export const useCardsGame = () => {
     };
 
     const handleGameStarted = () => {
-      toast.success(t('games.uno.game_started', 'Game is starting!'));
+      toast.success(t('games.uno.game_started'));
       setCurrentScreen(GAME_SCREENS.GAME_TABLE);
     };
 
@@ -277,18 +277,18 @@ export const useCardsGame = () => {
       setRoom(null);
       setPlayers([]);
       setCurrentScreen(GAME_SCREENS.LOBBY);
-      toast.error(t('games.uno.host_deleted_room', 'The host has deleted the room.'));
+      toast.error(t('games.uno.host_deleted_room'));
     };
 
     const handlePlayerRemoved = ({ playerId, reason }) => {
       if (playerId === user?.uuid) {
-        toast.error(t('games.uno.removed_inactivity', 'You were removed from the game due to inactivity.'));
+        toast.error(t('games.uno.removed_inactivity'));
         executeLeaveRoom();
         navigate.push('/games/uno');
       } else {
         setPlayers(prev => prev.filter(p => p.id !== playerId));
         if (reason === 'timeout') {
-          toast.error(t('games.uno.player_removed_inactivity', 'A player was removed due to inactivity.'), { icon: '🚪' });
+          toast.error(t('games.uno.player_removed_inactivity'), { icon: '🚪' });
         }
       }
     };
@@ -340,7 +340,7 @@ export const useCardsGame = () => {
   const playLocalCard = async (cardId, chosenColor = null) => {
     const isMyTurn = players[currentTurnIndex]?.id === user?.uuid;
     if (!isMyTurn) {
-      toast.error(t('games.uno.not_your_turn', 'Not your turn!'));
+      toast.error(t('games.uno.not_your_turn'));
       return;
     }
 

@@ -1,13 +1,13 @@
 const Joi = require('joi');
 const { verifyToken, requirePermission } = require('../../base/authMiddleware');
 const ApiSchema = require('../../base/apiSchema');
-const arrowPuzzleController = require('./arrowPuzzleController');
+const ArrowPuzzleController = require('./arrowPuzzleController');
 
 const conditionalAuth = (req, res, next) => {
   if (req.query.liteMode === 'true') {
     return next(); // Public access allowed for lite mode
   }
-  
+
   // Otherwise, require full auth and permission
   verifyToken(req, res, (err) => {
     if (err) return next(err);
@@ -21,7 +21,7 @@ const generate = {
   verb: 'GET',
   auditMessage: 'generating arrow puzzle',
   handler: {
-    controller: arrowPuzzleController,
+    controller: ArrowPuzzleController,
     method: 'generate'
   },
   middleware: {
@@ -41,7 +41,7 @@ const saveProgress = {
   verb: 'POST',
   auditMessage: 'saving arrow puzzle progress',
   handler: {
-    controller: arrowPuzzleController,
+    controller: ArrowPuzzleController,
     method: 'saveProgress'
   },
   middleware: {
@@ -61,7 +61,7 @@ const getProgress = {
   verb: 'GET',
   auditMessage: 'fetching arrow puzzle progress',
   handler: {
-    controller: arrowPuzzleController,
+    controller: ArrowPuzzleController,
     method: 'getProgress'
   },
   middleware: {

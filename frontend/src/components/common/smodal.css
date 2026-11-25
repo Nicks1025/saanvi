@@ -15,14 +15,16 @@
 
 .s-modal-content {
   background: var(--bg);
-  padding: 2rem;
+  padding: 1.75rem;
   border-radius: 8px;
   box-shadow: var(--shadow);
   width: 90%;
   max-width: 400px;
+  max-height: 70vh;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
+  box-sizing: border-box;
   animation: s-modal-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -30,12 +32,32 @@
   margin: 0;
   font-size: 1.25rem;
   color: var(--text-h);
+  flex-shrink: 0;
 }
 
 .s-modal-body {
   color: var(--text);
   font-size: 1rem;
   line-height: 1.5;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border, #e5e4e7) transparent;
+}
+
+.s-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.s-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.s-modal-body::-webkit-scrollbar-thumb {
+  background: var(--border, #e5e4e7);
+  border-radius: 3px;
 }
 
 .s-modal-actions {
@@ -43,6 +65,7 @@
   justify-content: flex-end;
   gap: 1rem;
   margin-top: 0.5rem;
+  flex-shrink: 0;
 }
 
 @keyframes s-modal-fade {

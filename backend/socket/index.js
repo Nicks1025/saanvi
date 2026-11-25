@@ -3,11 +3,9 @@ const { createAdapter } = require('@socket.io/redis-adapter');
 const { getClient, isReady } = require('../redis/redisClient');
 const authMiddleware = require('./middleware/auth');
 
-const ChatRepository = require('../features/chat/chatRepository');
 const ChatService = require('../features/chat/chatService');
 
-const chatRepository = new ChatRepository();
-const chatService = new ChatService(chatRepository);
+const chatService = new ChatService();
 
 // Handlers
 const registerChatHandlers = require('./handlers/chat');

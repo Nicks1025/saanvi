@@ -8,12 +8,15 @@ const rbacService = new RbacService(new BaseRepository());
 const verifyToken = (req, res, next) => {
   const token = req.headers['authorization'];
   if (!token) {
-    return res.status(403).json({ success: false, error: 'A token is required for authentication' });
+    return res.status(401).json({ success: false, error: 'A token is required for authentication' });
   }
 
   try {
     const tokenPart = token.split(' ').pop();
-    const secret = process.env.JWT_SECRET || 'fallback_secret';
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      return res.status(500).json({ success: false, error: 'Server configuration error: JWT_SECRET missing' });
+    }
     const decoded = jwt.verify(tokenPart, secret);
     req.user = decoded;
   } catch (err) {

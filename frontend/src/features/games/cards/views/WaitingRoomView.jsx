@@ -78,11 +78,11 @@ export const WaitingRoomView = ({
           color="secondary"
           onClick={onLeaveRoom}
           icon="back"
-          text={t('games.uno.leave_room', 'Leave Room')}
+          text={t('games.uno.leave_room')}
         />
 
         <div className="waiting-room-code-badge">
-          <span className="code-label">{t('games.uno.room_code_label', 'ROOM:')}</span>
+          <span className="code-label">{t('games.uno.room_code_label')}</span>
           <span className="code-value">{roomCode}</span>
           <SButton
             className="copy-code-btn"
@@ -90,7 +90,7 @@ export const WaitingRoomView = ({
             onClick={handleCopyLink}
             title="Copy room invite link"
             icon={copied ? "check" : "copy"}
-            text={copied ? t('common.copied', 'Copied!') : t('common.copy_link', 'Copy Link')}
+            text={copied ? t('common.copied') : t('common.copy_link')}
           />
         </div>
 
@@ -99,7 +99,7 @@ export const WaitingRoomView = ({
           color="secondary"
           onClick={() => openRules('basics')}
           icon="help"
-          text={t('games.uno.view_rules', 'View Rules')}
+          text={t('games.uno.view_rules')}
         />
       </div>
 
@@ -110,10 +110,10 @@ export const WaitingRoomView = ({
           <div className="roster-header">
             <div className="roster-title-group">
               <Users size={20} className="text-purple-400" />
-              <h3>{t('games.uno.table_players', 'Table Players')} ({players.length}/{playerLimit})</h3>
+              <h3>{t('games.uno.table_players')} ({players.length}/{playerLimit})</h3>
             </div>
             <span className="ready-summary-tag">
-              {players.filter((p) => p.isReady).length} {t('games.uno.ready', 'Ready')}
+              {players.filter((p) => p.isReady).length} {t('games.uno.ready')}
             </span>
           </div>
 
@@ -151,12 +151,12 @@ export const WaitingRoomView = ({
                         {player.isReady ? (
                           <>
                             <CheckCircle2 size={12} />
-                            <span>{t('games.uno.ready', 'Ready')}</span>
+                            <span>{t('games.uno.ready')}</span>
                           </>
                         ) : (
                           <>
                             <Hourglass size={12} />
-                            <span>{t('games.uno.waiting_ellipsis', 'Waiting...')}</span>
+                            <span>{t('games.uno.waiting_ellipsis')}</span>
                           </>
                         )}
                       </span>
@@ -171,8 +171,8 @@ export const WaitingRoomView = ({
                     <span className="empty-plus">+</span>
                   </div>
                   <div className="slot-meta">
-                    <span className="empty-label">{t('games.uno.empty_seat', 'Empty Seat')}</span>
-                    <span className="empty-sub">{t('games.uno.waiting_for_player', 'Waiting for player...')}</span>
+                    <span className="empty-label">{t('games.uno.empty_seat')}</span>
+                    <span className="empty-sub">{t('games.uno.waiting_for_player')}</span>
                   </div>
                 </div>
               );

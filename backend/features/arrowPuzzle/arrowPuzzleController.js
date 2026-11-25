@@ -1,49 +1,39 @@
 const BaseController = require('../../base/baseController');
-const arrowPuzzleService = require('./arrowPuzzleService');
+const ArrowPuzzleService = require('./arrowPuzzleService');
 
 class ArrowPuzzleController extends BaseController {
-  constructor() {
-    super('ArrowPuzzleController');
+  constructor(context = null) {
+    super(context);
+    this.service = new ArrowPuzzleService(context);
   }
 
-  generate(req, res, next) {
-    try {
-      const { shape, level, liteMode } = req.query;
-      
-      const parsedLevel = parseInt(level, 10) || 1;
-      const isLiteMode = liteMode === 'true';
+  generate(req, res) {
+    const request = req || this.context?.request;
+    const { shape, level, liteMode } = request.query;
 
-      const puzzle = arrowPuzzleService.generate(shape, parsedLevel, isLiteMode);
-      
-      this.sendSuccess(res, puzzle, 'Puzzle generated successfully');
-    } catch (error) {
-      this.sendError(res, error);
-    }
+    const parsedLevel = parseInt(level, 10) || 1;
+    const isLiteMode = liteMode === 'true';
+
+    const puzzle = this.service.generate(shape, parsedLevel, isLiteMode);
+    return this.respondOk(puzzle, 'Puzzle generated successfully');
   }
 
-  async saveProgress(req, res, next) {
-    try {
-      const userUuid = req.user.uuid;
-      const { shape, level, timeTaken } = req.body;
-      
-      const result = await arrowPuzzleService.saveProgress(userUuid, shape, level, timeTaken);
-      
-      this.sendSuccess(res, result, 'Progress saved successfully');
-    } catch (error) {
-      this.sendError(res, error);
-    }
+  async saveProgress(req, res) {
+    const request = req || this.context?.request;
+    const userUuid = request.user?.uuid;
+    const { shape, level, timeTaken } = request.body;
+
+    const result = await this.service.saveProgress(userUuid, shape, level, timeTaken);
+    return this.respondOk(result, 'Progress saved successfully');
   }
 
-  async getProgress(req, res, next) {
-    try {
-      const userUuid = req.user.uuid;
-      const progress = await arrowPuzzleService.getProgress(userUuid);
-      
-      this.sendSuccess(res, progress, 'Progress fetched successfully');
-    } catch (error) {
-      this.sendError(res, error);
-    }
+  async getProgress(req, res) {
+    const request = req || this.context?.request;
+    const userUuid = request.user?.uuid;
+
+    const progress = await this.service.getProgress(userUuid);
+    return this.respondOk(progress, 'Progress fetched successfully');
   }
 }
 
-module.exports = new ArrowPuzzleController();
+module.exports = ArrowPuzzleController;

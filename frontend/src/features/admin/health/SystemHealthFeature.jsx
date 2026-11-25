@@ -40,10 +40,10 @@ const SystemHealthFeature = () => {
       if (response.success) {
         setHealthData(response.data);
       } else {
-        toast.error(response.error || t('admin.health.fetch_failed', 'Failed to fetch system health'));
+        toast.error(response.error || t('admin.health.fetch_failed'));
       }
     } catch (err) {
-      toast.error(t('admin.health.network_error', 'Network error while fetching system health'));
+      toast.error(t('admin.health.network_error'));
     } finally {
       setLoading(false);
     }
@@ -60,56 +60,56 @@ const SystemHealthFeature = () => {
 
   const getStatusBadge = (status) => {
     const statusMap = {
-      healthy: { label: t('admin.health.healthy', 'Healthy'), className: 'status-healthy' },
-      degraded: { label: t('admin.health.degraded', 'Degraded'), className: 'status-degraded' },
-      down: { label: t('admin.health.down', 'Down'), className: 'status-down' }
+      healthy: { label: t('admin.health.healthy'), className: 'status-healthy' },
+      degraded: { label: t('admin.health.degraded'), className: 'status-degraded' },
+      down: { label: t('admin.health.down'), className: 'status-down' }
     };
     const config = statusMap[status] || statusMap.down;
     return <span className={`status-badge ${config.className}`}>{config.label}</span>;
   };
 
   const serviceNames = {
-    backendUptime: t('admin.health.backend_api', 'Backend API'),
-    supabaseDatabase: t('admin.health.supabase_db', 'Supabase Database'),
-    supabaseStorage: t('admin.health.supabase_storage', 'Supabase Storage'),
-    redis: t('admin.health.redis_cache', 'Redis Cache'),
-    socketIo: t('admin.health.socket_io', 'Socket.IO (Realtime)')
+    backendUptime: t('admin.health.backend_api'),
+    supabaseDatabase: t('admin.health.supabase_db'),
+    supabaseStorage: t('admin.health.supabase_storage'),
+    redis: t('admin.health.redis_cache'),
+    socketIo: t('admin.health.socket_io')
   };
 
   return (
     <div className="system-health-container page-container">
       <div className="health-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <h2 style={{ margin: 0 }}>{t('admin.health.title', 'System Health')}</h2>
+          <h2 style={{ margin: 0 }}>{t('admin.health.title')}</h2>
           <SButton size="m" color="primary" onClick={fetchHealth} disabled={loading}>
             <RefreshCw size={16} className={loading ? 'spinning-icon' : ''} />
-            <span className="health-refresh-text">{loading ? t('common.refreshing', 'Refreshing...') : t('common.refresh', 'Refresh')}</span>
+            <span className="health-refresh-text">{loading ? t('common.refreshing') : t('common.refresh')}</span>
           </SButton>
         </div>
 
         {healthData && (
           <p className="health-subtitle">
-            {t('admin.health.overall_status', 'Overall Status:')} {getStatusBadge(healthData.status)}
+            {t('admin.health.overall_status')} {getStatusBadge(healthData.status)}
             <span className="health-time">
-              {t('admin.health.last_checked', 'Last checked:')} {new Date(healthData.timestamp).toLocaleTimeString()}
+              {t('admin.health.last_checked')} {new Date(healthData.timestamp).toLocaleTimeString()}
             </span>
           </p>
         )}
       </div>
 
       {loading && !healthData ? (
-        <div className="health-loading">{t('admin.health.loading', 'Loading system status...')}</div>
+        <div className="health-loading">{t('admin.health.loading')}</div>
       ) : healthData ? (
         <div className="health-grid">
           
           <div className="health-card">
             <div className="health-card-header">
-              <h3 className="health-card-title">{t('admin.health.frontend_spa', 'Frontend SPA')}</h3>
+              <h3 className="health-card-title">{t('admin.health.frontend_spa')}</h3>
               {getStatusBadge('healthy')}
             </div>
             <div className="health-card-body">
               <div className="health-message">
-                {t('admin.health.uptime', 'Uptime:')} {frontendUptime}
+                {t('admin.health.uptime')} {frontendUptime}
               </div>
             </div>
           </div>
@@ -133,28 +133,28 @@ const SystemHealthFeature = () => {
                   <div className="health-card-body">
                     {service.responseTime !== undefined && (
                       <div className="health-metric">
-                        <span className="metric-label">{t('admin.health.ping', 'Ping:')}</span>
+                        <span className="metric-label">{t('admin.health.ping')}</span>
                         <span className="metric-value">{service.responseTime} ms</span>
                       </div>
                     )}
                   {parsedMessage ? (
                     <div className="health-message" style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px' }}>
                       <div className="health-metric">
-                        <span className="metric-label">{t('admin.health.storage', 'Storage:')}</span>
+                        <span className="metric-label">{t('admin.health.storage')}</span>
                         <span className="metric-value">{parsedMessage.used_mb} MB / 10 GB </span>
                       </div>
                       <div className="health-metric">
-                        <span className="metric-label">{t('admin.health.class_a_ops', 'Class A Ops:')}</span>
+                        <span className="metric-label">{t('admin.health.class_a_ops')}</span>
                         <span className="metric-value">{parsedMessage.class_a.toLocaleString()} / 1M </span>
                       </div>
                       <div className="health-metric">
-                        <span className="metric-label">{t('admin.health.class_b_ops', 'Class B Ops:')}</span>
+                        <span className="metric-label">{t('admin.health.class_b_ops')}</span>
                         <span className="metric-value">{parsedMessage.class_b.toLocaleString()} / 10M </span>
                       </div>
                     </div>
                   ) : service.message ? (
                     <div className="health-message">
-                      {key === 'backendUptime' ? `${t('admin.health.uptime', 'Uptime:')} ${service.message}` : service.message}
+                      {key === 'backendUptime' ? `${t('admin.health.uptime')} ${service.message}` : service.message}
                     </div>
                   ) : null}
                 </div>
@@ -163,7 +163,7 @@ const SystemHealthFeature = () => {
           })}
         </div>
       ) : (
-        <div className="health-error">{t('admin.health.failed_load', 'Failed to load system health.')}</div>
+        <div className="health-error">{t('admin.health.failed_load')}</div>
       )}
     </div>
   );

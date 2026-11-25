@@ -1,17 +1,9 @@
 const Joi = require('joi');
 const ApiSchema = require('../../base/apiSchema');
-const QueryHelper = require('../../database/queryHelper');
 const uploadMiddleware = require('../../base/uploadMiddleware');
-
-const ChatRepository = require('./chatRepository');
-const ChatService = require('./chatService');
 const ChatController = require('./chatController');
 
 const MAX_IMAGES = parseInt(process.env.CHAT_MAX_IMAGES, 10) || 5;
-
-const chatRepository = new ChatRepository();
-const chatService = new ChatService(chatRepository);
-const chatController = new ChatController(chatService);
 
 const ChatApi = {
   name: 'Chat',
@@ -22,7 +14,7 @@ const ChatApi = {
       path: "/users",
       verb: "GET",
       auditMessage: "searching users for chat",
-      handler: { controller: chatController, method: "searchUsers" },
+      handler: { controller: ChatController, method: "searchUsers" },
       middleware: { requireAuth: true, requirePermission: ["chat.access"] }
     },
     // ---- Blocks ----
@@ -30,7 +22,7 @@ const ChatApi = {
       path: '/blocks',
       verb: 'POST',
       auditMessage: 'blocking a user',
-      handler: { controller: chatController, method: 'blockUser' },
+      handler: { controller: ChatController, method: 'blockUser' },
       middleware: { requireAuth: true, requirePermission: ['chat.access'] },
       request: { body: Joi.object({ user_uuid: Joi.string().uuid().required() }) }
     },
@@ -38,7 +30,7 @@ const ChatApi = {
       path: '/blocks/:uuid',
       verb: 'DELETE',
       auditMessage: 'unblocking a user',
-      handler: { controller: chatController, method: 'unblockUser' },
+      handler: { controller: ChatController, method: 'unblockUser' },
       middleware: { requireAuth: true, requirePermission: ['chat.access'] }
     },
     
@@ -47,14 +39,14 @@ const ChatApi = {
       path: '/requests',
       verb: 'GET',
       auditMessage: 'getting chat requests',
-      handler: { controller: chatController, method: 'getChatRequests' },
+      handler: { controller: ChatController, method: 'getChatRequests' },
       middleware: { requireAuth: true, requirePermission: ['chat.access'] }
     },
     {
       path: '/requests',
       verb: 'POST',
       auditMessage: 'sending a chat request',
-      handler: { controller: chatController, method: 'sendChatRequest' },
+      handler: { controller: ChatController, method: 'sendChatRequest' },
       middleware: { requireAuth: true, requirePermission: ['chat.access'] },
       request: { body: Joi.object({ receiver_uuid: Joi.string().uuid().required() }) }
     },
@@ -62,7 +54,7 @@ const ChatApi = {
       path: '/requests/:uuid/respond',
       verb: 'PUT',
       auditMessage: 'responding to chat request',
-      handler: { controller: chatController, method: 'respondChatRequest' },
+      handler: { controller: ChatController, method: 'respondChatRequest' },
       middleware: { requireAuth: true, requirePermission: ['chat.access'] },
       request: { body: Joi.object({ status: Joi.string().valid('accepted', 'rejected', 'cancelled').required() }) }
     },
@@ -72,21 +64,21 @@ const ChatApi = {
       path: '/conversations',
       verb: 'GET',
       auditMessage: 'getting user conversations',
-      handler: { controller: chatController, method: 'getConversations' },
+      handler: { controller: ChatController, method: 'getConversations' },
       middleware: { requireAuth: true, requirePermission: ['chat.access'] }
     },
     {
       path: '/conversations/:uuid/messages',
       verb: 'GET',
       auditMessage: 'getting conversation messages',
-      handler: { controller: chatController, method: 'getMessages' },
+      handler: { controller: ChatController, method: 'getMessages' },
       middleware: { requireAuth: true, requirePermission: ['chat.access'] }
     },
     {
       path: '/conversations/:uuid/messages',
       verb: 'POST',
       auditMessage: 'sending message',
-      handler: { controller: chatController, method: 'sendMessage' },
+      handler: { controller: ChatController, method: 'sendMessage' },
       middleware: { requireAuth: true, requirePermission: ['chat.access'] },
       request: { body: Joi.object({ message: Joi.string().required() }) }
     },
@@ -94,7 +86,7 @@ const ChatApi = {
       path: '/messages/:uuid/status',
       verb: 'PUT',
       auditMessage: 'updating message receipt status',
-      handler: { controller: chatController, method: 'markMessageStatus' },
+      handler: { controller: ChatController, method: 'markMessageStatus' },
       middleware: { requireAuth: true, requirePermission: ['chat.access'] },
       request: { body: Joi.object({ status: Joi.string().valid('delivered', 'seen').required() }) }
     },
@@ -104,7 +96,7 @@ const ChatApi = {
       path: '/conversations/:uuid/attachments/upload-url',
       verb: 'POST',
       auditMessage: 'requesting upload url for attachment',
-      handler: { controller: chatController, method: 'generateUploadUrl' },
+      handler: { controller: ChatController, method: 'generateUploadUrl' },
       middleware: { requireAuth: true, requirePermission: ['chat.access'] },
       request: { body: Joi.object({ 
         file_name: Joi.string().required(),
@@ -117,7 +109,7 @@ const ChatApi = {
       path: '/conversations/:uuid/attachments/complete',
       verb: 'POST',
       auditMessage: 'completing attachment upload',
-      handler: { controller: chatController, method: 'completeUpload' },
+      handler: { controller: ChatController, method: 'completeUpload' },
       middleware: { requireAuth: true, requirePermission: ['chat.access'] },
       request: { body: Joi.object({ 
         message: Joi.string().allow('', null).optional(),
@@ -139,7 +131,7 @@ const ChatApi = {
       path: '/conversations/:uuid/attachments/complete-multi',
       verb: 'POST',
       auditMessage: 'completing multi-image upload',
-      handler: { controller: chatController, method: 'completeMultiUpload' },
+      handler: { controller: ChatController, method: 'completeMultiUpload' },
       middleware: { requireAuth: true, requirePermission: ['chat.access'] },
       request: { body: Joi.object({
         message: Joi.string().allow('', null).optional(),
@@ -162,7 +154,7 @@ const ChatApi = {
       path: '/messages/:messageUuid/attachments/:attachmentUuid/url',
       verb: 'GET',
       auditMessage: 'getting attachment download url',
-      handler: { controller: chatController, method: 'getDownloadUrl' },
+      handler: { controller: ChatController, method: 'getDownloadUrl' },
       middleware: { requireAuth: true, requirePermission: ['chat.access'] }
     },
 
@@ -171,7 +163,7 @@ const ChatApi = {
       path: '/conversations/:uuid/wallpaper/upload-url',
       verb: 'POST',
       auditMessage: 'requesting upload url for wallpaper',
-      handler: { controller: chatController, method: 'generateWallpaperUploadUrl' },
+      handler: { controller: ChatController, method: 'generateWallpaperUploadUrl' },
       middleware: { requireAuth: true, requirePermission: ['chat.access'] },
       request: { body: Joi.object({ 
         file_name: Joi.string().required(),
@@ -183,7 +175,7 @@ const ChatApi = {
       path: '/conversations/:uuid/wallpaper/complete',
       verb: 'POST',
       auditMessage: 'completing wallpaper upload',
-      handler: { controller: chatController, method: 'completeWallpaperUpload' },
+      handler: { controller: ChatController, method: 'completeWallpaperUpload' },
       middleware: { requireAuth: true, requirePermission: ['chat.access'] },
       request: { body: Joi.object({ 
         storage_key: Joi.string().required()
@@ -193,7 +185,7 @@ const ChatApi = {
       path: '/conversations/:uuid/background',
       verb: 'PUT',
       auditMessage: 'updating chat background',
-      handler: { controller: chatController, method: 'updateBackground' },
+      handler: { controller: ChatController, method: 'updateBackground' },
       middleware: { requireAuth: true, requirePermission: ['chat.access'] },
       request: { body: Joi.object({ 
         background_data: Joi.string().allow(null).required()
@@ -205,7 +197,7 @@ const ChatApi = {
       path: '/groups',
       verb: 'POST',
       auditMessage: 'creating group',
-      handler: { controller: chatController, method: 'createGroup' },
+      handler: { controller: ChatController, method: 'createGroup' },
       middleware: { requireAuth: true, requirePermission: ['chat.access'], custom: [uploadMiddleware.single('profile_image')] },
       // Joi validation is skipped for multipart form-data. Handled in controller/service.
     },
@@ -213,14 +205,14 @@ const ChatApi = {
       path: '/groups/:uuid',
       verb: 'PUT',
       auditMessage: 'updating group',
-      handler: { controller: chatController, method: 'updateGroup' },
+      handler: { controller: ChatController, method: 'updateGroup' },
       middleware: { requireAuth: true, requirePermission: ['chat.access'], custom: [uploadMiddleware.single('profile_image')] },
     },
     {
       path: '/groups/:uuid/members',
       verb: 'POST',
       auditMessage: 'adding group member',
-      handler: { controller: chatController, method: 'addGroupMember' },
+      handler: { controller: ChatController, method: 'addGroupMember' },
       middleware: { requireAuth: true, requirePermission: ['chat.access'] },
       request: { body: Joi.object({ user_uuid: Joi.string().uuid().required() }) }
     },
@@ -228,7 +220,7 @@ const ChatApi = {
       path: '/groups/:uuid/members/:user_uuid',
       verb: 'DELETE',
       auditMessage: 'removing group member',
-      handler: { controller: chatController, method: 'removeGroupMember' },
+      handler: { controller: ChatController, method: 'removeGroupMember' },
       middleware: { requireAuth: true, requirePermission: ['chat.access'] }
     }
   ]

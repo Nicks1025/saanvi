@@ -2,8 +2,9 @@ const BaseService = require('../../base/baseService');
 const RbacRepository = require('./rbacRepository');
 
 class RbacService extends BaseService {
-  constructor(ignoredRepository) {
-    super(new RbacRepository());
+  constructor(context = null) {
+    super(context);
+    this.repository = new RbacRepository(context);
   }
 
   /**

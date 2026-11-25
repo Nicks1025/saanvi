@@ -6,12 +6,14 @@ import { loginUser, loginWithGoogle } from './service/loginService';
 import { resendVerification } from '../signup/service/signupService';
 import { GoogleOAuthProvider, useGoogleLogin } from '@react-oauth/google';
 import MfaVerificationFeature from './MfaVerificationFeature';
+import { useTranslation } from 'react-i18next';
 import './login.css';
 
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/store/AuthContext';
 
 const LoginFeatureContent = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,6 +26,18 @@ const LoginFeatureContent = () => {
   const navigate = useRouter();
   const { login } = useAuth();
 
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const reason = params.get('reason');
+      if (reason === 'session_expired') {
+        setError(t('admin.auth.sessionExpired', 'Your session has expired. Please sign in again.'));
+      } else if (reason === 'invalidsession') {
+        setError(t('admin.auth.invalidSession', 'Your session is invalid. Please sign in again.'));
+      }
+    }
+  }, [t]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
@@ -31,14 +45,14 @@ const LoginFeatureContent = () => {
     setResendSuccess('');
 
     if (!email || !password) {
-      setError('Please fill in all fields.');
+      setError(t('admin.auth.fillAllFields'));
       return;
     }
 
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setError('Please enter a valid email address.');
+      setError(t('admin.auth.validEmail'));
       return;
     }
 
@@ -47,9 +61,9 @@ const LoginFeatureContent = () => {
     try {
       const data = await loginUser(email, password);
       if (data.mfaRequired) {
-        setMfaData({ email: data.email, supabaseToken: data.supabaseToken });
+        setMfaData({ email: data.email, mfaTicket: data.mfaTicket });
       } else if (data.token) {
-        login(data.token, data.supabaseToken);
+        login(data.token);
         navigate.push('/dashboard');
       }
     } catch (err) {
@@ -57,7 +71,7 @@ const LoginFeatureContent = () => {
       if (errCode === 'UNVERIFIED_EMAIL') {
         setIsUnverified(true);
       }
-      setError(err.response?.data?.error || err.message || 'Login failed.');
+      setError(err.response?.data?.error || err.message || t('admin.auth.loginFailed'));
     } finally {
       setLoading(false);
     }
@@ -69,9 +83,9 @@ const LoginFeatureContent = () => {
     setResendSuccess('');
     try {
       const data = await resendVerification(email);
-      setResendSuccess(data.message || 'A new verification email has been sent. Please check your inbox.');
+      setResendSuccess(data.message || t('admin.auth.resendSuccess'));
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to resend verification email.');
+      setError(err.response?.data?.error || err.message || t('admin.auth.resendFailed'));
     } finally {
       setResending(false);
     }
@@ -84,9 +98,9 @@ const LoginFeatureContent = () => {
       try {
         const data = await loginWithGoogle(tokenResponse.access_token);
         if (data.mfaRequired) {
-          setMfaData({ email: data.email, supabaseToken: data.supabaseToken });
+          setMfaData({ email: data.email, mfaTicket: data.mfaTicket });
         } else if (data.token) {
-          login(data.token, data.supabaseToken);
+          login(data.token);
           navigate.push('/dashboard');
         }
       } catch (err) {
@@ -94,13 +108,13 @@ const LoginFeatureContent = () => {
         if (errCode === 'UNVERIFIED_EMAIL') {
           setIsUnverified(true);
         }
-        setError(err.response?.data?.error || err.message || 'Google authentication failed.');
+        setError(err.response?.data?.error || err.message || t('admin.auth.googleAuthFailed'));
       } finally {
         setLoading(false);
       }
     },
     onError: () => {
-      setError('Google authentication failed.');
+      setError(t('admin.auth.googleAuthFailed'));
     }
   });
 
@@ -109,9 +123,9 @@ const LoginFeatureContent = () => {
       <div className="login-card">
         <MfaVerificationFeature 
           email={mfaData.email}
-          supabaseToken={mfaData.supabaseToken}
+          mfaTicket={mfaData.mfaTicket}
           onVerifySuccess={(data) => {
-            login(data.token, data.supabaseToken);
+            login(data.token);
             navigate.push('/dashboard');
           }}
           onCancel={() => {
@@ -125,7 +139,7 @@ const LoginFeatureContent = () => {
 
   return (
     <div className="login-card">
-      <h2 className="login-title">Login</h2>
+      <h2 className="login-title">{t('admin.auth.login')}</h2>
       
       {error && (
         <div className="login-error">
@@ -134,27 +148,28 @@ const LoginFeatureContent = () => {
       )}
 
       {resendSuccess && (
-        <div className="login-success" style={{ color: 'green', background: '#e8f5e9', padding: '10px', borderRadius: '4px', marginBottom: '16px' }}>
+        <div className="login-success text-center mb-4 p-3 rounded">
           {resendSuccess}
         </div>
       )}
 
       {isUnverified && (
-        <div style={{ marginBottom: '16px', textAlign: 'center' }}>
-          <button
+        <div className="mb-4 text-center">
+          <SButton
             type="button"
             onClick={handleResendVerification}
             disabled={resending}
-            style={{ padding: '8px 16px', background: '#f0f0f0', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer' }}
+            color="secondary"
+            className="w-full"
           >
-            {resending ? 'Sending...' : 'Resend verification email'}
-          </button>
+            {resending ? t('admin.auth.resending') : t('admin.auth.resendVerification')}
+          </SButton>
         </div>
       )}
 
       <form onSubmit={handleLogin} noValidate>
         <STextField 
-          label="Email" 
+          label={t('admin.auth.email')} 
           type="email"
           placeholder="you@example.com"
           text={email}
@@ -162,7 +177,7 @@ const LoginFeatureContent = () => {
         />
         
         <STextField 
-          label="Password" 
+          label={t('admin.auth.password')} 
           type="password"
           placeholder="••••••••"
           text={password}
@@ -170,24 +185,20 @@ const LoginFeatureContent = () => {
         />
 
         <div className="login-actions">
-          {loading ? (
-            <div className="login-loading">
-              Signing in...
-            </div>
-          ) : (
-            <button 
-              type="submit"
-              className="login-btn-primary"
-            >
-              Sign In
-            </button>
-          )}
+          <SButton 
+            type="submit"
+            color="primary"
+            className="login-btn-primary w-full"
+            disabled={loading}
+          >
+            {loading ? t('common.loading') : t('admin.auth.login')}
+          </SButton>
         </div>
       </form>
 
       <div className="login-divider">
         <div className="login-divider-line"></div>
-        <span className="login-divider-text">OR</span>
+        <span className="login-divider-text">{t('admin.auth.or')}</span>
         <div className="login-divider-line"></div>
       </div>
 
@@ -202,11 +213,12 @@ const LoginFeatureContent = () => {
           <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
           <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
         </svg>
-        Sign in with Google
+        {t('admin.auth.googleSignIn')}
       </button>
 
       <div className="login-footer">
-        Don't have an account? <a href="/signup" className="login-footer-link">Sign Up</a>
+        {t('admin.auth.dontHaveAccount')}{' '}
+        <a href="/signup" className="login-footer-link">{t('admin.auth.signUp')}</a>
       </div>
     </div>
   );

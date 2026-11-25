@@ -18,22 +18,22 @@ const DashboardFeature = () => {
   const hasChat = userPermissions.includes('chat.access');
   const hasGames = userPermissions.includes('games.uno') || userPermissions.includes('games.words.wordsearch');
 
+  const userName = user?.firstName || user?.displayName || user?.email?.split('@')[0] || 'User';
+
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour >= 2 && hour < 12) return t('dashboard.goodMorning', 'Good Morning');
-    if (hour >= 12 && hour < 16) return t('dashboard.goodAfternoon', 'Good Afternoon');
+    if (hour >= 2 && hour < 12) return t('dashboard.goodMorning', { name: userName });
+    if (hour >= 12 && hour < 16) return t('dashboard.goodAfternoon', { name: userName });
     // Using Evening for after 4 PM to 2 AM
-    return t('dashboard.goodEvening', 'Good Evening');
+    return t('dashboard.goodEvening', { name: userName });
   };
-
-  const userName = user?.firstName || user?.displayName || user?.email?.split('@')[0] || 'User';
 
   return (
     <div className="dashboard-container page-container">
 
       <div>
         <h3 className="dashboard-header">
-          {getGreeting()}, {userName}
+          {getGreeting()}
         </h3>
         <p className="">
           {new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}

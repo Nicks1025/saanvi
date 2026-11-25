@@ -7,7 +7,8 @@
     "dev": "next dev --turbo -p 5000",
     "build": "next build",
     "start": "next start -p 5000",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "node --test src/features/chat/attachmentUtils.test.js src/features/games/cards/services/unoService.test.js src/features/games/puzzles/arrow-puzzle/engine/PuzzleEngine.test.js src/components/common/SIcon.test.js src/features/objects/templatePlacement.test.js"
   },
   "dependencies": {
     "@react-oauth/google": "^0.13.5",
@@ -34,6 +35,7 @@
     "react-hot-toast": "^2.6.0",
     "react-i18next": "^17.0.11",
     "react-image-crop": "^11.1.2",
+    "react-phone-number-input": "^3.4.18",
     "react-select": "^5.10.2",
     "server-only": "^0.0.1",
     "socket.io-client": "^4.8.3",

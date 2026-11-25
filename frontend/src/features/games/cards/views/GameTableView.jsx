@@ -123,16 +123,16 @@ export const GameTableView = ({ game, onLeaveGame }) => {
           <button
             className="table-bar-btn btn-exit"
             onClick={() => onLeaveGame()}
-            title={t('games.uno.exit_game', 'Exit game')}
+            title={t('games.uno.exit_game')}
           >
             <ArrowLeft size={16} />
-            <span className="btn-text">{t('games.uno.exit', 'Exit')}</span>
+            <span className="btn-text">{t('games.uno.exit')}</span>
           </button>
         </div>
 
         {/* Right: Turn Timer & Rules Button */}
         <div className="table-bar-right">
-          <div className={`table-timer-chip ${turnTimeLeft <= 5 ? 'timer-warning' : ''}`} title={t('games.uno.turn_timer', 'Turn Timer')}>
+          <div className={`table-timer-chip ${turnTimeLeft <= 5 ? 'timer-warning' : ''}`} title={t('games.uno.turn_timer')}>
             <Clock size={14} className="timer-icon" />
             <span className="timer-digits">{formattedTimer}</span>
           </div>
@@ -140,7 +140,7 @@ export const GameTableView = ({ game, onLeaveGame }) => {
           <button
             className="table-bar-btn btn-rules"
             onClick={() => openRules('basics')}
-            title={t('games.uno.open_game_rules', 'Open game rules')}
+            title={t('games.uno.open_game_rules')}
             style={{ padding: '0.5rem' }}
           >
             <HelpCircle size={18} />

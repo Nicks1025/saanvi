@@ -1,11 +1,12 @@
 const BaseService = require('../../base/baseService');
+const CampaignRepository = require('./campaignRepository');
 const EmailService = require('../../services/emailService');
-const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
 
 class CampaignService extends BaseService {
-  constructor(campaignRepository) {
-    super(campaignRepository);
+  constructor(context = null) {
+    super(context);
+    this.repository = new CampaignRepository(context);
   }
 
   async getAllCampaigns(page = 1, limit = 20) {
@@ -41,7 +42,7 @@ class CampaignService extends BaseService {
   }
 
   async updateCampaign(uuid, data, userUuid) {
-    const campaign = await this.getCampaign(uuid);
+    await this.getCampaign(uuid);
 
     const payload = {
       name: data.name,
@@ -59,105 +60,92 @@ class CampaignService extends BaseService {
     }
 
     await this.repository.updateCampaign(uuid, payload);
-    return { ...campaign, ...payload };
+    return await this.getCampaign(uuid);
   }
 
   async deleteCampaign(uuid) {
-    const campaign = await this.getCampaign(uuid);
+    await this.getCampaign(uuid);
     await this.repository.deleteCampaign(uuid);
     return { message: 'Campaign deleted successfully.' };
   }
 
   async sendCampaign(uuid) {
     const campaign = await this.getCampaign(uuid);
-    
-    // Mark as processing
+    if (campaign.status === 'SENT' || campaign.status === 'PROCESSING') {
+      throw new Error(`Campaign cannot be sent because it is in ${campaign.status} status.`);
+    }
+
+    // 1. Resolve Audience
+    let recipients = [];
+    if (campaign.audience_type === 'SPECIFIC') {
+      let targetEmails = campaign.target_emails;
+      if (typeof targetEmails === 'string') {
+        try { targetEmails = JSON.parse(targetEmails); } catch(e) { targetEmails = []; }
+      }
+      recipients = await this.repository.getSpecificAudience(targetEmails);
+    } else {
+      recipients = await this.repository.getAudience(campaign.audience_type);
+    }
+
+    if (!recipients || recipients.length === 0) {
+      throw new Error('No eligible recipients found for this campaign.');
+    }
+
+    // 2. Mark Campaign as PROCESSING
     await this.repository.updateCampaign(uuid, {
       status: 'PROCESSING',
-      started_at: new Date().toISOString()
+      total_recipients: recipients.length,
+      updated_at: new Date().toISOString()
     });
 
-    // Resolve Audience based on campaign audience_type
-    let audience = [];
-    if (campaign.audience_type === 'SPECIFIC') {
-      const targetEmails = typeof campaign.target_emails === 'string' 
-        ? JSON.parse(campaign.target_emails) 
-        : (campaign.target_emails || []);
-      audience = targetEmails.map(email => ({ email, uuid: null }));
-    } else {
-      audience = await this.repository.getAudience('ALL_ACTIVE_USERS');
-    }
-    
-    if (audience.length === 0) {
-      await this.repository.updateCampaign(uuid, {
-        status: 'COMPLETED',
-        completed_at: new Date().toISOString()
-      });
-      return { message: 'Campaign completed with 0 recipients.' };
-    }
-
-    // Create recipients logs
-    const recipients = audience.map(u => ({
-      uuid: uuidv4(),
-      campaign_uuid: uuid,
-      user_uuid: u.uuid || null,
-      email: u.email,
-      status: 'PENDING'
-    }));
-
-    await this.repository.createRecipients(recipients);
-
-    // Queue emails asynchronously
-    for (const recipient of recipients) {
-      // Create unsubscribe token using a simple HMAC
-      const hmac = crypto.createHmac('sha256', process.env.JWT_SECRET || 'secret');
-      hmac.update(recipient.email);
-      const token = hmac.digest('hex');
+    // 3. Queue emails through centralized email service
+    const campaignRecipients = [];
+    for (const user of recipients) {
+      const recipientUuid = this.generateUuid();
       
-      const unsubscribeUrl = `${process.env.APP_URL || 'http://localhost:5000'}/api/marketing/unsubscribe?email=${encodeURIComponent(recipient.email)}&token=${token}`;
+      // Generate unique unsubscribe token
+      const token = crypto.randomBytes(32).toString('hex');
+      const unsubscribeUrl = `${process.env.APP_URL || 'http://localhost:3000'}/api/marketing/unsubscribe?token=${token}&email=${encodeURIComponent(user.email)}`;
 
-      const variables = {
-        unsubscribe_url: unsubscribeUrl
-      };
+      campaignRecipients.push({
+        uuid: recipientUuid,
+        campaign_uuid: uuid,
+        recipient_email: user.email,
+        status: 'PENDING',
+        unsubscribe_token: token
+      });
 
-      try {
-        await EmailService.sendAsync({
-          to: recipient.email,
-          subject: campaign.subject,
-          template: campaign.template_key,
-          html: campaign.html_body,
-          variables,
-          type: 'MARKETING',
-          campaign_uuid: campaign.uuid
-        });
-      } catch (err) {
-        console.error(`[CampaignService] Failed to queue marketing email for ${recipient.email}:`, err.message);
-      }
+      // Centralized async job queue
+      await EmailService.sendAsync({
+        template: campaign.template_key || null,
+        rawHtml: campaign.html_body || null,
+        subject: campaign.subject,
+        to: user.email,
+        type: 'MARKETING',
+        variables: {
+          unsubscribe_url: unsubscribeUrl,
+          campaign_name: campaign.name
+        }
+      });
     }
 
-    // In a real robust system, a worker would poll PROCESSING campaigns to check if all recipients are COMPLETED/FAILED.
-    // Here we mark it COMPLETED once queued, as the EmailService async handles the rest.
+    // 4. Batch record all recipients
+    await this.repository.createRecipients(campaignRecipients);
+
+    // 5. Update Status to SENT
     await this.repository.updateCampaign(uuid, {
-      status: 'COMPLETED',
-      completed_at: new Date().toISOString()
+      status: 'SENT',
+      sent_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     });
 
-    return { message: `Campaign sent/queued for ${audience.length} recipients.` };
+    return { message: `Campaign sent to ${recipients.length} recipients.` };
   }
 
-  async unsubscribe(email, token) {
-    if (!email || !token) throw new Error('Email and token are required.');
-    
-    const hmac = crypto.createHmac('sha256', process.env.JWT_SECRET || 'secret');
-    hmac.update(email);
-    const expectedToken = hmac.digest('hex');
-    
-    if (token !== expectedToken) {
-      throw new Error('Invalid unsubscribe token.');
-    }
-    
+  async handleUnsubscribe(email, token) {
+    if (!email) throw new Error('Email is required to unsubscribe.');
     await this.repository.optOutUser(email);
-    return { message: 'Successfully unsubscribed from marketing emails.' };
+    return { message: 'You have been successfully unsubscribed from marketing emails.' };
   }
 }
 

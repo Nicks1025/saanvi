@@ -1,324 +1,326 @@
 const BaseRepository = require('../../base/baseRepository');
+const QueryHelper = require('../../database/queryHelper');
 const { v4: uuidv4 } = require('uuid');
 
 class ChatRepository extends BaseRepository {
+  constructor(context = null) {
+    super(context);
+    this.sqlRequests = new QueryHelper('chat_requests');
+    this.sqlConversations = new QueryHelper('conversations');
+    this.sqlMembers = new QueryHelper('conversation_members');
+    this.sqlMessages = new QueryHelper('messages');
+    this.sqlAttachments = new QueryHelper('message_attachments');
+    this.sqlReceipts = new QueryHelper('message_receipts');
+    this.sqlBlocks = new QueryHelper('user_blocks');
+    this.sqlUsers = new QueryHelper('users');
+  }
 
   // ---- Requests ----
   async createChatRequest(senderUuid, receiverUuid) {
     const uuid = uuidv4();
-    const result = await this.queryHelper
-      .from('chat_requests')
-      .insert({
-        uuid,
-        sender_uuid: senderUuid,
-        receiver_uuid: receiverUuid,
-        status: 'pending'
-      })
-      .execute();
-    return result[0];
+    const query = this.sqlRequests.insert({
+      uuid,
+      sender_uuid: senderUuid,
+      receiver_uuid: receiverUuid,
+      status: 'pending'
+    });
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   async getChatRequest(uuid) {
-    const result = await this.queryHelper
-      .from('chat_requests')
-      .where('uuid', 'eq', uuid)
-      .execute();
-    return result[0];
+    const query = this.sqlRequests
+      .select()
+      .field('*')
+      .where('uuid', '=', uuid);
+    return this.runQueryFirst(query);
   }
 
   async getChatRequests(userUuid) {
-    const result = await this.queryHelper
-      .from('chat_requests', 'cr')
-      .field('cr.*')
+    const query = this.sqlRequests
+      .select()
+      .field('chat_requests.*')
       .field('s.email as sender_email')
       .field('sd.display_name as sender_name')
       .field('sd.profile_image_url as sender_image')
       .field('r.email as receiver_email')
       .field('rd.display_name as receiver_name')
       .field('rd.profile_image_url as receiver_image')
-      .join('users', 's', 'cr.sender_uuid = s.uuid')
-      .leftJoin('user_details', 'sd', 's.uuid = sd.user_uuid')
-      .join('users', 'r', 'cr.receiver_uuid = r.uuid')
-      .leftJoin('user_details', 'rd', 'r.uuid = rd.user_uuid')
-      .where(`cr.sender_uuid = '${userUuid}' OR cr.receiver_uuid = '${userUuid}'`)
-      .orderBy('cr.created_at', false)
-      .execute();
-    return result;
+      .join('users as s', 'chat_requests.sender_uuid', 's.uuid')
+      .leftJoin('user_details as sd', 's.uuid', 'sd.user_uuid')
+      .join('users as r', 'chat_requests.receiver_uuid', 'r.uuid')
+      .leftJoin('user_details as rd', 'r.uuid', 'rd.user_uuid')
+      .whereRaw('(chat_requests.sender_uuid = ? OR chat_requests.receiver_uuid = ?)', [userUuid, userUuid])
+      .orderBy('chat_requests.created_at', 'desc');
+
+    return this.runQuery(query);
   }
 
   async updateChatRequestStatus(uuid, status) {
-    const result = await this.queryHelper
-      .from('chat_requests')
+    const query = this.sqlRequests
       .update({ status, responded_at: new Date(), updated_at: new Date() })
-      .where('uuid', 'eq', uuid)
-      .execute();
-    return result[0];
+      .where('uuid', '=', uuid);
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   // ---- Conversations ----
   async createConversation(isGroup, createdByUuid = null, name = null, description = null, profileImageUrl = null) {
     const uuid = uuidv4();
-    const result = await this.queryHelper
-      .from('conversations')
-      .insert({
-        uuid,
-        is_group: isGroup,
-        name,
-        description,
-        profile_image_url: profileImageUrl,
-        created_by_uuid: createdByUuid
-      })
-      .execute();
-    return result[0];
+    const query = this.sqlConversations.insert({
+      uuid,
+      is_group: isGroup,
+      name,
+      description,
+      profile_image_url: profileImageUrl,
+      created_by_uuid: createdByUuid
+    });
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   async addConversationMember(conversationUuid, userUuid) {
-    const existing = await this.queryHelper
-      .from('conversation_members')
-      .where('conversation_uuid', 'eq', conversationUuid)
-      .where('user_uuid', 'eq', userUuid)
-      .execute();
+    const existing = await this.runQueryFirst(
+      this.sqlMembers
+        .select()
+        .field('uuid')
+        .where('conversation_uuid', '=', conversationUuid)
+        .where('user_uuid', '=', userUuid)
+    );
 
-    if (existing && existing.length > 0) {
-      const result = await this.queryHelper
-        .from('conversation_members')
+    if (existing) {
+      const query = this.sqlMembers
         .update({ archived_at: null })
-        .where('conversation_uuid', 'eq', conversationUuid)
-        .where('user_uuid', 'eq', userUuid)
-        .execute();
-      return result[0];
+        .where('conversation_uuid', '=', conversationUuid)
+        .where('user_uuid', '=', userUuid);
+      const result = await this.execute(query);
+      return result.rows[0];
     }
 
     const uuid = uuidv4();
-    const result = await this.queryHelper
-      .from('conversation_members')
-      .insert({
-        uuid,
-        conversation_uuid: conversationUuid,
-        user_uuid: userUuid
-      })
-      .execute();
-    return result[0];
+    const query = this.sqlMembers.insert({
+      uuid,
+      conversation_uuid: conversationUuid,
+      user_uuid: userUuid
+    });
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   async removeConversationMember(conversationUuid, userUuid) {
-    const result = await this.queryHelper
-      .from('conversation_members')
+    const query = this.sqlMembers
       .update({ archived_at: new Date() })
-      .where('conversation_uuid', 'eq', conversationUuid)
-      .where('user_uuid', 'eq', userUuid)
-      .execute();
-    return result[0];
+      .where('conversation_uuid', '=', conversationUuid)
+      .where('user_uuid', '=', userUuid);
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   async getConversation(uuid) {
-    const result = await this.queryHelper
-      .from('conversations')
-      .where('uuid', 'eq', uuid)
-      .where('archived_at', 'is', null)
-      .execute();
-    return result[0];
+    const query = this.sqlConversations
+      .select()
+      .field('*')
+      .where('uuid', '=', uuid)
+      .whereNull('archived_at');
+    return this.runQueryFirst(query);
   }
 
   async getUserConversations(userUuid) {
-    const db = this.queryHelper.db;
-
-    // Correlated subqueries for aggregated JSON columns — these reference the
-    // outer query alias `c` and use Postgres JSON aggregate functions, which
-    // cannot be expressed through the top-level queryHelper chain.
-    const membersSubquery = db('conversation_members as cm2')
-      .join('users as u', 'cm2.user_uuid', 'u.uuid')
-      .leftJoin('user_details as ud', 'u.uuid', 'ud.user_uuid')
-      .whereRaw('cm2.conversation_uuid = c.uuid')
-      .whereNull('cm2.archived_at')
-      .select(db.raw(`json_agg(json_build_object('uuid', u.uuid, 'display_name', ud.display_name, 'profile_image_url', ud.profile_image_url))`))
-      .as('members');
-
-    const lastMessageSubquery = db('messages as m')
-      .whereRaw('m.conversation_uuid = c.uuid')
-      .whereNull('m.archived_at')
-      .orderBy('m.sent_at', 'desc')
-      .limit(1)
-      .select(db.raw(`
-        json_build_object(
-          'uuid', m.uuid,
-          'message', m.message,
-          'sent_at', m.sent_at,
-          'sender_uuid', m.sender_uuid,
-          'attachments', (
-            SELECT json_agg(json_build_object('attachment_type', ma.attachment_type, 'mime_type', ma.mime_type))
-            FROM message_attachments ma WHERE ma.message_uuid = m.uuid AND ma.archived_at IS NULL
-          ),
-          'receipts', (
-            SELECT json_agg(json_build_object('user_uuid', mr.user_uuid, 'delivered_at', mr.delivered_at, 'seen_at', mr.seen_at))
-            FROM message_receipts mr WHERE mr.message_uuid = m.uuid
+    const rows = await this.queryRaw(`
+      SELECT
+        c.*,
+        cm.wallpaper_url,
+        (
+          SELECT json_agg(json_build_object('uuid', u.uuid, 'display_name', ud.display_name, 'profile_image_url', ud.profile_image_url))
+          FROM conversation_members cm2
+          JOIN users u ON cm2.user_uuid = u.uuid
+          LEFT JOIN user_details ud ON u.uuid = ud.user_uuid
+          WHERE cm2.conversation_uuid = c.uuid AND cm2.archived_at IS NULL
+        ) AS members,
+        (
+          SELECT json_build_object(
+            'uuid', m.uuid,
+            'message', m.message,
+            'sent_at', m.sent_at,
+            'sender_uuid', m.sender_uuid,
+            'attachments', (
+              SELECT json_agg(json_build_object('attachment_type', ma.attachment_type, 'mime_type', ma.mime_type))
+              FROM message_attachments ma WHERE ma.message_uuid = m.uuid AND ma.archived_at IS NULL
+            ),
+            'receipts', (
+              SELECT json_agg(json_build_object('user_uuid', mr.user_uuid, 'delivered_at', mr.delivered_at, 'seen_at', mr.seen_at))
+              FROM message_receipts mr WHERE mr.message_uuid = m.uuid
+            )
           )
-        )
-      `))
-      .as('last_message');
-
-    const unreadCountSubquery = db('messages as m2')
-      .leftJoin(db.raw('message_receipts as mr2 on mr2.message_uuid = m2.uuid and mr2.user_uuid = ?', [userUuid]))
-      .whereRaw('m2.conversation_uuid = c.uuid')
-      .where('m2.sender_uuid', '!=', userUuid)
-      .whereNull('m2.archived_at')
-      .whereNull('mr2.seen_at')
-      .count('*')
-      .as('unread_count');
-
-    const result = await this.queryHelper
-      .from('conversations', 'c')
-      .field('c.*')
-      .field('cm.wallpaper_url')
-      .field(membersSubquery)
-      .field(lastMessageSubquery)
-      .field(unreadCountSubquery)
-      .join('conversation_members', 'cm', 'c.uuid = cm.conversation_uuid')
-      .where('cm.user_uuid', 'eq', userUuid)
-      .where('c.archived_at', 'is', null)
-      .where('cm.archived_at', 'is', null)
-      .execute();
-    return result;
+          FROM messages m
+          WHERE m.conversation_uuid = c.uuid AND m.archived_at IS NULL
+          ORDER BY m.sent_at DESC
+          LIMIT 1
+        ) AS last_message,
+        (
+          SELECT count(*)
+          FROM messages m2
+          LEFT JOIN message_receipts mr2 ON mr2.message_uuid = m2.uuid AND mr2.user_uuid = ?
+          WHERE m2.conversation_uuid = c.uuid
+            AND m2.sender_uuid != ?
+            AND m2.archived_at IS NULL
+            AND mr2.seen_at IS NULL
+        ) AS unread_count
+      FROM conversations c
+      JOIN conversation_members cm ON c.uuid = cm.conversation_uuid
+      WHERE cm.user_uuid = ?
+        AND c.archived_at IS NULL
+        AND cm.archived_at IS NULL
+    `, [userUuid, userUuid, userUuid]);
+    return rows;
   }
   
   async updateConversationWallpaper(conversationUuid, userUuid, wallpaperUrl) {
-    const result = await this.queryHelper
-      .from('conversation_members')
+    const query = this.sqlMembers
       .update({ wallpaper_url: wallpaperUrl })
-      .where('conversation_uuid', 'eq', conversationUuid)
-      .where('user_uuid', 'eq', userUuid)
-      .execute();
-    return result[0];
+      .where('conversation_uuid', '=', conversationUuid)
+      .where('user_uuid', '=', userUuid);
+    const result = await this.execute(query);
+    return result.rows[0];
   }
   
   async getExistingOneToOneConversation(user1, user2) {
-    const result = await this.queryHelper
-      .from('conversations', 'c')
-      .field('c.uuid')
-      .join('conversation_members', 'cm1', 'c.uuid = cm1.conversation_uuid')
-      .join('conversation_members', 'cm2', 'c.uuid = cm2.conversation_uuid')
-      .where('c.is_group', 'eq', false)
-      .where('cm1.user_uuid', 'eq', user1)
-      .where('cm1.archived_at', 'is', null)
-      .where('cm2.user_uuid', 'eq', user2)
-      .where('cm2.archived_at', 'is', null)
-      .limit(1)
-      .execute();
-    return result[0];
+    const query = this.sqlConversations
+      .select()
+      .field('conversations.uuid')
+      .join('conversation_members as cm1', 'conversations.uuid', 'cm1.conversation_uuid')
+      .join('conversation_members as cm2', 'conversations.uuid', 'cm2.conversation_uuid')
+      .where('conversations.is_group', '=', false)
+      .where('cm1.user_uuid', '=', user1)
+      .whereNull('cm1.archived_at')
+      .where('cm2.user_uuid', '=', user2)
+      .whereNull('cm2.archived_at')
+      .limit(1);
+    return this.runQueryFirst(query);
   }
 
   // ---- Messages ----
   async createMessage(conversationUuid, senderUuid, messageText) {
     const uuid = uuidv4();
-    const result = await this.queryHelper
-      .from('messages')
-      .insert({
-        uuid,
-        conversation_uuid: conversationUuid,
-        sender_uuid: senderUuid,
-        message: messageText
-      })
-      .execute();
-    return result[0];
+    const query = this.sqlMessages.insert({
+      uuid,
+      conversation_uuid: conversationUuid,
+      sender_uuid: senderUuid,
+      message: messageText
+    });
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   async getMessages(conversationUuid, limit = 50, cursor = null, after = null) {
-    const db = this.queryHelper.db;
-
-    // Correlated JSON aggregate subqueries — reference outer alias `m` and use
-    // Postgres-specific JSON functions, which require direct Knex builder access.
-    const receiptsSubquery = db('message_receipts as mr')
-      .whereRaw('mr.message_uuid = m.uuid')
-      .select(db.raw(`json_agg(json_build_object('user_uuid', mr.user_uuid, 'delivered_at', mr.delivered_at, 'seen_at', mr.seen_at))`))
-      .as('receipts');
-
-    const attachmentsSubquery = db('message_attachments as ma')
-      .whereRaw('ma.message_uuid = m.uuid')
-      .whereNull('ma.archived_at')
-      .select(db.raw(`json_agg(json_build_object('uuid', ma.uuid, 'file_name', ma.file_name, 'original_file_name', ma.original_file_name, 'mime_type', ma.mime_type, 'file_size', ma.file_size, 'attachment_type', ma.attachment_type, 'width', ma.width, 'height', ma.height, 'preview_data', ma.preview_data))`))
-      .as('attachments');
-
-    const query = this.queryHelper
-      .from('messages', 'm')
-      .field('m.*')
-      .field(receiptsSubquery)
-      .field(attachmentsSubquery)
-      .where('m.conversation_uuid', 'eq', conversationUuid)
-      .where('m.archived_at', 'is', null)
-      .orderBy('m.sent_at', false)
-      .limit(limit);
-
+    let sql = `
+      SELECT
+        m.*,
+        (
+          SELECT json_agg(json_build_object('user_uuid', mr.user_uuid, 'delivered_at', mr.delivered_at, 'seen_at', mr.seen_at))
+          FROM message_receipts mr WHERE mr.message_uuid = m.uuid
+        ) AS receipts,
+        (
+          SELECT json_agg(json_build_object(
+            'uuid', ma.uuid,
+            'file_name', ma.file_name,
+            'original_file_name', ma.original_file_name,
+            'mime_type', ma.mime_type,
+            'file_size', ma.file_size,
+            'attachment_type', ma.attachment_type,
+            'width', ma.width,
+            'height', ma.height,
+            'preview_data', ma.preview_data
+          ))
+          FROM message_attachments ma WHERE ma.message_uuid = m.uuid AND ma.archived_at IS NULL
+        ) AS attachments
+      FROM messages m
+      WHERE m.conversation_uuid = ?
+        AND m.archived_at IS NULL
+    `;
+    const params = [conversationUuid];
     if (cursor) {
-      query.where('m.sent_at', '<', cursor);
+      sql += ` AND m.sent_at < ?`;
+      params.push(cursor);
     }
-    
     if (after) {
-      query.where('m.sent_at', '>', after);
+      sql += ` AND m.sent_at > ?`;
+      params.push(after);
     }
+    sql += ` ORDER BY m.sent_at DESC LIMIT ?`;
+    params.push(limit);
 
-    const result = await query.execute();
-    return result;
+    return await this.queryRaw(sql, params);
+  }
+
+  async getMessage(messageUuid) {
+    const query = this.sqlMessages
+      .select()
+      .field('*')
+      .where('uuid', '=', messageUuid)
+      .whereNull('archived_at');
+    return this.runQueryFirst(query);
   }
   
   async getAttachment(attachmentUuid) {
-    const result = await this.queryHelper
-      .from('message_attachments')
-      .where('uuid', 'eq', attachmentUuid)
-      .where('archived_at', 'is', null)
-      .execute();
-    return result[0];
+    const query = this.sqlAttachments
+      .select()
+      .field('*')
+      .where('uuid', '=', attachmentUuid)
+      .whereNull('archived_at');
+    return this.runQueryFirst(query);
   }
 
   async createMessageAttachment(messageUuid, metadata) {
     const uuid = metadata.uuid || uuidv4();
-    const result = await this.queryHelper
-      .from('message_attachments')
-      .insert({
-        uuid,
-        message_uuid: messageUuid,
-        storage_key: metadata.storage_key,
-        file_name: metadata.file_name,
-        original_file_name: metadata.original_file_name,
-        mime_type: metadata.mime_type,
-        file_size: metadata.file_size,
-        attachment_type: metadata.attachment_type,
-        width: metadata.width || null,
-        height: metadata.height || null,
-        duration: metadata.duration || null,
-        preview_data: metadata.preview_data || null
-      })
-      .execute();
-    return result[0];
+    const query = this.sqlAttachments.insert({
+      uuid,
+      message_uuid: messageUuid,
+      storage_key: metadata.storage_key,
+      file_name: metadata.file_name,
+      original_file_name: metadata.original_file_name,
+      mime_type: metadata.mime_type,
+      file_size: metadata.file_size,
+      attachment_type: metadata.attachment_type,
+      width: metadata.width || null,
+      height: metadata.height || null,
+      duration: metadata.duration || null,
+      preview_data: metadata.preview_data || null
+    });
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   async deleteMessageAttachment(attachmentUuid) {
-    const result = await this.queryHelper
-      .from('message_attachments')
+    const query = this.sqlAttachments
       .update({ archived_at: new Date(), updated_at: new Date() })
-      .where('uuid', 'eq', attachmentUuid)
-      .execute();
-    return result[0];
+      .where('uuid', '=', attachmentUuid);
+    const result = await this.execute(query);
+    return result.rows[0];
   }
   
   async upsertMessageReceipt(messageUuid, userUuid, status) {
-    const existing = await this.queryHelper
-      .from('message_receipts')
-      .where('message_uuid', 'eq', messageUuid)
-      .where('user_uuid', 'eq', userUuid)
-      .execute();
+    const existing = await this.runQueryFirst(
+      this.sqlReceipts
+        .select()
+        .field('uuid')
+        .field('delivered_at')
+        .field('seen_at')
+        .where('message_uuid', '=', messageUuid)
+        .where('user_uuid', '=', userUuid)
+    );
 
-    if (existing && existing.length > 0) {
+    if (existing) {
       const payload = { updated_at: new Date() };
       if (status === 'seen') payload.seen_at = new Date();
-      if (!existing[0].delivered_at || status === 'delivered') payload.delivered_at = new Date();
+      if (!existing.delivered_at || status === 'delivered') payload.delivered_at = new Date();
 
-      const result = await this.queryHelper
-        .from('message_receipts')
+      const query = this.sqlReceipts
         .update(payload)
-        .where('message_uuid', 'eq', messageUuid)
-        .where('user_uuid', 'eq', userUuid)
-        .execute();
-      return result[0];
+        .where('message_uuid', '=', messageUuid)
+        .where('user_uuid', '=', userUuid);
+      const result = await this.execute(query);
+      return result.rows[0];
     }
 
     const payload = {
@@ -332,34 +334,32 @@ class ChatRepository extends BaseRepository {
     }
     
     try {
-      const result = await this.queryHelper
-        .from('message_receipts')
-        .insert(payload)
-        .execute();
-      return result[0];
+      const query = this.sqlReceipts.insert(payload);
+      const result = await this.execute(query);
+      return result.rows[0];
     } catch (err) {
-      // 23505 is PostgreSQL's code for unique_violation
       if (err.code === '23505') {
-        // Race condition occurred, it was inserted by another request.
-        // Re-run the update logic.
-        const refetched = await this.queryHelper
-          .from('message_receipts')
-          .where('message_uuid', 'eq', messageUuid)
-          .where('user_uuid', 'eq', userUuid)
-          .execute();
+        const refetched = await this.runQueryFirst(
+          this.sqlReceipts
+            .select()
+            .field('uuid')
+            .field('delivered_at')
+            .field('seen_at')
+            .where('message_uuid', '=', messageUuid)
+            .where('user_uuid', '=', userUuid)
+        );
           
-        if (refetched && refetched.length > 0) {
+        if (refetched) {
           const updatePayload = { updated_at: new Date() };
           if (status === 'seen') updatePayload.seen_at = new Date();
-          if (!refetched[0].delivered_at || status === 'delivered') updatePayload.delivered_at = new Date();
+          if (!refetched.delivered_at || status === 'delivered') updatePayload.delivered_at = new Date();
 
-          const result = await this.queryHelper
-            .from('message_receipts')
+          const query = this.sqlReceipts
             .update(updatePayload)
-            .where('message_uuid', 'eq', messageUuid)
-            .where('user_uuid', 'eq', userUuid)
-            .execute();
-          return result[0];
+            .where('message_uuid', '=', messageUuid)
+            .where('user_uuid', '=', userUuid);
+          const result = await this.execute(query);
+          return result.rows[0];
         }
       }
       throw err;
@@ -367,20 +367,17 @@ class ChatRepository extends BaseRepository {
   }
 
   async markOfflineMessagesAsDelivered(userUuid) {
-    const db = this.queryHelper.db;
-    
-    // Uses the Knex builder directly because this is a bulk upsert pattern
-    // with multiple operations (insert batch + update batch) that cannot be
-    // expressed as a single queryHelper chain.
-    const messages = await db('messages as m')
-      .join('conversation_members as cm', 'm.conversation_uuid', 'cm.conversation_uuid')
-      .leftJoin(db.raw('message_receipts as mr on mr.message_uuid = m.uuid and mr.user_uuid = ?', [userUuid]))
-      .where('cm.user_uuid', userUuid)
-      .where('m.sender_uuid', '!=', userUuid)
-      .whereNull('cm.archived_at')
-      .whereNull('m.archived_at')
-      .whereNull('mr.delivered_at')
-      .select('m.uuid as message_uuid', 'm.conversation_uuid', 'mr.uuid as existing_receipt_uuid');
+    const messages = await this.queryRaw(`
+      SELECT m.uuid AS message_uuid, m.conversation_uuid, mr.uuid AS existing_receipt_uuid
+      FROM messages m
+      JOIN conversation_members cm ON m.conversation_uuid = cm.conversation_uuid
+      LEFT JOIN message_receipts mr ON mr.message_uuid = m.uuid AND mr.user_uuid = ?
+      WHERE cm.user_uuid = ?
+        AND m.sender_uuid != ?
+        AND cm.archived_at IS NULL
+        AND m.archived_at IS NULL
+        AND mr.delivered_at IS NULL
+    `, [userUuid, userUuid, userUuid]);
 
     if (!messages.length) return [];
 
@@ -390,22 +387,24 @@ class ChatRepository extends BaseRepository {
 
     for (const msg of messages) {
       if (msg.existing_receipt_uuid) {
-         toUpdate.push(msg.existing_receipt_uuid);
+        toUpdate.push(msg.existing_receipt_uuid);
       } else {
-         toInsert.push({
-           uuid: uuidv4(),
-           message_uuid: msg.message_uuid,
-           user_uuid: userUuid,
-           delivered_at: now
-         });
+        toInsert.push({
+          uuid: uuidv4(),
+          message_uuid: msg.message_uuid,
+          user_uuid: userUuid,
+          delivered_at: now
+        });
       }
     }
 
     if (toInsert.length > 0) {
-      await db('message_receipts').insert(toInsert);
+      await this.execute(this.sqlReceipts.insert(toInsert));
     }
     if (toUpdate.length > 0) {
-      await db('message_receipts').whereIn('uuid', toUpdate).update({ delivered_at: now, updated_at: now });
+      await this.execute(
+        this.sqlReceipts.update({ delivered_at: now, updated_at: now }).whereIn('uuid', toUpdate)
+      );
     }
 
     return messages.map(m => ({
@@ -419,75 +418,70 @@ class ChatRepository extends BaseRepository {
 
   // ---- Blocks ----
   async blockUser(blockerUuid, blockedUuid) {
-    const existing = await this.queryHelper
-      .from('user_blocks')
-      .where('blocker_uuid', 'eq', blockerUuid)
-      .where('blocked_uuid', 'eq', blockedUuid)
-      .execute();
+    const existing = await this.runQueryFirst(
+      this.sqlBlocks
+        .select()
+        .field('uuid')
+        .where('blocker_uuid', '=', blockerUuid)
+        .where('blocked_uuid', '=', blockedUuid)
+    );
 
-    if (existing && existing.length > 0) {
-      const result = await this.queryHelper
-        .from('user_blocks')
+    if (existing) {
+      const query = this.sqlBlocks
         .update({ archived_at: null, updated_at: new Date() })
-        .where('blocker_uuid', 'eq', blockerUuid)
-        .where('blocked_uuid', 'eq', blockedUuid)
-        .execute();
-      return result[0];
+        .where('blocker_uuid', '=', blockerUuid)
+        .where('blocked_uuid', '=', blockedUuid);
+      const result = await this.execute(query);
+      return result.rows[0];
     }
 
     const uuid = uuidv4();
-    const result = await this.queryHelper
-      .from('user_blocks')
-      .insert({
-        uuid,
-        blocker_uuid: blockerUuid,
-        blocked_uuid: blockedUuid
-      })
-      .execute();
-    return result[0];
+    const query = this.sqlBlocks.insert({
+      uuid,
+      blocker_uuid: blockerUuid,
+      blocked_uuid: blockedUuid
+    });
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   async unblockUser(blockerUuid, blockedUuid) {
-    const result = await this.queryHelper
-      .from('user_blocks')
+    const query = this.sqlBlocks
       .update({ archived_at: new Date(), updated_at: new Date() })
-      .where('blocker_uuid', 'eq', blockerUuid)
-      .where('blocked_uuid', 'eq', blockedUuid)
-      .execute();
-    return result[0];
+      .where('blocker_uuid', '=', blockerUuid)
+      .where('blocked_uuid', '=', blockedUuid);
+    const result = await this.execute(query);
+    return result.rows[0];
   }
   
   async getBlockRecord(user1, user2) {
-    const result = await this.queryHelper
-      .from('user_blocks')
-      .where('archived_at', 'is', null)
-      .where(`(blocker_uuid = '${user1}' AND blocked_uuid = '${user2}') OR (blocker_uuid = '${user2}' AND blocked_uuid = '${user1}')`)
-      .execute();
-    return result;
+    const query = this.sqlBlocks
+      .select()
+      .field('*')
+      .whereNull('archived_at')
+      .whereRaw('((blocker_uuid = ? AND blocked_uuid = ?) OR (blocker_uuid = ? AND blocked_uuid = ?))', [user1, user2, user2, user1]);
+    return this.runQuery(query);
   }
 
   async searchUsers(query = '', limit = 50) {
-    let qh = this.queryHelper
-      .from('users', 'u')
-      .field('u.uuid')
-      .field('u.email')
-      .field('ud.first_name')
-      .field('ud.last_name')
-      .field('ud.display_name')
-      .field('ud.profile_image_url')
-      .leftJoin('user_details', 'ud', 'u.uuid = ud.user_uuid')
-      .where('u.status', 'eq', 'active');
+    const dataQuery = this.sqlUsers
+      .select()
+      .field('users.uuid')
+      .field('users.email')
+      .field('user_details.first_name')
+      .field('user_details.last_name')
+      .field('user_details.display_name')
+      .field('user_details.profile_image_url')
+      .leftJoin('user_details', 'users.uuid', 'user_details.user_uuid')
+      .where('users.status', '=', 'active');
 
     if (query) {
-      // `query` is free-text user input — escape single quotes before interpolating.
-      const safe = query.replace(/'/g, "''");
-      qh = qh
-        .where(`u.email ILIKE '%${safe}%' OR ud.display_name ILIKE '%${safe}%' OR ud.first_name ILIKE '%${safe}%' OR ud.last_name ILIKE '%${safe}%'`);
+      const pattern = `%${query}%`;
+      dataQuery.whereRaw('(users.email ILIKE ? OR user_details.display_name ILIKE ? OR user_details.first_name ILIKE ? OR user_details.last_name ILIKE ?)', [pattern, pattern, pattern, pattern]);
     }
 
-    qh = qh.limit(limit);
-    const result = await qh.execute();
-    return result;
+    dataQuery.limit(limit);
+    return this.runQuery(dataQuery);
   }
 }
 

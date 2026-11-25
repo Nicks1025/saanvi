@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from '@/services/axios.client';
+import axios, { refreshAuthToken } from '@/services/axios.client';
 import i18n from '../i18n';
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
@@ -9,10 +9,9 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [supabaseToken, setSupabaseToken] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [isSessionInitializing, setIsSessionInitializing] = useState(false);
+  const [isSessionInitializing, setIsSessionInitializing] = useState(true);
   const isFetchingMe = React.useRef(false);
 
   // Keep fetchUser for profile sync — merges JWT auth fields with API profile data
@@ -30,7 +29,6 @@ export const AuthProvider = ({ children }) => {
         let tokenData = {};
         if (token) {
           try {
-            const { jwtDecode } = await import('jwt-decode');
             tokenData = jwtDecode(token);
           } catch {}
         }
@@ -72,65 +70,99 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // On initial load, decode token from cookies for auth state & preferences,
-  // then fetch full profile from /api/users/me
+  // On initial load, restore session: check auth_token or refresh token if expired/missing
   useEffect(() => {
-    const token = Cookies.get('auth_token');
-    if (token) {
+    const initializeAuth = async () => {
+      setLoading(true);
+      setIsSessionInitializing(true);
       try {
-        const decodedUser = jwtDecode(token);
-        // Check if token is expired
-        if (decodedUser.exp && decodedUser.exp * 1000 < Date.now()) {
-          console.warn('Token expired on load');
-          Cookies.remove('auth_token', { path: '/' });
-          Cookies.remove('supabase_token', { path: '/' });
-          setLoading(false);
-          return;
+        const token = Cookies.get('auth_token');
+        let activeToken = token;
+        let decodedUser = null;
+
+        if (token) {
+          try {
+            const decoded = jwtDecode(token);
+            if (decoded.exp && decoded.exp * 1000 > Date.now() + 10000) {
+              decodedUser = decoded;
+            }
+          } catch (e) {
+            activeToken = null;
+          }
         }
 
-        // Set minimal auth state immediately from JWT
-        setUser(decodedUser);
-        const storedSbToken = Cookies.get('supabase_token');
-        if (storedSbToken) setSupabaseToken(storedSbToken);
-        setIsAuthenticated(true);
+        // If no active valid token found, attempt session restoration via refresh token
+        if (!decodedUser) {
+          const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+          const search = typeof window !== 'undefined' ? window.location.search : '';
+          const isAuthPage =
+            pathname.startsWith('/login') ||
+            pathname.startsWith('/signup') ||
+            pathname.startsWith('/forgot-password') ||
+            pathname.startsWith('/reset-password') ||
+            pathname.startsWith('/verify-otp') ||
+            search.includes('reason=session_expired');
 
-        // Apply theme/font preferences immediately (no flash)
-        const syncDetail = {};
-        if (decodedUser.language && decodedUser.language !== i18n.resolvedLanguage) {
-          i18n.changeLanguage(decodedUser.language);
-        }
-        if (decodedUser.theme) {
-          localStorage.setItem('app-theme', decodedUser.theme);
-          syncDetail.theme = decodedUser.theme;
-        }
-        if (decodedUser.font) {
-          localStorage.setItem('app-font', decodedUser.font);
-          syncDetail.font = decodedUser.font;
-        }
-        if (syncDetail.theme || syncDetail.font) {
-          setTimeout(() => {
-            window.dispatchEvent(new CustomEvent('app-theme-sync', { detail: syncDetail }));
-          }, 0);
+          if (!isAuthPage) {
+            try {
+              const refreshedToken = await refreshAuthToken();
+              if (refreshedToken) {
+                activeToken = refreshedToken;
+                decodedUser = jwtDecode(refreshedToken);
+              }
+            } catch (refreshErr) {
+              setUser(null);
+              setIsAuthenticated(false);
+              setLoading(false);
+              setIsSessionInitializing(false);
+              return;
+            }
+          }
         }
 
-        // Fetch full profile data asynchronously so settings form populates correctly
-        fetchUser();
-        return;
-      } catch (e) {
-        console.error('Invalid token in cookies', e);
-        logout();
+        if (decodedUser) {
+          setUser(decodedUser);
+          setIsAuthenticated(true);
+
+          const syncDetail = {};
+          if (decodedUser.language && decodedUser.language !== i18n.resolvedLanguage) {
+            i18n.changeLanguage(decodedUser.language);
+          }
+          if (decodedUser.theme) {
+            localStorage.setItem('app-theme', decodedUser.theme);
+            syncDetail.theme = decodedUser.theme;
+          }
+          if (decodedUser.font) {
+            localStorage.setItem('app-font', decodedUser.font);
+            syncDetail.font = decodedUser.font;
+          }
+          if (syncDetail.theme || syncDetail.font) {
+            setTimeout(() => {
+              window.dispatchEvent(new CustomEvent('app-theme-sync', { detail: syncDetail }));
+            }, 0);
+          }
+
+          await fetchUser();
+        } else {
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      } catch (err) {
+        console.error('Session initialization error:', err);
+        setUser(null);
+        setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
+        setIsSessionInitializing(false);
       }
-    }
-    setLoading(false);
+    };
+
+    initializeAuth();
   }, []);
 
-  const login = async (token, sbToken) => {
+  const login = async (token) => {
     setIsSessionInitializing(true);
-    Cookies.set('auth_token', token, { expires: 1, path: '/' }); // 1 day
-    if (sbToken) {
-      Cookies.set('supabase_token', sbToken, { expires: 1, path: '/' });
-      setSupabaseToken(sbToken);
-    }
+    Cookies.set('auth_token', token, { expires: 7, path: '/' });
 
     // Decode minimal auth state from the slim JWT
     try {
@@ -163,14 +195,20 @@ export const AuthProvider = ({ children }) => {
     setIsSessionInitializing(false);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await axios.post('/api/login/logout');
+    } catch (e) {
+      // Ignore network errors on logout
+    }
     Cookies.remove('auth_token', { path: '/' });
     Cookies.remove('supabase_token', { path: '/' });
     setUser(null);
-    setSupabaseToken(null);
     setIsAuthenticated(false);
-    // Hard redirect to clear any state
-    window.location.href = '/login';
+    // Hard redirect to clear any state if not already on /login
+    if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+      window.location.href = '/login';
+    }
   };
 
   const hasPermission = (permission) => {
@@ -179,7 +217,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, supabaseToken, isAuthenticated, loading, isSessionInitializing, login, logout, fetchUser, hasPermission }}>
+    <AuthContext.Provider value={{ user, setUser, isAuthenticated, loading, isSessionInitializing, login, logout, fetchUser, hasPermission }}>
       {children}
     </AuthContext.Provider>
   );

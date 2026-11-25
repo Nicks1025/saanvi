@@ -4,6 +4,7 @@ import { Mail, Plus, CheckCircle, XCircle } from 'lucide-react';
 import SDataTable from '@/components/common/SDataTable';
 import SButton from '@/components/common/SButton';
 import SModal from '@/components/common/SModal';
+import SDeleteConfirmation from '@/components/common/SDeleteConfirmation';
 import { getEmailTemplates, updateEmailTemplate, deleteEmailTemplate } from './communicationService';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/store/AuthContext';
@@ -37,7 +38,7 @@ const EmailTemplatesFeature = () => {
       const data = await getEmailTemplates();
       setTemplates(data || []);
     } catch (err) {
-      toast.error(t('admin.communication.fetch_error', 'Failed to fetch templates'));
+      toast.error(t('admin.communication.fetch_error'));
     } finally {
       setLoading(false);
       isFetching.current = false;
@@ -57,7 +58,7 @@ const EmailTemplatesFeature = () => {
     setIsProcessing(true);
     try {
       await updateEmailTemplate(archiveTemplateUuid, { status: 'INACTIVE' });
-      toast.success(t('admin.communication.template_archived', 'Template archived successfully'));
+      toast.success(t('common.toaster.templateArchived'));
       setArchiveTemplateUuid(null);
       fetchTemplates();
     } catch (err) {
@@ -73,7 +74,7 @@ const EmailTemplatesFeature = () => {
     setIsProcessing(true);
     try {
       await updateEmailTemplate(restoreTemplateUuid, { status: 'ACTIVE' });
-      toast.success(t('admin.communication.template_restored', 'Template restored successfully'));
+      toast.success(t('common.toaster.templateRestored'));
       setRestoreTemplateUuid(null);
       fetchTemplates();
     } catch (err) {
@@ -89,7 +90,7 @@ const EmailTemplatesFeature = () => {
     setIsProcessing(true);
     try {
       await deleteEmailTemplate(deleteTemplateUuid);
-      toast.success(t('admin.communication.template_deleted', 'Template deleted successfully'));
+      toast.success(t('common.toaster.templateDeleted'));
       setDeleteTemplateUuid(null);
       fetchTemplates();
     } catch (err) {
@@ -103,21 +104,21 @@ const EmailTemplatesFeature = () => {
   const columns = [
     {
       key: 'template_key',
-      label: t('admin.communication.template_key', 'Template Key'),
+      label: t('admin.communication.template_key'),
       render: (item) => <strong style={{ color: 'var(--accent)' }}>{item.template_key}</strong>
     },
     {
       key: 'name',
-      label: t('admin.communication.template_name', 'Name'),
+      label: t('admin.communication.template_name'),
       sortable: true
     },
     {
       key: 'subject',
-      label: t('admin.communication.subject', 'Subject')
+      label: t('admin.communication.subject')
     },
     {
       key: 'status',
-      label: t('admin.communication.status', 'Status'),
+      label: t('admin.communication.status'),
       render: (item) => (
         <span style={{ 
           display: 'inline-flex', 
@@ -145,7 +146,7 @@ const EmailTemplatesFeature = () => {
       title={
           <div style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-h)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Mail size={22} />
-          {t('admin.communication.email_templates', 'Email Templates')}
+          {t('admin.communication.email_templates')}
           </div>
       }
       headerActions={
@@ -154,7 +155,7 @@ const EmailTemplatesFeature = () => {
             type="button" 
             onClick={handleCreateNew} 
             icon="add" 
-            text={t('admin.communication.create_template', 'New Template')}
+            text={t('admin.communication.create_template')}
             color="primary"
           />
         ) : null
@@ -165,13 +166,13 @@ const EmailTemplatesFeature = () => {
               onClick={() => setActiveTab('ACTIVE')}
               style={{ padding: '0.75rem 1rem', background: 'transparent', border: 'none', borderBottom: activeTab === 'ACTIVE' ? '2px solid var(--accent)' : '2px solid transparent', color: activeTab === 'ACTIVE' ? 'var(--accent)' : 'var(--text-h)', fontWeight: 600, cursor: 'pointer' }}
             >
-              {t('admin.communication.active_tab', 'Active')}
+              {t('admin.communication.active_tab')}
             </button>
             <button
               onClick={() => setActiveTab('INACTIVE')}
               style={{ padding: '0.75rem 1rem', background: 'transparent', border: 'none', borderBottom: activeTab === 'INACTIVE' ? '2px solid var(--accent)' : '2px solid transparent', color: activeTab === 'INACTIVE' ? 'var(--accent)' : 'var(--text-h)', fontWeight: 600, cursor: 'pointer' }}
             >
-              {t('admin.communication.archived_tab', 'Archived')}
+              {t('admin.communication.archived_tab')}
             </button>
           </div>
         }
@@ -194,37 +195,35 @@ const EmailTemplatesFeature = () => {
           if (action === 'restore') setRestoreTemplateUuid(row.uuid);
           if (action === 'delete') setDeleteTemplateUuid(row.uuid);
         }}
-      emptyText={t('admin.communication.no_templates', 'No email templates found.')}
+      emptyText={t('admin.communication.no_templates')}
     />
       <SModal
         isOpen={!!archiveTemplateUuid}
-        title={t('admin.archiveEmailTemplateTitle', 'Archive Email Template')}
+        title={t('common.confirmationModal.archiveEmailTemplateTitle')}
         onConfirm={confirmArchive}
         onCancel={() => setArchiveTemplateUuid(null)}
-        confirmText={t('common.archive', 'Archive')}
+        confirmText={t('common.archive')}
         confirmColor="warning"
         isProcessing={isProcessing}
-        text={t('admin.archiveEmailTemplateConfirm', 'Are you sure you want to archive this email template? It will no longer be available for sending emails.')}
+        text={t('common.confirmationModal.archiveEmailTemplateConfirm')}
       />
       <SModal
         isOpen={!!restoreTemplateUuid}
-        title={t('admin.restoreEmailTemplateTitle', 'Restore Email Template')}
+        title={t('common.confirmationModal.restoreEmailTemplateTitle')}
         onConfirm={confirmRestore}
         onCancel={() => setRestoreTemplateUuid(null)}
-        confirmText={t('common.restore', 'Restore')}
+        confirmText={t('common.restore')}
         confirmColor="primary"
         isProcessing={isProcessing}
-        text={t('admin.restoreEmailTemplateConfirm', 'Are you sure you want to restore this email template? It will become active again.')}
+        text={t('common.confirmationModal.restoreEmailTemplateConfirm')}
       />
-      <SModal
+      <SDeleteConfirmation
         isOpen={!!deleteTemplateUuid}
-        title={t('admin.deleteEmailTemplateTitle', 'Delete Email Template')}
+        title={t('common.confirmationModal.deleteEmailTemplateTitle')}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTemplateUuid(null)}
-        confirmText={t('common.delete', 'Delete')}
-        confirmColor="danger"
         isProcessing={isProcessing}
-        text={t('admin.deleteEmailTemplateConfirm', 'Are you sure you want to delete this email template? This action cannot be undone.')}
+        text={t('common.confirmationModal.deleteEmailTemplateConfirm')}
       />
     </>
   );

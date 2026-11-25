@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import SDataTable from '@/components/common/SDataTable';
 import SModal from '@/components/common/SModal';
+import SDeleteConfirmation from '@/components/common/SDeleteConfirmation';
 import SButton from '@/components/common/SButton';
 import STextField from '@/components/common/STextField';
 import SDropdown from '@/components/common/SDropdown';
@@ -285,15 +286,14 @@ const UserFieldsFeature = ({ disableContainer = false, tabs, activeTab, onTabCha
         </form>
       </SModal>
 
-      <SModal
+      <SDeleteConfirmation
         isOpen={modalState.isOpen && modalState.type === 'delete'}
-        title={t('admin.deleteUserFieldTitle', 'Delete User Field')}
+        title={t('common.confirmationModal.deleteUserFieldTitle')}
         onConfirm={handleDelete}
         onCancel={() => setModalState({ isOpen: false, type: null, field: null })}
         isProcessing={isProcessing}
-        confirmText={t('admin.deleteUserFieldConfirmBtn', 'Delete Field')}
-        confirmColor="danger"
-        text={t('admin.deleteUserFieldConfirm', 'Are you sure you want to PERMANENTLY delete the {{fieldName}} field? This will irreversibly remove all stored values for this field across the entire database.', { fieldName: modalState.field?.label })}
+        confirmText={t('common.confirmationModal.deleteUserFieldConfirmBtn')}
+        text={t('common.confirmationModal.deleteUserFieldConfirm', { fieldName: modalState.field?.label })}
       />
     </div>
   );

@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { X, ImagePlus } from 'lucide-react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import SButton from '@/components/common/SButton';
+import SIcon from '@/components/common/SIcon';
 
 const MAX_IMAGES = parseInt(process.env.NEXT_PUBLIC_CHAT_MAX_IMAGES, 10) || 5;
 
@@ -34,19 +34,19 @@ const ImagePreviewStrip = ({ images, onRemove, onAddMore, onSend, onCancel, send
     <div className="img-preview-strip">
       <div className="img-preview-strip-header">
         <span className="img-preview-strip-count">
-          {images.length !== 1 
-            ? t('chat.imagesSelected_plural', { count: images.length }) 
-            : t('chat.imagesSelected', { count: images.length })}
+          {images.length !== 1
+            ? t('admin.chat.imagesSelected_plural', { count: images.length })
+            : t('admin.chat.imagesSelected', { count: images.length })}
         </span>
-        <button
+        <SIcon
+          name="x"
+          size={18}
           className="img-preview-strip-cancel"
-          type="button"
           onClick={onCancel}
           disabled={sending}
-          aria-label={t('chat.cancelSelection')}
-        >
-          <X size={18} />
-        </button>
+          title={t('admin.chat.cancelSelection')}
+          aria-label={t('admin.chat.cancelSelection')}
+        />
       </div>
 
       <div className="img-preview-strip-thumbs">
@@ -54,31 +54,30 @@ const ImagePreviewStrip = ({ images, onRemove, onAddMore, onSend, onCancel, send
           return (
             <div key={img.previewUrl} className="img-preview-thumb">
               <img src={img.previewUrl} alt={img.file.name} className="img-preview-thumb-img" />
-              <button
+              <SIcon
+                name="x"
+                size={12}
                 className="img-preview-thumb-remove"
-                type="button"
                 onClick={() => {
-                   onRemove(idx);
+                  onRemove(idx);
                 }}
                 disabled={isBusy}
-                aria-label={t('chat.removeImage', { name: img.file.name })}
-              >
-                <X size={12} />
-              </button>
+                title={t('admin.chat.removeImage', { name: img.file.name })}
+                aria-label={t('admin.chat.removeImage', { name: img.file.name })}
+              />
             </div>
           );
         })}
 
         {canAddMore && !isBusy && (
-          <button
+          <SIcon
+            name="image-plus"
+            size={22}
             className="img-preview-add-more"
-            type="button"
             onClick={onAddMore}
-            aria-label={t('chat.addMoreImages')}
-            title={t('chat.addMoreTitle', { max: MAX_IMAGES })}
-          >
-            <ImagePlus size={22} />
-          </button>
+            aria-label={t('admin.chat.addMoreImages')}
+            title={t('admin.chat.addMoreTitle', { max: MAX_IMAGES })}
+          />
         )}
       </div>
 
@@ -97,10 +96,10 @@ const ImagePreviewStrip = ({ images, onRemove, onAddMore, onSend, onCancel, send
             className="img-preview-send-btn"
             type="button"
             onClick={handleInternalSend}
-            aria-label={images.length > 1 ? t('chat.sendImages_plural', { count: images.length }) : t('chat.sendImages')}
+            aria-label={images.length > 1 ? t('admin.chat.sendImages_plural', { count: images.length }) : t('admin.chat.sendImages')}
             color="primary"
           >
-            {images.length > 1 ? t('chat.sendImages_plural', { count: images.length }) : t('chat.sendImages')}
+            {images.length > 1 ? t('admin.chat.sendImages_plural', { count: images.length }) : t('admin.chat.sendImages')}
           </SButton>
         </div>
       )}

@@ -55,9 +55,9 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
         </Link>
 
         {userPermissions.includes('chat.access') && (
-          <Link href="/chat" className={pathname.startsWith("/chat") ? "sidebar-link active" : "sidebar-link"} title={t('navigation.chat', 'Chat')} onClick={onNavClick}>
+          <Link href="/chat" className={pathname.startsWith("/chat") ? "sidebar-link active" : "sidebar-link"} title={t('navigation.chat')} onClick={onNavClick}>
             <MessageSquare size={20} style={{ flexShrink: 0 }} />
-            <span className="sidebar-link-text">{t('navigation.chat', 'Chat')}</span>
+            <span className="sidebar-link-text">{t('navigation.chat')}</span>
           </Link>
         )}
 
@@ -66,7 +66,7 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
             <button
               className={`sidebar-link sidebar-group-btn ${location.pathname.startsWith('/admin') ? 'active-parent' : ''}`}
               onClick={handleAdminClick}
-              title={t('navigation.admin', 'Admin')}
+              title={t('navigation.admin')}
             >
               <Shield size={20} style={{ flexShrink: 0 }} />
               <span className="sidebar-link-text">{t('navigation.admin')}</span>
@@ -80,33 +80,33 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
             {isAdminOpen && (
               <div className="sidebar-sub-menu">
                 {userPermissions.includes('admin.users.view') && (
-                  <Link href="/admin/users" className={pathname.startsWith("/admin/users") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.users', 'Users')} onClick={onNavClick}>
-                    <span className="sidebar-link-text">{t('navigation.users', 'Users')}</span>
+                  <Link href="/admin/users" className={pathname.startsWith("/admin/users") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.users')} onClick={onNavClick}>
+                    <span className="sidebar-link-text">{t('navigation.users')}</span>
                   </Link>
                 )}
                 {userPermissions.includes('admin.roles.view') && (
-                  <Link href="/admin/roles" className={pathname.startsWith("/admin/roles") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.roles', 'Roles')} onClick={onNavClick}>
-                    <span className="sidebar-link-text">{t('navigation.roles', 'Roles')}</span>
+                  <Link href="/admin/roles" className={pathname.startsWith("/admin/roles") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.roles')} onClick={onNavClick}>
+                    <span className="sidebar-link-text">{t('navigation.roles')}</span>
                   </Link>
                 )}
                 {userPermissions.includes('admin.system.health') && (
-                  <Link href="/admin/health" className={pathname.startsWith("/admin/health") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.system_health', 'System Health')} onClick={onNavClick}>
-                    <span className="sidebar-link-text">{t('navigation.system_health', 'System Health')}</span>
+                  <Link href="/admin/health" className={pathname.startsWith("/admin/health") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.system_health')} onClick={onNavClick}>
+                    <span className="sidebar-link-text">{t('navigation.system_health')}</span>
                   </Link>
                 )}
                 {userPermissions.includes('admin.sql_editor') && (
-                  <Link href="/admin/sql-editor" className={pathname.startsWith("/admin/sql-editor") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.sql_editor', 'SQL Editor')} onClick={onNavClick}>
-                    <span className="sidebar-link-text">{t('navigation.sql_editor', 'SQL Editor')}</span>
+                  <Link href="/admin/sql-editor" className={pathname.startsWith("/admin/sql-editor") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.sql_editor')} onClick={onNavClick}>
+                    <span className="sidebar-link-text">{t('navigation.sql_editor')}</span>
                   </Link>
                 )}
                 {userPermissions.includes('admin.email_templates.view') && (
-                  <Link href="/admin/email-templates" className={pathname.startsWith("/admin/email-templates") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.email_templates', 'Email Templates')} onClick={onNavClick}>
-                    <span className="sidebar-link-text">{t('navigation.email_templates', 'Email Templates')}</span>
+                  <Link href="/admin/email-templates" className={pathname.startsWith("/admin/email-templates") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.email_templates')} onClick={onNavClick}>
+                    <span className="sidebar-link-text">{t('navigation.email_templates')}</span>
                   </Link>
                 )}
                 {userPermissions.includes('admin.dynamic_variables.view') && (
-                  <Link href="/admin/dynamic-variables" className={pathname.startsWith("/admin/dynamic-variables") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.dynamic_variables', 'Dynamic Variables')} onClick={onNavClick}>
-                    <span className="sidebar-link-text">{t('navigation.dynamic_variables', 'Dynamic Variables')}</span>
+                  <Link href="/admin/dynamic-variables" className={pathname.startsWith("/admin/dynamic-variables") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.dynamic_variables')} onClick={onNavClick}>
+                    <span className="sidebar-link-text">{t('navigation.dynamic_variables')}</span>
                   </Link>
                 )}
               </div>
@@ -119,10 +119,10 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
             <button
               className={`sidebar-link sidebar-group-btn ${location.pathname.startsWith('/games') ? 'active-parent' : ''}`}
               onClick={handleGamesClick}
-              title={t('navigation.games', 'Games')}
+              title={t('navigation.games')}
             >
               <Gamepad2 size={20} style={{ flexShrink: 0 }} />
-              <span className="sidebar-link-text">{t('navigation.games', 'Games')}</span>
+              <span className="sidebar-link-text">{t('navigation.games')}</span>
               {isOpen && (
                 <span className="sidebar-group-toggle" style={{ marginLeft: 'auto' }}>
                   {isGamesOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -133,13 +133,13 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
             {isGamesOpen && (
               <div className="sidebar-sub-menu">
                 {userPermissions.includes('games.uno') && (
-                  <Link href="/games/uno" className={pathname.startsWith("/games/uno") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.uno', 'UNO')} onClick={onNavClick}>
-                    <span className="sidebar-link-text">{t('navigation.uno', 'UNO')}</span>
+                  <Link href="/games/uno" className={pathname.startsWith("/games/uno") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.uno')} onClick={onNavClick}>
+                    <span className="sidebar-link-text">{t('navigation.uno')}</span>
                   </Link>
                 )}
                 {userPermissions.includes('games.words.wordsearch') && (
-                  <Link href="/games/word-search" className={pathname.startsWith("/games/word-search") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.word_search', 'Word Search')} onClick={onNavClick}>
-                    <span className="sidebar-link-text">{t('navigation.word_search', 'Word Search')}</span>
+                  <Link href="/games/word-search" className={pathname.startsWith("/games/word-search") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.word_search')} onClick={onNavClick}>
+                    <span className="sidebar-link-text">{t('navigation.word_search')}</span>
                   </Link>
                 )}
                 {userPermissions.includes('games.puzzles.arrowpuzzle') && (
@@ -156,10 +156,10 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
             <button
               className={`sidebar-link sidebar-group-btn ${location.pathname.startsWith('/email') ? 'active-parent' : ''}`}
               onClick={handleEmailClick}
-              title={t('navigation.email', 'Email')}
+              title={t('navigation.email')}
             >
               <Mail size={20} style={{ flexShrink: 0 }} />
-              <span className="sidebar-link-text">{t('navigation.email', 'Email')}</span>
+              <span className="sidebar-link-text">{t('navigation.email')}</span>
               {isOpen && (
                 <span className="sidebar-group-toggle" style={{ marginLeft: 'auto' }}>
                   {isEmailOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -170,13 +170,13 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
             {isEmailOpen && (
               <div className="sidebar-sub-menu">
                 {userPermissions.includes('admin.email.logs') && (
-                  <Link href="/email/logs" className={pathname.startsWith("/email/logs") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.email_logs', 'Logs')} onClick={onNavClick}>
-                    <span className="sidebar-link-text">{t('navigation.email_logs', 'Logs')}</span>
+                  <Link href="/email/logs" className={pathname.startsWith("/email/logs") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.email_logs')} onClick={onNavClick}>
+                    <span className="sidebar-link-text">{t('navigation.email_logs')}</span>
                   </Link>
                 )}
                 {userPermissions.includes('admin.email.campaign.get') && (
-                  <Link href="/email/campaigns" className={pathname.startsWith("/email/campaigns") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.email_campaigns', 'Campaigns')} onClick={onNavClick}>
-                    <span className="sidebar-link-text">{t('navigation.email_campaigns', 'Campaigns')}</span>
+                  <Link href="/email/campaigns" className={pathname.startsWith("/email/campaigns") ? "sidebar-link sub-link active" : "sidebar-link sub-link"} title={t('navigation.email_campaigns')} onClick={onNavClick}>
+                    <span className="sidebar-link-text">{t('navigation.email_campaigns')}</span>
                   </Link>
                 )}
               </div>
@@ -185,15 +185,15 @@ const AppSidebar = ({ isOpen, setSidebarOpen, isMobile, onNavClick }) => {
         )}
 
         {userPermissions.includes('objects.view') && (
-          <Link href="/objects" className={pathname.startsWith("/objects") ? "sidebar-link active" : "sidebar-link"} title={t('navigation.objects', 'Objects')} onClick={onNavClick}>
+          <Link href="/objects" className={pathname.startsWith("/objects") ? "sidebar-link active" : "sidebar-link"} title={t('navigation.objects')} onClick={onNavClick}>
             <Box size={20} style={{ flexShrink: 0 }} />
-            <span className="sidebar-link-text">{t('navigation.objects', 'Objects')}</span>
+            <span className="sidebar-link-text">{t('navigation.objects')}</span>
           </Link>
         )}
         {userPermissions.includes('form_wizards.view') && (
-          <Link href="/form-wizards" className={pathname.startsWith("/form-wizards") ? "sidebar-link active" : "sidebar-link"} title={t('navigation.formWizards', 'Form Wizards')} onClick={onNavClick}>
+          <Link href="/form-wizards" className={pathname.startsWith("/form-wizards") ? "sidebar-link active" : "sidebar-link"} title={t('navigation.formWizards')} onClick={onNavClick}>
             <ClipboardList size={20} style={{ flexShrink: 0 }} />
-            <span className="sidebar-link-text">{t('navigation.formWizards', 'Form Wizards')}</span>
+            <span className="sidebar-link-text">{t('navigation.formWizards')}</span>
           </Link>
         )}
 

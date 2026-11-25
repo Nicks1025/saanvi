@@ -1,37 +1,42 @@
-const QueryHelper = require('../../database/queryHelper');
-const AdminRepository = require('./adminRepository');
+const BaseController = require('../../base/baseController');
 const UserFieldsService = require('./userFieldsService');
 
-const queryHelper = new QueryHelper();
-const adminRepository = new AdminRepository(queryHelper);
-const userFieldsService = new UserFieldsService(adminRepository);
-
-const userFieldsController = {
-  getAllFields: async (req, res) => {
-    const result = await userFieldsService.getAllFields();
-    res.json({ success: true, data: result });
-  },
-  createField: async (req, res) => {
-    const result = await userFieldsService.createField(req.body);
-    res.status(201).json({ success: true, data: result });
-  },
-  updateField: async (req, res) => {
-    const result = await userFieldsService.updateField(req.params.id, req.body);
-    res.json({ success: true, data: result });
-  },
-  deleteField: async (req, res) => {
-    await userFieldsService.deleteField(req.params.id);
-    res.status(200).json({ success: true, data: null });
-  },
-  bulkSaveFields: async (req, res) => {
-    const result = await userFieldsService.bulkSaveFields(req.body.fields, req.body.deletedFieldIds);
-    res.json({ success: true, data: result });
-  },
-  getPublicFormConfig: async (req, res) => {
-    const context = req.query.context || 'signup';
-    const result = await userFieldsService.getPublicFormConfig(context);
-    res.json({ success: true, data: result });
+class UserFieldsController extends BaseController {
+  constructor(context = null) {
+    super(context);
+    this.userFieldsService = new UserFieldsService(context);
   }
-};
 
-module.exports = userFieldsController;
+  async getAllFields() {
+    const result = await this.userFieldsService.getAllFields();
+    return this.respondOk(result, 'Fields retrieved successfully');
+  }
+
+  async createField(req) {
+    const result = await this.userFieldsService.createField(req.body);
+    return this.respondOk(result, 'Field created successfully');
+  }
+
+  async updateField(req) {
+    const result = await this.userFieldsService.updateField(req.params.id, req.body);
+    return this.respondOk(result, 'Field updated successfully');
+  }
+
+  async deleteField(req) {
+    await this.userFieldsService.deleteField(req.params.id);
+    return this.respondOk(null, 'Field deleted successfully');
+  }
+
+  async bulkSaveFields(req) {
+    const result = await this.userFieldsService.bulkSaveFields(req.body.fields, req.body.deletedFieldIds);
+    return this.respondOk(result, 'Fields updated successfully');
+  }
+
+  async getPublicFormConfig(req) {
+    const context = req.query?.context || 'signup';
+    const result = await this.userFieldsService.getPublicFormConfig(context);
+    return this.respondOk(result, 'Form configuration retrieved successfully');
+  }
+}
+
+module.exports = UserFieldsController;

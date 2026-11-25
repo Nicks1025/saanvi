@@ -10,48 +10,58 @@ const EmailLogsFeature = () => {
   const { t } = useTranslation();
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const fetchLogs = async () => {
+  const fetchLogs = async (currentPage = pageNumber, currentLimit = pageSize, currentSearch = searchQuery) => {
     try {
       setLoading(true);
-      const data = await getEmailLogs();
-      setLogs(Array.isArray(data) ? data : (data?.data || []));
+      const response = await getEmailLogs(currentPage, currentLimit, currentSearch);
+      if (response?.data && response?.pagination) {
+        setLogs(response.data);
+        setTotalRecords(response.pagination.totalRecords);
+      } else {
+        setLogs([]);
+        setTotalRecords(0);
+      }
     } catch (err) {
-      toast.error(t('admin.email.fetch_logs_error', 'Failed to fetch email logs'));
+      toast.error(t('admin.email.fetch_logs_error'));
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchLogs();
+    fetchLogs(pageNumber, pageSize, searchQuery);
   }, []);
 
   const columns = [
     {
       key: 'recipient',
-      label: t('admin.email.column_recipient', 'Recipient'),
+      label: t('admin.email.column_recipient'),
       sortable: true,
       render: (item) => (
         <strong style={{ color: 'var(--text-h)' }}>
-          {item.recipient || item.to_email || item.to || '-'}
+          {item.recipient}
         </strong>
       )
     },
     {
-      key: 'template_key',
-      label: t('admin.email.column_template', 'Template'),
+      key: 'templateKey',
+      label: t('admin.email.column_template'),
       sortable: true,
-      render: (item) => item.template_key || item.template || '-'
+      render: (item) => item.templateKey || '-'
     },
     {
       key: 'subject',
-      label: t('admin.email.column_subject', 'Subject'),
+      label: t('admin.email.column_subject'),
       render: (item) => item.subject || '-'
     },
     {
       key: 'status',
-      label: t('admin.email.column_status', 'Status'),
+      label: t('admin.email.column_status'),
       sortable: true,
       render: (item) => {
         const status = (item.status || 'SENT').toUpperCase();
@@ -92,9 +102,9 @@ const EmailLogsFeature = () => {
       }
     },
     {
-      key: 'error_details',
-      label: t('admin.email.column_error', 'Error Details'),
-      render: (item) => item.error_details ? (
+      key: 'errorMessage',
+      label: t('admin.email.column_error'),
+      render: (item) => item.errorMessage ? (
         <span style={{
           color: '#ef4444',
           fontSize: '0.78rem',
@@ -104,16 +114,16 @@ const EmailLogsFeature = () => {
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap'
-        }} title={item.error_details}>
-          {item.error_details}
+        }} title={item.errorMessage}>
+          {item.errorMessage}
         </span>
       ) : <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>—</span>
     },
     {
-      key: 'created_at',
-      label: t('admin.email.column_sent_at', 'Sent At'),
+      key: 'createdAt',
+      label: t('admin.email.column_sent_at'),
       sortable: true,
-      render: (item) => item.created_at || item.sent_at ? new Date(item.created_at || item.sent_at).toLocaleString() : '-'
+      render: (item) => item.createdAt ? new Date(item.createdAt).toLocaleString() : '-'
     }
   ];
 
@@ -124,22 +134,42 @@ const EmailLogsFeature = () => {
         title={
           <div style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-h)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Mail size={22} />
-            {t('admin.email.logs_title', 'Email Logs')}
+            {t('admin.email.logs_title')}
           </div>
         }
         headerActions={
           <SButton 
             type="button" 
-            onClick={fetchLogs} 
+            onClick={() => fetchLogs(pageNumber, pageSize, searchQuery)} 
             icon="refresh" 
-            text={t('common.refresh', 'Refresh')}
+            text={t('common.refresh')}
             color="secondary"
           />
         }
         columns={columns}
         data={logs}
         loading={loading}
-        emptyText={t('admin.email.no_logs', 'No email logs found.')}
+        emptyText={t('admin.email.no_logs')}
+        serverSideSearch={true}
+        onSearch={(term) => {
+          setSearchQuery(term);
+          setPageNumber(1);
+          fetchLogs(1, pageSize, term);
+        }}
+        pagination={{
+          page: pageNumber,
+          limit: pageSize,
+          total: totalRecords,
+          onPageChange: (newPage) => {
+            setPageNumber(newPage);
+            fetchLogs(newPage, pageSize, searchQuery);
+          },
+          onLimitChange: (newLimit) => {
+            setPageSize(newLimit);
+            setPageNumber(1);
+            fetchLogs(1, newLimit, searchQuery);
+          }
+        }}
       />
     </div>
   );

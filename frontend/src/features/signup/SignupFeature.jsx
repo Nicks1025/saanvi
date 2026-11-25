@@ -4,12 +4,11 @@ import { useRouter } from 'next/navigation';
 import STextField from '@/components/common/STextField';
 import SDropdown from '@/components/common/SDropdown';
 import SButton from '@/components/common/SButton';
-import { signupUser } from './service/signupService';
+import { signupUser, getSignupFormConfig } from './service/signupService';
 import {
   validateRequired,
   validateMaxLength,
   validateEmail,
-  validatePhone,
   validateDate,
   validatePassword,
   validateConfirmPassword,
@@ -17,6 +16,7 @@ import {
 } from '../../common/validations';
 import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import './signup.css';
 
 // ---------------------------------------------------------------------------
@@ -36,22 +36,7 @@ const LANGUAGE_OPTIONS = [
   { label: 'हिंदी', value: 'hi' },
 ];
 
-// ---------------------------------------------------------------------------
-// Initial form state (no timezone)
-// ---------------------------------------------------------------------------
 
-const EMPTY_FORM = {
-  firstName: '',
-  lastName: '',
-  displayName: '',
-  email: '',
-  phoneNumber: '',
-  dateOfBirth: '',
-  gender: '',
-  language: 'en',
-  password: '',
-  confirmPassword: '',
-};
 
 // ---------------------------------------------------------------------------
 // Form-level validation (runs on submit)
@@ -64,9 +49,9 @@ function validateForm(form, formConfig) {
   if (emailErr) e.email = emailErr;
 
   const passwordErr = validatePassword(form.password, {
-    firstName: form.first_name,
-    lastName: form.last_name,
-    displayName: form.display_name,
+    firstName: form.firstName,
+    lastName: form.lastName,
+    displayName: form.displayName,
   });
   if (passwordErr) e.password = passwordErr;
 
@@ -75,8 +60,11 @@ function validateForm(form, formConfig) {
 
   // Validate dynamic required fields
   formConfig.forEach(field => {
-    if (field.is_required && (!form[field.field_name] || String(form[field.field_name]).trim() === '')) {
-      e[field.field_name] = `${field.label} is required`;
+    const key = field.fieldName;
+    const val = form[key];
+    const isRequired = field.isRequired;
+    if (isRequired && (!val || String(val).trim() === '')) {
+      e[key] = `${field.label} is required`;
     }
   });
 
@@ -88,10 +76,11 @@ function validateForm(form, formConfig) {
 // ---------------------------------------------------------------------------
 
 const PasswordRequirements = ({ password, firstName, lastName, displayName }) => {
+  const { t } = useTranslation();
   const requirements = getPasswordRequirements(password, { firstName, lastName, displayName });
   return (
     <div className="signup-pw-requirements">
-      <p className="signup-pw-req-title">Password must contain</p>
+      <p className="signup-pw-req-title">{t('admin.auth.passwordMustContain')}</p>
       <ul className="signup-pw-req-list">
         {requirements.map((req) => (
           <li
@@ -125,18 +114,18 @@ const DropdownField = ({ label, required, value, options, onChange, error }) => 
       options={options}
       onChange={onChange}
     />
-  
+
   </div>
 );
 
-import DynamicFormRenderer from '@/components/common/DynamicFormRenderer';
-import axios from '@/services/axios.client';
+import DynamicFormRenderer from '@/components/common/dynamic_form';
 
 // ---------------------------------------------------------------------------
 // Main feature
 // ---------------------------------------------------------------------------
 
 const SignupFeature = () => {
+  const { t } = useTranslation();
   const navigate = useRouter();
 
   const [form, setForm] = useState({ email: '', password: '', confirmPassword: '' });
@@ -150,13 +139,12 @@ const SignupFeature = () => {
   React.useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const response = await axios.get('/api/public/users/form-config?context=signup');
-        const config = response.data || [];
+        const config = await getSignupFormConfig();
         setFormConfig(config);
-        
+
         const initialForm = { email: '', password: '', confirmPassword: '' };
         config.forEach(f => {
-          initialForm[f.field_name] = '';
+          initialForm[f.fieldName] = '';
         });
         setForm(initialForm);
       } catch (err) {
@@ -176,9 +164,9 @@ const SignupFeature = () => {
     if (field === 'password') {
       setPasswordTouched(true);
       const pwErr = validatePassword(value, {
-        firstName: form.first_name,
-        lastName: form.last_name,
-        displayName: form.display_name,
+        firstName: form.firstName,
+        lastName: form.lastName,
+        displayName: form.displayName,
       });
       setErrors((prev) => ({ ...prev, password: pwErr || undefined }));
 
@@ -192,13 +180,6 @@ const SignupFeature = () => {
     if (field === 'confirmPassword') {
       const confErr = validateConfirmPassword(form.password, value);
       setErrors((prev) => ({ ...prev, confirmPassword: confErr || undefined }));
-      return;
-    }
-
-    // Live required-field validation for all other touched fields
-    if (field === 'phoneNumber') {
-      const phoneErr = validatePhone(value);
-      setErrors((prev) => ({ ...prev, phoneNumber: phoneErr || undefined }));
       return;
     }
 
@@ -217,35 +198,32 @@ const SignupFeature = () => {
     }
   };
 
-  // Phone: allow only digits, cap at 10
-  const handlePhoneChange = (e) => {
-    const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
-    handleChange('phoneNumber', digits);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const validationErrors = validateForm(form, formConfig);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-      
-      const hasRequiredError = Object.values(validationErrors).some(msg => 
+
+      const hasRequiredError = Object.values(validationErrors).some(msg =>
         msg.toLowerCase().includes('required')
       );
-      
+
       if (hasRequiredError) {
         toast.error('Please fill all required fields');
       } else {
         toast.error('Please provide valid values');
       }
-      
+
       return;
     }
 
     setLoading(true);
     try {
-      const payload = { ...form, email: form.email.trim() };
+      const payload = {
+        ...form,
+        email: form.email.trim(),
+      };
       delete payload.confirmPassword;
       await signupUser(payload);
       toast.success('Account created successfully. Please check your email and click the verification link to activate your account.', { duration: 6000 });
@@ -253,7 +231,7 @@ const SignupFeature = () => {
     } catch (err) {
       const data = err.response?.data;
       let msg = 'Something went wrong. Please try again.';
-      
+
       if (data) {
         // If the backend returns Joi validation details array, use the first exact error message
         if (data.details && Array.isArray(data.details) && data.details.length > 0) {
@@ -364,17 +342,17 @@ const SignupFeature = () => {
           {/* Testimonial */}
           <blockquote className="signup-testimonial">
             <p className="signup-testimonial-text">
-              "Saanvi made learning fun again. My vocabulary improved in just two weeks!"
+              {t('admin.auth.studentQuote')}
             </p>
-            <footer className="signup-testimonial-author">— Priya K., Student</footer>
+            <footer className="signup-testimonial-author">{t('admin.auth.studentAuthor')}</footer>
           </blockquote>
 
           {/* Pills */}
           <div className="signup-branding-pills">
-            <span className="signup-branding-pill">Learn</span>
-            <span className="signup-branding-pill">Challenge</span>
-            <span className="signup-branding-pill">Have Fun</span>
-            <span className="signup-branding-pill">Free to Join</span>
+            <span className="signup-branding-pill">{t('admin.auth.learnPill')}</span>
+            <span className="signup-branding-pill">{t('admin.auth.challengePill')}</span>
+            <span className="signup-branding-pill">{t('admin.auth.haveFunPill')}</span>
+            <span className="signup-branding-pill">{t('admin.auth.freeToJoinPill')}</span>
           </div>
         </div>
       </aside>
@@ -383,82 +361,81 @@ const SignupFeature = () => {
       <div className="signup-form-col">
         <div className="signup-card">
 
-        {/* Card header branding */}
-        <div className="signup-card-brand">
-          <img src="/saanvi_logo.png" alt="Saanvi" className="signup-card-logo" />
-          <div className="signup-card-brand-text">
-            <span className="signup-card-brand-name">Saanvi</span>
-            <span className="signup-card-tagline">Learn · Play · Grow</span>
+          {/* Card header branding */}
+          <div className="signup-card-brand">
+            <img src="/saanvi_logo.png" alt="Saanvi" className="signup-card-logo" />
+            <div className="signup-card-brand-text">
+              <span className="signup-card-brand-name">Saanvi</span>
+              <span className="signup-card-tagline">{t('admin.auth.brandTagline')}</span>
+            </div>
           </div>
-        </div>
 
-        <h2 className="signup-form-title">Create your account</h2>
-        <p className="signup-form-subtitle">Join Saanvi and start your journey</p>
+          <h2 className="signup-form-title">{t('admin.auth.createAccountHeader')}</h2>
+          <p className="signup-form-subtitle">{t('admin.auth.signupSubtitle')}</p>
 
-        <form onSubmit={handleSubmit} noValidate autoComplete="off">
-
+          <form onSubmit={handleSubmit} noValidate autoComplete="off">
 
 
-          {!configLoading && (
-            <DynamicFormRenderer 
-              fields={formConfig}
-              form={form}
-              errors={errors}
-              onChange={handleChange}
-            />
-          )}
 
-          {/* Password section — separated with a visual divider */}
-          <div className="signup-password-section" style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
-            <STextField
-              label="Password"
-              type="password"
-              text={form.password}
-              onChange={(e) => handleChange('password', e.target.value)}
-              placeholder="••••••••"
-              required
-              error={errors.password}
-              autoComplete="new-password"
-            />
-
-            {showPwRequirements && (
-              <PasswordRequirements
-                password={form.password}
-                firstName={form.first_name}
-                lastName={form.last_name}
-                displayName={form.display_name}
+            {!configLoading && (
+              <DynamicFormRenderer
+                fields={formConfig}
+                form={form}
+                errors={errors}
+                onChange={handleChange}
               />
             )}
 
-            <STextField
-              label="Confirm Password"
-              type="password"
-              text={form.confirmPassword}
-              onChange={(e) => handleChange('confirmPassword', e.target.value)}
-              placeholder="••••••••"
-              required
-              error={errors.confirmPassword}
-              autoComplete="new-password"
-            />
-          </div>
+            {/* Password section — separated with a visual divider */}
+            <div className="signup-password-section" style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
+              <STextField
+                label={t('admin.auth.password')}
+                type="password"
+                text={form.password}
+                onChange={(e) => handleChange('password', e.target.value)}
+                placeholder="••••••••"
+                required
+                error={errors.password}
+                autoComplete="new-password"
+              />
 
-          <div className="signup-actions">
-            <SButton
-              type="submit"
-              color="primary"
-              disabled={loading}
-              label="Create account"
-              icon={loading ? <Loader2 className="signup-spinner" size={18} /> : null}
-            >
-              {loading ? 'Creating account…' : 'Create Account'}
-            </SButton>
-          </div>
-        </form>
+              {showPwRequirements && (
+                <PasswordRequirements
+                  password={form.password}
+                  firstName={form.firstName}
+                  lastName={form.lastName}
+                  displayName={form.displayName}
+                />
+              )}
 
-        <div className="signup-footer">
-          Already have an account?{' '}
-          <a href="/login" className="signup-footer-link">Sign In</a>
-        </div>
+              <STextField
+                label={t('admin.auth.confirmPassword')}
+                type="password"
+                text={form.confirmPassword}
+                onChange={(e) => handleChange('confirmPassword', e.target.value)}
+                placeholder="••••••••"
+                required
+                error={errors.confirmPassword}
+                autoComplete="new-password"
+              />
+            </div>
+
+            <div className="signup-actions">
+              <SButton
+                type="submit"
+                color="primary"
+                disabled={loading}
+                icon={loading ? <Loader2 className="signup-spinner" size={18} /> : null}
+              >
+                {loading ? t('admin.auth.creatingAccount') : t('admin.auth.createAccount')}
+              </SButton>
+            </div>
+          </form>
+
+          <div className="signup-footer">
+            {t('admin.auth.alreadyHaveAccount')}{' '}
+            <a href="/login" className="signup-footer-link">{t('admin.auth.login')}</a>
+          </div>
         </div>{/* end signup-card */}
       </div>{/* end signup-form-col */}
 

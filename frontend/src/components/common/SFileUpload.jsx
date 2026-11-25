@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { Upload, X } from 'lucide-react';
 import SButton from './SButton';
+import SIcon from './SIcon';
 
 const SFileUpload = ({
   label,
@@ -70,13 +71,16 @@ const SFileUpload = ({
           </div>
         )}
         
-        <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexShrink: 0 }}>
           {file && (
-            <SButton 
-              type="button" 
-              onClick={handleRemove} 
+            <SIcon 
+              name="close"
+              size={18}
               color="danger"
-              icon="close"
+              onClick={handleRemove} 
+              title="Remove file"
+              aria-label="Remove file"
+              subtle
             />
           )}
           <input

@@ -1,139 +1,166 @@
 const BaseController = require('../../base/baseController');
+const ObjectsService = require('./objectsService');
 
 class ObjectsController extends BaseController {
-  constructor(objectsService) {
-    super();
-    this.objectsService = objectsService;
+  constructor(context = null) {
+    super(context);
+    this.objectsService = new ObjectsService(context);
   }
 
   // --- Objects ---
-  listObjects = async (req, res) => {
-    const userUuid = req.user.uuid;
-    const objects = await this.objectsService.listObjects(userUuid);
-    this.sendSuccess(res, objects);
-  };
+  async listObjects(req, res) {
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const objects = await this.objectsService.listObjects(user.uuid);
+    return this.respondOk(objects);
+  }
 
-  getObject = async (req, res) => {
-    const { uuid } = req.params;
-    const userUuid = req.user.uuid;
-    const object = await this.objectsService.getObject(uuid, userUuid);
-    this.sendSuccess(res, object);
-  };
+  async getObject(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const object = await this.objectsService.getObject(params.uuid, user.uuid);
+    return this.respondOk(object);
+  }
 
-  createObject = async (req, res) => {
-    const userUuid = req.user.uuid;
-    const object = await this.objectsService.createObject(req.body, userUuid);
-    this.sendSuccess(res, object, 'Object created successfully');
-  };
+  async createObject(req, res) {
+    const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const object = await this.objectsService.createObject(body, user.uuid);
+    return this.respondOk(object, 'Object created successfully', 201);
+  }
 
-  updateObject = async (req, res) => {
-    const { uuid } = req.params;
-    const userUuid = req.user.uuid;
-    const object = await this.objectsService.updateObject(uuid, userUuid, req.body);
-    this.sendSuccess(res, object, 'Object updated successfully');
-  };
+  async updateObject(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const object = await this.objectsService.updateObject(params.uuid, user.uuid, body);
+    return this.respondOk(object, 'Object updated successfully');
+  }
 
-  deleteObject = async (req, res) => {
-    const { uuid } = req.params;
-    const userUuid = req.user.uuid;
-    await this.objectsService.deleteObject(uuid, userUuid);
-    this.sendSuccess(res, null, 'Object deleted successfully');
-  };
+  async deleteObject(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    await this.objectsService.deleteObject(params.uuid, user.uuid);
+    return this.respondOk(null, 'Object deleted successfully');
+  }
 
   // --- Fields ---
-  listFields = async (req, res) => {
-    const { objectUuid } = req.params;
-    const userUuid = req.user.uuid;
-    const fields = await this.objectsService.listFields(objectUuid, userUuid);
-    this.sendSuccess(res, fields);
-  };
+  async listFields(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const fields = await this.objectsService.listFields(params.objectUuid, user.uuid);
+    return this.respondOk(fields);
+  }
 
-  createField = async (req, res) => {
-    const { objectUuid } = req.params;
-    const userUuid = req.user.uuid;
-    const field = await this.objectsService.createField(objectUuid, userUuid, req.body);
-    this.sendSuccess(res, field, 'Field created successfully');
-  };
+  async createField(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const field = await this.objectsService.createField(params.objectUuid, user.uuid, body);
+    return this.respondOk(field, 'Field created successfully', 201);
+  }
 
-  updateField = async (req, res) => {
-    const { objectUuid, fieldUuid } = req.params;
-    const userUuid = req.user.uuid;
-    const field = await this.objectsService.updateField(objectUuid, fieldUuid, userUuid, req.body);
-    this.sendSuccess(res, field, 'Field updated successfully');
-  };
+  async updateField(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const field = await this.objectsService.updateField(params.objectUuid, params.fieldUuid, user.uuid, body);
+    return this.respondOk(field, 'Field updated successfully');
+  }
 
-  archiveField = async (req, res) => {
-    const { objectUuid, fieldUuid } = req.params;
-    const userUuid = req.user.uuid;
-    await this.objectsService.archiveField(objectUuid, fieldUuid, userUuid);
-    this.sendSuccess(res, null, 'Field archived successfully');
-  };
+  async archiveField(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    await this.objectsService.archiveField(params.objectUuid, params.fieldUuid, user.uuid);
+    return this.respondOk(null, 'Field archived successfully');
+  }
 
-  bulkSaveFields = async (req, res) => {
-    const { objectUuid } = req.params;
-    const { fields, deletedFieldIds } = req.body;
-    const userUuid = req.user.uuid;
-    await this.objectsService.bulkSaveFields(objectUuid, userUuid, fields, deletedFieldIds);
-    this.sendSuccess(res, null, 'Fields updated successfully');
-  };
+  async bulkSaveFields(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const { fields, deletedFieldIds } = body;
+    await this.objectsService.bulkSaveFields(params.objectUuid, user.uuid, fields, deletedFieldIds);
+    return this.respondOk(null, 'Fields updated successfully');
+  }
 
   // --- Templates ---
-  listTemplates = async (req, res) => {
-    const { objectUuid } = req.params;
-    const userUuid = req.user.uuid;
-    const templates = await this.objectsService.listTemplates(objectUuid, userUuid);
-    this.sendSuccess(res, templates);
-  };
+  async listTemplates(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const templates = await this.objectsService.listTemplates(params.objectUuid, user.uuid);
+    return this.respondOk(templates);
+  }
 
-  createTemplate = async (req, res) => {
-    const { objectUuid } = req.params;
-    const userUuid = req.user.uuid;
-    const template = await this.objectsService.createTemplate(objectUuid, userUuid, req.body);
-    this.sendSuccess(res, template, 'Template created successfully');
-  };
+  async createTemplate(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const template = await this.objectsService.createTemplate(params.objectUuid, user.uuid, body);
+    return this.respondOk(template, 'Template created successfully', 201);
+  }
 
-  updateTemplate = async (req, res) => {
-    const { objectUuid, templateUuid } = req.params;
-    const userUuid = req.user.uuid;
-    const template = await this.objectsService.updateTemplate(templateUuid, objectUuid, userUuid, req.body);
-    this.sendSuccess(res, template, 'Template updated successfully');
-  };
+  async updateTemplate(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const template = await this.objectsService.updateTemplate(params.templateUuid, params.objectUuid, user.uuid, body);
+    return this.respondOk(template, 'Template updated successfully');
+  }
 
-  deleteTemplate = async (req, res) => {
-    const { objectUuid, templateUuid } = req.params;
-    const userUuid = req.user.uuid;
-    await this.objectsService.deleteTemplate(templateUuid, objectUuid, userUuid);
-    this.sendSuccess(res, null, 'Template deleted successfully');
-  };
+  async deleteTemplate(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    await this.objectsService.deleteTemplate(params.templateUuid, params.objectUuid, user.uuid);
+    return this.respondOk(null, 'Template deleted successfully');
+  }
 
   // --- Records ---
-  listRecords = async (req, res) => {
-    const { objectUuid } = req.params;
-    const userUuid = req.user.uuid;
-    const data = await this.objectsService.listRecords(objectUuid, userUuid);
-    this.sendSuccess(res, data);
-  };
+  async getRecordCount(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const count = await this.objectsService.getRecordCount(params.objectUuid, user.uuid);
+    return this.respondOk({ count });
+  }
 
-  createRecord = async (req, res) => {
-    const { objectUuid } = req.params;
-    const userUuid = req.user.uuid;
-    const record = await this.objectsService.createRecord(objectUuid, userUuid, req.body);
-    this.sendSuccess(res, record, 'Record created successfully');
-  };
+  async listRecords(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const data = await this.objectsService.listRecords(params.objectUuid, user.uuid);
+    return this.respondOk(data);
+  }
 
-  updateRecord = async (req, res) => {
-    const { objectUuid, recordUuid } = req.params;
-    const userUuid = req.user.uuid;
-    const record = await this.objectsService.updateRecord(objectUuid, recordUuid, userUuid, req.body);
-    this.sendSuccess(res, record, 'Record updated successfully');
-  };
+  async getRecord(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const record = await this.objectsService.getRecord(params.objectUuid, params.recordUuid, user.uuid);
+    if (!record) {
+      return this.respondError('Record not found', 404);
+    }
+    return this.respondOk(record);
+  }
 
-  deleteRecord = async (req, res) => {
-    const { objectUuid, recordUuid } = req.params;
-    const userUuid = req.user.uuid;
-    await this.objectsService.deleteRecord(objectUuid, recordUuid, userUuid);
-    this.sendSuccess(res, null, 'Record deleted successfully');
-  };
+  async createRecord(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const record = await this.objectsService.createRecord(params.objectUuid, user.uuid, body);
+    return this.respondOk(record, 'Record created successfully', 201);
+  }
+
+  async updateRecord(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const record = await this.objectsService.updateRecord(params.objectUuid, params.recordUuid, user.uuid, body);
+    return this.respondOk(record, 'Record updated successfully');
+  }
+
+  async deleteRecord(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    await this.objectsService.deleteRecord(params.objectUuid, params.recordUuid, user.uuid);
+    return this.respondOk(null, 'Record deleted successfully');
+  }
 }
 
 module.exports = ObjectsController;

@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/store/AuthContext';
-import axios from '@/services/axios.client';
+import { mfaService } from './services/mfaService';
 import toast from 'react-hot-toast';
-import { Shield, ShieldAlert, Loader2, QrCode } from 'lucide-react';
-import SButton from '@/components/common/SButton';
+import { ShieldAlert, Loader2 } from 'lucide-react';
 import STextField from '@/components/common/STextField';
 import SModal from '@/components/common/SModal';
+import SSwitch from '@/components/common/SSwitch';
+import { useTranslation } from 'react-i18next';
 import './settings.css';
 
 const MfaSetupFeature = () => {
-  const { user, supabaseToken, setUser } = useAuth();
+  const { t } = useTranslation();
+  const { user, setUser } = useAuth();
   
   const [loading, setLoading] = useState(false);
-  const mfaStatus = user?.is_mfa_enabled || false;
+  const mfaStatus = Boolean(user?.isMfaEnabled ?? user?.is_mfa_enabled);
   
   // Setup flow state
   const [isSettingUp, setIsSettingUp] = useState(false);
@@ -22,20 +24,28 @@ const MfaSetupFeature = () => {
   const [verificationCode, setVerificationCode] = useState('');
   const [showDisableModal, setShowDisableModal] = useState(false);
 
+  const handleCloseSetup = () => {
+    setIsSettingUp(false);
+    setVerificationCode('');
+    setQrCodeUrl('');
+    setFactorId('');
+    setChallengeId('');
+  };
+
   const handleStartSetup = async () => {
     setLoading(true);
     try {
-      const res = await axios.post('/api/mfa/enroll', { supabaseToken });
-      const factor = res.data;
+      const factor = await mfaService.enroll();
       setFactorId(factor.id);
       setQrCodeUrl(factor.totp.qr_code);
 
       // Immediately challenge so we can verify
-      const challengeRes = await axios.post('/api/mfa/challenge', { supabaseToken, factorId: factor.id });
-      setChallengeId(challengeRes.data.id);
+      const challengeRes = await mfaService.challenge(factor.id);
+      setChallengeId(challengeRes.id);
+      setVerificationCode('');
       setIsSettingUp(true);
     } catch (err) {
-      toast.error('Failed to start MFA setup');
+      toast.error(t('admin.mfa.startSetupFailed'));
     } finally {
       setLoading(false);
     }
@@ -43,24 +53,23 @@ const MfaSetupFeature = () => {
 
   const handleVerify = async () => {
     if (!verificationCode || verificationCode.length !== 6) {
-      toast.error('Please enter a valid 6-digit code');
+      toast.error(t('admin.mfa.enterValidCode'));
       return;
     }
     
     setLoading(true);
     try {
-      await axios.post('/api/mfa/verify', {
-        supabaseToken,
+      await mfaService.verify({
         factorId,
         challengeId,
         code: verificationCode
       });
       
-      toast.success('Two-Factor Authentication enabled successfully!');
-      setIsSettingUp(false);
-      setUser(prev => ({ ...prev, is_mfa_enabled: true }));
+      toast.success(t('admin.mfa.enabledSuccess'));
+      handleCloseSetup();
+      setUser(prev => ({ ...prev, isMfaEnabled: true, is_mfa_enabled: true }));
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Invalid verification code');
+      toast.error(err.response?.data?.error || t('admin.mfa.invalidCode'));
     } finally {
       setLoading(false);
     }
@@ -69,117 +78,90 @@ const MfaSetupFeature = () => {
   const handleDisable = async () => {
     setLoading(true);
     try {
-      await axios.post('/api/mfa/unenroll', { supabaseToken, factorId: 'totp' }); 
+      await mfaService.unenroll('totp'); 
       
-      toast.success('Two-Factor Authentication disabled');
+      toast.success(t('admin.mfa.disabledSuccess'));
       setShowDisableModal(false);
-      setUser(prev => ({ ...prev, is_mfa_enabled: false }));
+      setUser(prev => ({ ...prev, isMfaEnabled: false, is_mfa_enabled: false }));
     } catch (err) {
-      toast.error('Failed to disable MFA');
+      toast.error(t('admin.mfa.disableFailed'));
     } finally {
       setLoading(false);
     }
   };
 
-
   return (
     <>
       <div className="settings-info-row">
-        <div className="settings-info-label">Two-Factor Authentication (TOTP)</div>
+        <div className="settings-info-label">{t('admin.mfa.totpTitle')}</div>
         <div className="settings-info-value" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <label style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer', position: 'relative' }}>
-            <input 
-              type="checkbox" 
-              style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }}
-              checked={mfaStatus || false}
-              onChange={(e) => {
-                if (e.target.checked) {
-                  handleStartSetup();
-                } else {
-                  setShowDisableModal(true);
-                }
-              }}
-              disabled={loading}
-            />
-            <div style={{
-              width: '44px',
-              height: '24px',
-              backgroundColor: mfaStatus ? '#22c55e' : '#cbd5e1',
-              borderRadius: '9999px',
-              position: 'relative',
-              transition: 'background-color 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-              padding: '2px',
-              boxSizing: 'border-box'
-            }}>
-              <div style={{
-                width: '20px',
-                height: '20px',
-                backgroundColor: 'white',
-                borderRadius: '50%',
-                transition: 'transform 0.2s',
-                transform: mfaStatus ? 'translateX(20px)' : 'translateX(0)',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-              }} />
-            </div>
-          </label>
-          <span style={{ color: mfaStatus ? '#15803d' : '#64748b', fontWeight: '500', minWidth: '4rem' }}>
-            {mfaStatus ? 'Enabled' : 'Disabled'}
-          </span>
-          {loading && <Loader2 className="spinner" size={16} color="#94a3b8" />}
+          <SSwitch
+            checked={mfaStatus}
+            disabled={loading}
+            onChange={(nextChecked) => {
+              if (nextChecked) {
+                handleStartSetup();
+              } else {
+                setShowDisableModal(true);
+              }
+            }}
+          />
+          {loading && <Loader2 className="spinner" size={16} />}
         </div>
       </div>
 
-      <SModal 
-        isOpen={isSettingUp} 
-        title="Setup Two-Factor Authentication"
-        onCancel={() => { setIsSettingUp(false); }}
+      <SModal
+        isOpen={isSettingUp}
+        title={t('admin.mfa.setupTitle')}
+        width="440px"
+        onConfirm={handleVerify}
+        onCancel={handleCloseSetup}
+        confirmText={t('admin.mfa.verify')}
+        isProcessing={loading}
+        confirmDisabled={loading || verificationCode.length !== 6}
       >
-        <div style={{ padding: '0 1rem 1rem' }}>
-          <p style={{ fontSize: '0.95rem', color: 'var(--text-2)', marginBottom: '1.5rem' }}>
-            Scan this QR code using Google Authenticator or another compatible app, then enter the 6-digit code.
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem', padding: '0.25rem 0' }}>
+          <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)', textAlign: 'center', lineHeight: 1.5 }}>
+            {t('admin.mfa.scanInstructions')}
           </p>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
-            <div style={{ background: 'white', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-              <img src={qrCodeUrl} alt="MFA QR Code" style={{ width: '200px', height: '200px' }} />
-            </div>
-            
-            <div className="w-full max-w-xs" color="primary">
-              <STextField 
-                text={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
-                placeholder="0 0 0 0 0 0"
+
+          {qrCodeUrl && (
+            <div style={{ background: '#ffffff', padding: '0.875rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
+              <img
+                src={qrCodeUrl}
+                alt="MFA QR Code"
+                style={{ width: '192px', height: '192px', display: 'block' }}
               />
             </div>
+          )}
 
-            <SButton 
-              onClick={handleVerify} 
-              disabled={loading || verificationCode.length !== 6} 
-              className="w-full max-w-xs" color="primary"
-            >
-              {loading ? <Loader2 className="spinner" size={16} /> : 'Verify & Enable'}
-            </SButton>
+          <div style={{ width: '100%', maxWidth: '240px' }}>
+            <STextField
+              text={verificationCode}
+              onChange={(e) => setVerificationCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+              placeholder="000000"
+              marginBottom="0"
+            />
           </div>
         </div>
       </SModal>
 
       <SModal
         isOpen={showDisableModal}
-        title="Disable Two-Factor Authentication"
+        title={t('admin.mfa.disableModalTitle')}
         onConfirm={handleDisable}
         onCancel={() => setShowDisableModal(false)}
-        confirmText="Disable MFA"
+        confirmText={t('admin.mfa.disableButton')}
         confirmColor="danger"
+        isProcessing={loading}
       >
-        <div style={{ padding: '0 1rem 1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#ef4444', marginBottom: '1rem' }}>
+        <div style={{ padding: '0.25rem 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--error, #ef4444)', marginBottom: '0.75rem' }}>
             <ShieldAlert size={24} />
-            <span style={{ fontWeight: '600' }}>Warning</span>
+            <span style={{ fontWeight: 600 }}>{t('common.cannot')}</span>
           </div>
-          <p style={{ color: 'var(--text-2)', lineHeight: 1.5 }}>
-            Are you sure you want to disable Two-Factor Authentication? Removing this extra layer of security will make your account more vulnerable to unauthorized access.
+          <p style={{ margin: 0, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+            {t('admin.mfa.disableModalDesc')}
           </p>
         </div>
       </SModal>

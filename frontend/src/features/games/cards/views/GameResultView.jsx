@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 export const GameResultView = ({ gameResult, onLeaveGame }) => {
   const { t } = useTranslation();
-  const winner = gameResult?.winner || { name: t('games.uno.you_fallback', 'You (Nikhil)'), isLocal: true, score: 320 };
+  const winner = gameResult?.winner || { name: t('games.uno.you_fallback'), isLocal: true, score: 320 };
   const isLocalWinner = gameResult?.isLocalWinner ?? true;
   const scores = gameResult?.scores || [];
 
@@ -21,12 +21,12 @@ export const GameResultView = ({ gameResult, onLeaveGame }) => {
             <Trophy size={48} className={isLocalWinner ? 'text-amber-400' : 'text-purple-400'} />
           </div>
           <h1 className="result-title">
-            {isLocalWinner ? t('games.uno.victory', 'VICTORY! YOU WON!') : t('games.uno.wins', '{{name}} WINS!', { name: winner.name })}
+            {isLocalWinner ? t('games.uno.victory') : t('games.uno.wins', { name: winner.name })}
           </h1>
           <p className="result-sub">
             {isLocalWinner
-              ? t('games.uno.victory_desc', 'Flawless table play! You emptied your hand and owned the circle.')
-              : t('games.uno.defeat_desc', 'Great match! Better luck next round.')}
+              ? t('games.uno.victory_desc')
+              : t('games.uno.defeat_desc')}
           </p>
         </div>
 
@@ -43,28 +43,28 @@ export const GameResultView = ({ gameResult, onLeaveGame }) => {
             <div className="spotlight-crown">👑</div>
           </div>
           <div className="spotlight-meta">
-            <span className="spotlight-label">{t('games.uno.champion', '1ST PLACE CHAMPION')}</span>
+            <span className="spotlight-label">{t('games.uno.champion')}</span>
             <h3 className="spotlight-name">{winner.name}</h3>
           </div>
           <div className="spotlight-score-tag">
             <Sparkles size={16} className="text-amber-400" />
-            <span><strong>{winner.score || 320}</strong> {t('games.uno.pts', 'pts')}</span>
+            <span><strong>{winner.score || 320}</strong> {t('games.uno.pts')}</span>
           </div>
         </div>
 
         {/* Final Standings Table */}
         <div className="result-standings-section">
           <div className="standings-header">
-            <h4>{t('games.uno.final_standings', 'Final Match Standings')}</h4>
-            <span className="standings-count">{t('games.uno.players_count', '{{count}} Players', { count: scores.length })}</span>
+            <h4>{t('games.uno.final_standings')}</h4>
+            <span className="standings-count">{t('games.uno.players_count', { count: scores.length })}</span>
           </div>
 
           <div className="standings-table">
             <div className="standings-thead">
-              <span className="col-rank">{t('games.uno.rank', 'Rank')}</span>
-              <span className="col-player">{t('games.uno.player', 'Player')}</span>
-              <span className="col-cards">{t('games.uno.cards_left', 'Cards Left')}</span>
-              <span className="col-score">{t('games.uno.total_score', 'Total Score')}</span>
+              <span className="col-rank">{t('games.uno.rank')}</span>
+              <span className="col-player">{t('games.uno.player')}</span>
+              <span className="col-cards">{t('games.uno.cards_left')}</span>
+              <span className="col-score">{t('games.uno.total_score')}</span>
             </div>
 
             <div className="standings-tbody">
@@ -89,13 +89,13 @@ export const GameResultView = ({ gameResult, onLeaveGame }) => {
 
                     <div className="col-player">
                       <span className="player-name-text">
-                        {item.name} {item.isLocal && `(${t('games.uno.you', 'You')})`}
+                        {item.name} {item.isLocal && `(${t('games.uno.you')})`}
                       </span>
                     </div>
 
                     <div className="col-cards">
                       <span className="cards-left-badge">
-                        {item.cardsLeft === 0 ? t('games.uno.empty_0', 'Empty (0)') : t('games.uno.cards_count', '{{count}} cards', { count: item.cardsLeft })}
+                        {item.cardsLeft === 0 ? t('games.uno.empty_0') : t('games.uno.cards_count', { count: item.cardsLeft })}
                       </span>
                     </div>
 
@@ -113,7 +113,7 @@ export const GameResultView = ({ gameResult, onLeaveGame }) => {
         <div className="result-actions-row">
           <button className="s-button btn-hero-secondary" onClick={onLeaveGame}>
             <LogOut size={18} />
-            <span>{t('games.uno.back_to_lobby', 'Back to Lobby')}</span>
+            <span>{t('games.uno.back_to_lobby')}</span>
           </button>
         </div>
       </div>

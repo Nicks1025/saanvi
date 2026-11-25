@@ -2,14 +2,18 @@ const BaseController = require('../../base/baseController');
 const { userActiveRooms } = require('./unoStore');
 const UnoService = require('./unoService');
 
-const unoService = new UnoService();
-
 class UnoController extends BaseController {
-  
+  constructor(context = null) {
+    super(context);
+    this.unoService = new UnoService(context);
+  }
+
   async createRoom(req, res) {
     try {
-      const { userData } = req.body;
-      const { uuid } = req.user;
+      const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+      const user = (req && req.user) || (this.context && this.context.user) || {};
+      const { userData } = body;
+      const { uuid } = user;
 
       // Clear any stuck lock to prevent permanent lockouts
       if (userActiveRooms.has(uuid)) {
@@ -22,17 +26,19 @@ class UnoController extends BaseController {
         avatar: userData?.avatar || null
       };
 
-      const roomCode = await unoService.createRoom(userObj);
-      this.sendSuccess(res, { roomCode }, 'Room created successfully');
+      const roomCode = await this.unoService.createRoom(userObj);
+      return this.respondOk({ roomCode }, 'Room created successfully');
     } catch (error) {
-      this.sendError(res, error, 400);
+      return this.respondError(error, 400);
     }
   }
 
   async joinRoom(req, res) {
     try {
-      const { roomCode, userData } = req.body;
-      const { uuid } = req.user;
+      const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+      const user = (req && req.user) || (this.context && this.context.user) || {};
+      const { roomCode, userData } = body;
+      const { uuid } = user;
 
       // Clear any stuck lock to prevent permanent lockouts
       if (userActiveRooms.has(uuid)) {
@@ -45,39 +51,37 @@ class UnoController extends BaseController {
         avatar: userData?.avatar || null
       };
 
-      const roomData = await unoService.joinRoom(roomCode.toUpperCase(), userObj);
-      this.sendSuccess(res, roomData, 'Joined room successfully');
+      const roomData = await this.unoService.joinRoom(roomCode.toUpperCase(), userObj);
+      return this.respondOk(roomData, 'Joined room successfully');
     } catch (error) {
       console.error('[UnoController] Join Room Error:', error.message, 'Stack:', error.stack);
-      this.sendError(res, error, 400);
+      return this.respondError(error, 400);
     }
   }
 
   async getUserRooms(req, res) {
     try {
-      const { uuid } = req.user;
-      const rooms = await unoService.getUserRooms(uuid);
-      this.sendSuccess(res, { rooms }, 'User rooms fetched successfully');
+      const user = (req && req.user) || (this.context && this.context.user) || {};
+      const { uuid } = user;
+      const rooms = await this.unoService.getUserRooms(uuid);
+      return this.respondOk({ rooms }, 'User rooms fetched successfully');
     } catch (error) {
-      this.sendError(res, error, 400);
+      return this.respondError(error, 400);
     }
   }
 
-  async deleteRoom(req, res) {
+  async closeRoom(req, res) {
     try {
-      const { roomId } = req.params;
-      const { uuid } = req.user;
-      
-      const deleted = await unoService.deleteRoom(roomId.toUpperCase(), uuid);
-      if (deleted) {
-        this.sendSuccess(res, null, 'Room deleted successfully');
-      } else {
-        this.sendError(res, new Error('Room not found or unauthorized'), 404);
-      }
+      const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+      const user = (req && req.user) || (this.context && this.context.user) || {};
+      const { roomCode } = params;
+      const { uuid } = user;
+      await this.unoService.closeRoom(roomCode.toUpperCase(), uuid);
+      return this.respondOk(null, 'Room closed successfully');
     } catch (error) {
-      this.sendError(res, error, 400);
+      return this.respondError(error, 400);
     }
   }
 }
 
-module.exports = new UnoController();
+module.exports = UnoController;

@@ -107,7 +107,7 @@ const CampaignFormFeature = ({ editUuid }) => {
         toast.success('Campaign updated successfully!');
       } else {
         await createCampaign(payload);
-        toast.success(t('admin.email.create_success', 'Campaign created successfully!'));
+        toast.success(t('admin.email.create_success'));
       }
       router.push('/email/campaigns');
     } catch (err) {
@@ -133,7 +133,7 @@ const CampaignFormFeature = ({ editUuid }) => {
         />
         <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-h)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <Mail size={24} />
-          {editUuid ? 'Edit Campaign' : t('admin.email.create_title', 'Create New Campaign')}
+          {editUuid ? 'Edit Campaign' : t('admin.email.create_title')}
         </h1>
       </div>
 
@@ -141,18 +141,18 @@ const CampaignFormFeature = ({ editUuid }) => {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '800px' }}>
           
           <STextField
-            label={t('admin.email.name_label', 'Campaign Name')}
+            label={t('admin.email.name_label')}
             text={formData.name}
             onChange={(e) => handleChange({ target: { name: 'name', value: e.target.value } })}
-            placeholder={t('admin.email.name_placeholder', 'e.g., Summer Sale')}
+            placeholder={t('admin.email.name_placeholder')}
             required
           />
 
           <STextField
-            label={t('admin.email.subject_label', 'Subject Line')}
+            label={t('admin.email.subject_label')}
             text={formData.subject}
             onChange={(e) => handleChange({ target: { name: 'subject', value: e.target.value } })}
-            placeholder={t('admin.email.subject_placeholder', 'Don\'t miss our summer sale!')}
+            placeholder={t('admin.email.subject_placeholder')}
             required
           />
 
@@ -229,13 +229,13 @@ const CampaignFormFeature = ({ editUuid }) => {
               color="primary"
               loading={loading}
               icon="save"
-              text={editUuid ? 'Save Changes' : t('common.save', 'Save')}
+              text={editUuid ? 'Save Changes' : t('common.save')}
             />
             <SButton 
               type="button" 
               onClick={() => router.push('/email/campaigns')} 
               color="secondary"
-              text={t('common.cancel', 'Cancel')}
+              text={t('common.cancel')}
             />
           </div>
         </form>

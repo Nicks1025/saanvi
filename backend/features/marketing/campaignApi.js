@@ -1,20 +1,12 @@
 const Joi = require('joi');
 const ApiSchema = require('../../base/apiSchema');
-const QueryHelper = require('../../database/queryHelper');
-const CampaignRepository = require('./campaignRepository');
-const CampaignService = require('./campaignService');
 const CampaignController = require('./campaignController');
-
-const queryHelper = new QueryHelper();
-const repository = new CampaignRepository(queryHelper);
-const service = new CampaignService(repository);
-const controller = new CampaignController(service);
 
 const getAllCampaigns = {
   path: '/',
   verb: 'GET',
   auditMessage: 'getting all campaigns',
-  handler: { controller, method: 'getAllCampaigns' },
+  handler: { controller: CampaignController, method: 'getAllCampaigns' },
   middleware: { requirePermission: ['admin.email.campaign.get'] }
 };
 
@@ -22,7 +14,7 @@ const getCampaign = {
   path: '/:uuid',
   verb: 'GET',
   auditMessage: 'getting campaign by uuid',
-  handler: { controller, method: 'getCampaign' },
+  handler: { controller: CampaignController, method: 'getCampaign' },
   middleware: { requirePermission: ['admin.email.campaign.get'] },
   request: {
     params: Joi.object({
@@ -35,7 +27,7 @@ const createCampaign = {
   path: '/',
   verb: 'POST',
   auditMessage: 'creating campaign',
-  handler: { controller, method: 'createCampaign' },
+  handler: { controller: CampaignController, method: 'createCampaign' },
   middleware: { requirePermission: ['admin.email.campaign.create'] },
   request: {
     body: Joi.object({
@@ -54,7 +46,7 @@ const sendCampaign = {
   path: '/:uuid/send',
   verb: 'POST',
   auditMessage: 'sending campaign',
-  handler: { controller, method: 'sendCampaign' },
+  handler: { controller: CampaignController, method: 'sendCampaign' },
   middleware: { requirePermission: ['admin.email.campaign.send'] },
   request: {
     params: Joi.object({
@@ -67,7 +59,7 @@ const unsubscribe = {
   path: '/unsubscribe',
   verb: 'GET',
   auditMessage: 'unsubscribing from marketing emails',
-  handler: { controller, method: 'unsubscribe' },
+  handler: { controller: CampaignController, method: 'unsubscribe' },
   // No permission required, this is a public endpoint used via email links
   request: {
     query: Joi.object({
@@ -81,7 +73,7 @@ const updateCampaign = {
   path: '/:uuid',
   verb: 'PUT',
   auditMessage: 'updating campaign',
-  handler: { controller, method: 'updateCampaign' },
+  handler: { controller: CampaignController, method: 'updateCampaign' },
   middleware: { requirePermission: ['admin.email.campaign.update'] },
   request: {
     params: Joi.object({
@@ -103,7 +95,7 @@ const deleteCampaign = {
   path: '/:uuid',
   verb: 'DELETE',
   auditMessage: 'deleting campaign',
-  handler: { controller, method: 'deleteCampaign' },
+  handler: { controller: CampaignController, method: 'deleteCampaign' },
   middleware: { requirePermission: ['admin.email.campaign.delete'] },
   request: {
     params: Joi.object({

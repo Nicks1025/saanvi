@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from '@/store/AuthContext';
 import SDataTable from '@/components/common/SDataTable';
 import SButton from '@/components/common/SButton';
-import SModal from '@/components/common/SModal';
+import SDeleteConfirmation from '@/components/common/SDeleteConfirmation';
 import * as rolesService from './rolesService';
 import '../users/users.css';
 
@@ -63,7 +63,7 @@ const RolesFeature = () => {
     try {
       await rolesService.deleteRole(role.uuid);
       setRoles(roles.filter(r => r.uuid !== role.uuid));
-      toast.success(t('admin.roleDeleted', 'Role deleted successfully'));
+      toast.success(t('common.toaster.roleDeleted'));
     } catch (err) {
       console.error('Failed to delete role', err);
       toast.error(err.response?.data?.message || err.response?.data?.error || 'Failed to delete role');
@@ -74,11 +74,11 @@ const RolesFeature = () => {
   };
 
   const columns = [
-    { key: 'name', label: t('admin.roleName', 'Role Name'), sortable: true },
-    { key: 'description', label: t('admin.description', 'Description'), sortable: true },
+    { key: 'name', label: t('admin.roles.roleName'), sortable: true },
+    { key: 'description', label: t('admin.roles.description'), sortable: true },
     {
       key: 'is_active',
-      label: t('admin.status', 'Status'),
+      label: t('admin.roles.status'),
       sortable: true,
       render: (item) => item.is_active ? 'Active' : 'Inactive'
     },
@@ -87,12 +87,12 @@ const RolesFeature = () => {
   return (
     <div className="admin-users-container">
       <SDataTable
-        title={t('admin.roles', 'Roles')}
+        title={t('admin.roles.title')}
         data={roles}
         columns={columns}
         serverSideSearch={true}
         onSearch={(query) => fetchRoles(query)}
-        searchPlaceholder={t('admin.searchRoles', 'Search roles...')}
+        searchPlaceholder={t('admin.roles.searchRoles')}
         loading={loading}
         actions={['view', 'edit', 'delete']}
         onAction={(action, row) => {
@@ -111,22 +111,20 @@ const RolesFeature = () => {
             <SButton
               onClick={handleCreate}
               icon="add"
-              text={t('admin.addRole', 'Add Role')}
+              text={t('admin.roles.addRole')}
               className="flex-shrink-0"
             />
           ) : null
         }
       />
 
-      <SModal
+      <SDeleteConfirmation
         isOpen={modalState.isOpen}
-        title={t('admin.deleteRole', 'Delete Role')}
+        title={t('admin.roles.deleteRole')}
         onConfirm={confirmDelete}
         onCancel={() => setModalState({ isOpen: false, role: null })}
         isProcessing={isProcessing}
-        confirmText={t('common.delete', 'Delete')}
-        confirmColor="danger"
-        text={modalState.role && t('admin.deleteRoleConfirm', 'Are you sure you want to PERMANENTLY delete role "{{roleName}}"? This cannot be undone.', { roleName: modalState.role.name })}
+        text={modalState.role && t('common.confirmationModal.deleteRoleConfirm', { roleName: modalState.role.name })}
       />
     </div>
   );

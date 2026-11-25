@@ -1,18 +1,52 @@
 const BaseService = require('../../base/baseService');
+const ObjectsRepository = require('./objectsRepository');
 
 class ObjectsService extends BaseService {
-  constructor(repository) {
-    super(repository);
+  constructor(context = null) {
+    super(context);
+    this.repository = new ObjectsRepository(context);
+  }
+
+  _mapObject(obj) {
+    if (!obj) return null;
+    return {
+      uuid: obj.uuid,
+      name: obj.name,
+      objectSlug: obj.object_slug,
+      createdBy: obj.created_by,
+      updatedBy: obj.updated_by,
+      createdAt: obj.created_at,
+      updatedAt: obj.updated_at
+    };
+  }
+
+  _mapField(f) {
+    if (!f) return null;
+    return {
+      uuid: f.uuid,
+      fieldName: f.field_name,
+      label: f.label,
+      fieldType: f.field_type,
+      placeholder: f.placeholder,
+      defaultValue: f.default_value,
+      isRequired: Boolean(f.is_required),
+      displayOrder: f.display_order || 0,
+      options: typeof f.options === 'string' ? JSON.parse(f.options) : f.options,
+      validationRules: typeof f.validation_rules === 'string' ? JSON.parse(f.validation_rules) : f.validation_rules,
+      createdAt: f.created_at,
+      updatedAt: f.updated_at
+    };
   }
 
   async listObjects(userUuid) {
-    return await this.repository.listObjects(userUuid);
+    const list = await this.repository.listObjects(userUuid);
+    return (list || []).map(o => this._mapObject(o));
   }
 
   async getObject(uuid, userUuid) {
     const object = await this.repository.getObjectByUuid(uuid, userUuid);
     if (!object) throw new Error('Object not found or you do not have permission');
-    return object;
+    return this._mapObject(object);
   }
 
   async createObject(data, userUuid) {
@@ -29,17 +63,18 @@ class ObjectsService extends BaseService {
       created_by: userUuid,
       updated_by: userUuid
     });
-    return object;
+    return this._mapObject(object);
   }
 
   async updateObject(uuid, userUuid, data) {
     const object = await this.repository.getObjectByUuid(uuid, userUuid);
     if (!object) throw new Error('Object not found');
 
-    return await this.repository.updateObject(uuid, userUuid, {
+    const updated = await this.repository.updateObject(uuid, userUuid, {
       name: data.name,
       updated_by: userUuid
     });
+    return this._mapObject(updated);
   }
 
   async deleteObject(uuid, userUuid) {
@@ -52,14 +87,26 @@ class ObjectsService extends BaseService {
   // --- Fields ---
   async listFields(objectUuid, userUuid) {
     await this.getObject(objectUuid, userUuid); // Check ownership
-    return await this.repository.listFields(objectUuid);
+    const fields = await this.repository.listFields(objectUuid);
+    return (fields || []).map(f => this._mapField(f));
   }
 
   async createField(objectUuid, userUuid, data) {
     await this.getObject(objectUuid, userUuid); // Check ownership
 
+    const isRequired = data.isRequired === true || data.is_required === true || data.is_required === 'true';
+    if (isRequired) {
+      const recordCount = await this.repository.countRecords(objectUuid);
+      if (recordCount > 0) {
+        throw Object.assign(
+          new Error('This object already contains records so before making it required add this field and fill all values'),
+          { code: 'OBJECT_CONTAINS_RECORDS', statusCode: 422, count: recordCount }
+        );
+      }
+    }
+
     // Normalize field_name
-    let fieldName = data.field_name || this._generateSlug(data.label).replace(/-/g, '_');
+    let fieldName = data.fieldName || data.field_name || this._generateSlug(data.label).replace(/-/g, '_');
 
     // Ensure uniqueness
     const existingFields = await this.repository.listFields(objectUuid);
@@ -67,17 +114,27 @@ class ObjectsService extends BaseService {
       fieldName = `${fieldName}_${Math.floor(Math.random() * 1000)}`;
     }
 
-    return await this.repository.createField(objectUuid, {
+    const fieldType = data.fieldType || data.field_type;
+    const placeholder = data.placeholder || null;
+    const defaultValue = data.defaultValue ?? data.default_value ?? null;
+    const options = data.options ? (typeof data.options === 'string' ? data.options : JSON.stringify(data.options)) : null;
+    const rawVr = data.validationRules ?? data.validation_rules;
+    const validationRules = rawVr ? (typeof rawVr === 'string' ? rawVr : JSON.stringify(rawVr)) : null;
+    const displayOrder = data.displayOrder ?? data.display_order ?? 0;
+
+    const created = await this.repository.createField(objectUuid, {
       object_uuid: objectUuid,
       field_name: fieldName,
       label: data.label,
-      field_type: data.field_type,
-      placeholder: data.placeholder,
-      default_value: data.default_value,
-      is_required: data.is_required,
-      options: data.options ? JSON.stringify(data.options) : null,
-      validation_rules: data.validation_rules ? JSON.stringify(data.validation_rules) : null
+      field_type: fieldType,
+      placeholder,
+      default_value: defaultValue,
+      is_required: isRequired,
+      options,
+      validation_rules: validationRules,
+      display_order: displayOrder
     });
+    return this._mapField(created);
   }
 
   async updateField(objectUuid, fieldUuid, userUuid, data) {
@@ -85,9 +142,8 @@ class ObjectsService extends BaseService {
     const field = await this.repository.getFieldByUuid(objectUuid, fieldUuid);
     if (!field) throw new Error('Field not found');
 
-    // If making the field required, check for existing records with empty values
-    const isBeingMadeRequired = (data.is_required === true || data.is_required === 'true')
-      && !field.is_required;
+    const isRequiredInput = data.isRequired !== undefined ? data.isRequired : data.is_required;
+    const isBeingMadeRequired = (isRequiredInput === true || isRequiredInput === 'true') && !field.is_required;
 
     if (isBeingMadeRequired) {
       const emptyCount = await this.repository.countEmptyRecordsForField(objectUuid, field.field_name);
@@ -99,11 +155,31 @@ class ObjectsService extends BaseService {
       }
     }
 
-    // Convert JSON fields if present
-    if (data.options) data.options = JSON.stringify(data.options);
-    if (data.validation_rules) data.validation_rules = JSON.stringify(data.validation_rules);
+    const dbPayload = {};
+    if (data.label !== undefined) dbPayload.label = data.label;
+    if (data.fieldType !== undefined || data.field_type !== undefined) {
+      dbPayload.field_type = data.fieldType || data.field_type;
+    }
+    if (data.placeholder !== undefined) dbPayload.placeholder = data.placeholder;
+    if (data.defaultValue !== undefined || data.default_value !== undefined) {
+      dbPayload.default_value = data.defaultValue ?? data.default_value;
+    }
+    if (isRequiredInput !== undefined) {
+      dbPayload.is_required = Boolean(isRequiredInput);
+    }
+    if (data.options !== undefined) {
+      dbPayload.options = data.options ? (typeof data.options === 'string' ? data.options : JSON.stringify(data.options)) : null;
+    }
+    if (data.validationRules !== undefined || data.validation_rules !== undefined) {
+      const vr = data.validationRules ?? data.validation_rules;
+      dbPayload.validation_rules = vr ? (typeof vr === 'string' ? vr : JSON.stringify(vr)) : null;
+    }
+    if (data.displayOrder !== undefined || data.display_order !== undefined) {
+      dbPayload.display_order = data.displayOrder ?? data.display_order;
+    }
 
-    return await this.repository.updateField(objectUuid, fieldUuid, data);
+    const updated = await this.repository.updateField(objectUuid, fieldUuid, dbPayload);
+    return this._mapField(updated);
   }
 
   async archiveField(objectUuid, fieldUuid, userUuid) {
@@ -146,6 +222,17 @@ class ObjectsService extends BaseService {
           await this.repository.updateField(objectUuid, fieldData.uuid, payload);
         } else {
           // It's a draft/new field
+          const isRequired = fieldData.is_required === true || fieldData.is_required === 'true';
+          if (isRequired) {
+            const recordCount = await this.repository.countRecords(objectUuid);
+            if (recordCount > 0) {
+              throw Object.assign(
+                new Error('This object already contains records so before making it required add this field and fill all values'),
+                { code: 'OBJECT_CONTAINS_RECORDS', statusCode: 422, count: recordCount }
+              );
+            }
+          }
+
           let fieldName = fieldData.field_name || this._generateSlug(fieldData.label).replace(/-/g, '_');
 
           payload.object_uuid = objectUuid;
@@ -178,13 +265,26 @@ class ObjectsService extends BaseService {
     const payload = { name: data.name };
 
     if (data.fields && data.fields.length > 0) {
-      const layoutFields = data.fields.map(f => ({
-        field_uuid: f.field_uuid,
-        row_number: f.row_number || 0,
-        column_number: f.column_number || 0,
-        width: f.width || 12,
-        display_order: f.display_order || 0
-      }));
+      const layoutFields = data.fields.map(f => {
+        const pUuid = f.placement_uuid || f.placementUuid || null;
+        const fUuid = f.field_uuid || f.fieldUuid;
+        const rNum = f.row_number ?? f.rowNumber ?? 0;
+        const cNum = f.column_number ?? f.columnNumber ?? 0;
+        const dOrder = f.display_order ?? f.displayOrder ?? 0;
+        return {
+          placement_uuid: pUuid,
+          placementUuid: pUuid,
+          field_uuid: fUuid,
+          fieldUuid: fUuid,
+          row_number: rNum,
+          rowNumber: rNum,
+          column_number: cNum,
+          columnNumber: cNum,
+          width: f.width || 12,
+          display_order: dOrder,
+          displayOrder: dOrder
+        };
+      });
       payload.jsonBuilderConfig = JSON.stringify(layoutFields);
     }
 
@@ -200,13 +300,26 @@ class ObjectsService extends BaseService {
     if (data.name !== undefined) updatePayload.name = data.name;
 
     if (data.fields) {
-      const layoutFields = data.fields.map(f => ({
-        field_uuid: f.field_uuid,
-        row_number: f.row_number || 0,
-        column_number: f.column_number || 0,
-        width: f.width || 12,
-        display_order: f.display_order || 0
-      }));
+      const layoutFields = data.fields.map(f => {
+        const pUuid = f.placement_uuid || f.placementUuid || null;
+        const fUuid = f.field_uuid || f.fieldUuid;
+        const rNum = f.row_number ?? f.rowNumber ?? 0;
+        const cNum = f.column_number ?? f.columnNumber ?? 0;
+        const dOrder = f.display_order ?? f.displayOrder ?? 0;
+        return {
+          placement_uuid: pUuid,
+          placementUuid: pUuid,
+          field_uuid: fUuid,
+          fieldUuid: fUuid,
+          row_number: rNum,
+          rowNumber: rNum,
+          column_number: cNum,
+          columnNumber: cNum,
+          width: f.width || 12,
+          display_order: dOrder,
+          displayOrder: dOrder
+        };
+      });
       updatePayload.jsonBuilderConfig = JSON.stringify(layoutFields);
     }
 
@@ -226,16 +339,21 @@ class ObjectsService extends BaseService {
   }
 
   // --- Records ---
+  async getRecordCount(objectUuid, userUuid) {
+    await this.getObject(objectUuid, userUuid); // Check ownership
+    return await this.repository.countRecords(objectUuid);
+  }
+
   async listRecords(objectUuid, userUuid) {
     await this.getObject(objectUuid, userUuid); // Check ownership
 
     const records = await this.repository.listRecords(objectUuid);
     const fields = await this.repository.listFields(objectUuid);
 
-    if (records.length === 0) return { records: [], fields };
+    if (records.length === 0) return { records: [], fields: fields.map(f => this._mapField(f)) };
 
     const formattedRecords = records.map(record => {
-      const row = { uuid: record.uuid, created_at: record.created_at };
+      const row = { uuid: record.uuid, createdAt: record.created_at };
       const recordData = record.record_data || {};
 
       for (const field of fields) {
@@ -244,7 +362,22 @@ class ObjectsService extends BaseService {
       return row;
     });
 
-    return { records: formattedRecords, fields };
+    return { records: formattedRecords, fields: fields.map(f => this._mapField(f)) };
+  }
+
+  async getRecord(objectUuid, recordUuid, userUuid) {
+    await this.getObject(objectUuid, userUuid); // Check ownership
+    const record = await this.repository.getRecordByUuid(objectUuid, recordUuid);
+    if (!record) return null;
+
+    const fields = await this.repository.listFields(objectUuid);
+    const recordData = record.record_data || {};
+    const formatted = { uuid: record.uuid, createdAt: record.created_at };
+
+    for (const field of fields) {
+      formatted[field.field_name] = recordData[field.field_name] !== undefined ? recordData[field.field_name] : null;
+    }
+    return formatted;
   }
 
   async createRecord(objectUuid, userUuid, data) {
@@ -254,7 +387,6 @@ class ObjectsService extends BaseService {
 
   async updateRecord(objectUuid, recordUuid, userUuid, data) {
     await this.getObject(objectUuid, userUuid);
-    // You could also add check if record exists before updating
     return await this.repository.updateRecord(objectUuid, recordUuid, data);
   }
 

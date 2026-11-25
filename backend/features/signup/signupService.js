@@ -1,16 +1,22 @@
 const BaseService = require('../../base/baseService');
+const SignupRepository = require('./signupRepository');
 const argon2 = require('argon2');
-const { supabaseAdmin } = require('../../services/supabaseAdmin');
-const LoginRepository = require('../login/loginRepository');
-const jwt = require('jsonwebtoken');
+const RedisHelper = require('../../redis/redisHelper');
+const {
+  signUpAuthUser,
+  createAdminAuthUser,
+  deleteAuthUser,
+  resendAuthVerification
+} = require('../../services/supabaseAdmin');
 
 /**
  * SignupService
- * Orchestrates user registration business logic.
+ * Orchestrates user registration business logic following Sofy conventions.
  */
 class SignupService extends BaseService {
-  constructor(signupRepository) {
-    super(signupRepository);
+  constructor(context = null) {
+    super(context);
+    this.repository = new SignupRepository(context);
   }
 
   /**
@@ -18,6 +24,7 @@ class SignupService extends BaseService {
    */
   async processSignup(userData, onTransaction = null, isAdminCreation = false) {
     const { email, password, language } = userData;
+
     // 1. Email uniqueness check
     const emailExists = await this.repository.emailExists(email);
     if (emailExists) {
@@ -28,41 +35,20 @@ class SignupService extends BaseService {
     const passwordHash = await argon2.hash(password);
 
     // 3. Supabase Auth Signup
-    let authData, signUpError;
+    const redirectTo = process.env.NODE_ENV === 'production'
+      ? 'https://www.saanviworld.com/auth/callback'
+      : 'http://localhost:5000/auth/callback';
 
-    if (isAdminCreation) {
-      // Create user via Admin API to prevent sending the verification email instantly.
-      // We want the welcome credentials email to arrive first.
-      const { supabaseAdmin } = require('../../services/supabaseAdmin');
-      const res = await supabaseAdmin.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: false // keeps them unverified so we can send the link later
-      });
-      authData = res.data;
-      signUpError = res.error;
-    } else {
-      // Normal signup — sends email instantly
-      const { createClient } = require('@supabase/supabase-js');
-      const supabaseAnon = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-
-      const res = await supabaseAnon.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: process.env.NODE_ENV === 'production' ? 'https://www.saanviworld.com/auth/callback' : 'http://localhost:5000/auth/callback'
-        }
-      });
-      authData = res.data;
-      signUpError = res.error;
-    }
+    const { data: authData, error: signUpError } = isAdminCreation
+      ? await createAdminAuthUser({ email, password })
+      : await signUpAuthUser({ email, password, redirectTo });
 
     if (signUpError) {
       console.error('[SignupService] Supabase signUp error:', signUpError.message);
       throw new Error(signUpError.message);
     }
 
-    if (!authData.user || !authData.user.id) {
+    if (!authData?.user?.id) {
       throw new Error('Failed to create authentication user in Supabase.');
     }
 
@@ -71,46 +57,38 @@ class SignupService extends BaseService {
     const userDetailsUuid = this.generateUuid();
     const userRoleEntryUuid = this.generateUuid();
 
-    // 5. Resolve the default 'user' role (outside transaction — read-only)
-    let roleName = 'user';
-    let themeValue = null;
-
-    if (email.toLowerCase() === 'sujjuutiwari@gmail.com' || email.toLowerCase() === 'nkcjsss@gmail.com') {
-      roleName = 'sujju';
-      themeValue = 'birthday';
-    }
+    // 5. Resolve the default 'user' role
+    const roleName = 'user';
+    const themeValue = null;
 
     const userRole = await this.repository.getRoleByName(roleName);
     if (!userRole) {
-      // Rollback Auth User
-      await supabaseAdmin.auth.admin.deleteUser(userUuid);
+      await deleteAuthUser(userUuid);
       throw new Error(`Default '${roleName}' role not found. Please ensure it exists in the roles table.`);
     }
 
     // 6. Insert users, user_details and user_roles atomically
     try {
-      await this.repository.queryHelper.transaction(async (trx) => {
+      await this.repository.transaction(async (trx) => {
         await this.repository.createUser(
           { uuid: userUuid, email, passwordHash, language: language || 'en', theme: themeValue },
           trx
         );
-        // Dynamically extract user_details fields
-        const activeFields = await this.repository.queryHelper.from('sph_user_fields').where('is_active', 'eq', true).execute();
-        const detailsData = {
-          uuid: userDetailsUuid,
-          user_uuid: userUuid
-        };
 
-        for (const field of activeFields) {
-          // Skip base user fields that belong to the users table, not user_details
-          if (['email', 'language', 'password'].includes(field.field_name)) continue;
+        await this.repository.createUserDetails(
+          {
+            uuid: userDetailsUuid,
+            userUuid,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            displayName: userData.displayName,
+            phoneNumber: userData.phoneNumber,
+            dateOfBirth: userData.dateOfBirth,
+            gender: userData.gender,
+          },
+          trx
+        );
 
-          if (userData[field.field_name] !== undefined) {
-            detailsData[field.field_name] = userData[field.field_name] || null;
-          }
-        }
-
-        await this.repository.createUserDetails(detailsData, trx);
         await this.repository.assignUserRole(
           { uuid: userRoleEntryUuid, userUuid, roleUuid: userRole.uuid },
           trx
@@ -122,7 +100,7 @@ class SignupService extends BaseService {
       });
     } catch (dbError) {
       console.error('[SignupService] Failed to insert public user records, rolling back Auth user:', dbError.message);
-      await supabaseAdmin.auth.admin.deleteUser(userUuid);
+      await deleteAuthUser(userUuid);
       throw dbError;
     }
 
@@ -134,50 +112,33 @@ class SignupService extends BaseService {
    * Prevents abuse by applying rate limits.
    */
   async resendVerification(email) {
-    // Standard response to avoid leaking account existence
     const successMsg = 'If your account exists and is unverified, a verification email will be sent.';
 
     const user = await this.repository.getUserByEmail(email);
-    if (!user) {
+    if (!user || user.is_email_verified) {
       return { success: true, message: successMsg };
     }
 
-    if (user.is_email_verified) {
-      return { success: true, message: successMsg };
-    }
-
-    const RedisHelper = require('../../redis/redisHelper');
     const rateLimitKey = `resend_verify:${email}`;
-
     const currentCount = await RedisHelper.get(rateLimitKey);
     if (currentCount && Number(currentCount) >= 5) {
       throw new Error('Please wait before requesting another verification email.');
     }
 
-    // Call Supabase Auth resend
-    const { createClient } = require('@supabase/supabase-js');
-    const supabaseAnon = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-
-    const emailRedirectTo = process.env.NODE_ENV === 'production'
+    const redirectTo = process.env.NODE_ENV === 'production'
       ? 'https://www.saanviworld.com/auth/callback'
       : 'http://localhost:5000/auth/callback';
 
     console.log(`[SignupService] Triggering Supabase resend for: ${email}`);
 
-    const { error } = await supabaseAnon.auth.resend({
-      type: 'signup',
-      email,
-      options: { emailRedirectTo }
-    });
+    // Call Supabase Auth resend via supabaseAdmin helper
+    const { error } = await resendAuthVerification(email, redirectTo);
 
     if (error) {
       console.error('[SignupService] Supabase resend error:', error.message);
-      // Still return success to front-end to prevent enumeration/leaks, but it failed internally.
-      // Wait, if it fails, maybe we should not increment rate limit?
       return { success: true, message: successMsg };
     }
 
-    // Increment rate limit after successful send
     if (!currentCount) {
       await RedisHelper.set(rateLimitKey, 1, 15 * 60); // 15 mins
     } else {

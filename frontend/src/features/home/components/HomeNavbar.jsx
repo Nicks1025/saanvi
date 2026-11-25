@@ -16,6 +16,7 @@ import {
   Shield,
   Home
 } from 'lucide-react';
+import SIcon from '@/components/common/SIcon';
 import '../home.css';
 
 const HomeNavbar = () => {
@@ -140,15 +141,14 @@ const HomeNavbar = () => {
                 <span>Dashboard</span>
               </Link>
 
-              <button 
-                type="button" 
+              <SIcon 
+                name="log-out"
+                size={16}
                 onClick={logout} 
                 className="nav-action-btn btn-ghost" 
                 title="Sign out"
                 aria-label="Sign out"
-              >
-                <LogOut size={16} />
-              </button>
+              />
             </div>
           ) : (
             <div className="nav-guest-controls">
@@ -177,15 +177,15 @@ const HomeNavbar = () => {
         </div>
 
         {/* Mobile Hamburger Button */}
-        <button 
-          type="button"
+        <SIcon 
+          name={mobileMenuOpen ? 'x' : 'menu'}
+          size={24}
           className="home-nav-mobile-toggle"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          title={mobileMenuOpen ? 'Close Menu' : 'Open Menu'}
           aria-label={mobileMenuOpen ? 'Close Menu' : 'Open Menu'}
           aria-expanded={mobileMenuOpen}
-        >
-          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        />
       </div>
 
       {/* Mobile Drawer Menu */}

@@ -47,7 +47,7 @@ const RoleDetailsFeature = () => {
         setSelectedPermissions(rolePerms || []);
       }
     } catch (err) {
-      toast.error(t('admin.roleLoadFailed', 'Failed to load role details'));
+      toast.error(t('common.toaster.roleLoadFailed'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -56,7 +56,7 @@ const RoleDetailsFeature = () => {
 
   const handleSave = async () => {
     if (!role.name.trim()) {
-      toast.error(t('admin.roleNameRequired', 'Role name is required'));
+      toast.error(t('common.toaster.roleNameRequired'));
       return;
     }
     
@@ -68,23 +68,23 @@ const RoleDetailsFeature = () => {
         if (selectedPermissions.length > 0) {
           await rolesService.updateRolePermissions(savedRole.uuid, selectedPermissions);
         }
-        toast.success(t('admin.roleCreated', 'Role created successfully'));
+        toast.success(t('common.toaster.roleCreated'));
         navigate.push(`/admin/roles`);
       } else {
         await rolesService.updateRole(uuid, role);
         await rolesService.updateRolePermissions(uuid, selectedPermissions);
-        toast.success(t('admin.roleUpdated', 'Role updated successfully'));
+        toast.success(t('common.toaster.roleUpdated'));
         navigate.push(`/admin/roles`);
       }
     } catch (err) {
-      toast.error(err?.response?.data?.error || t('admin.roleSaveFailed', 'Failed to save role'));
+      toast.error(err?.response?.data?.error || t('common.toaster.roleSaveFailed'));
       console.error(err);
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) return <div style={{ padding: '2rem' }}>{t('common.loading', 'Loading...')}</div>;
+  if (loading) return <div style={{ padding: '2rem' }}>{t('common.loading')}</div>;
 
   return (
     <div className="admin-users-container page-container">
@@ -94,19 +94,19 @@ const RoleDetailsFeature = () => {
             onClick={() => navigate.push('/admin/roles')}
             style={{ background: 'none', border: 'none', color: 'var(--text)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: 0, marginBottom: '0.5rem' }}
           >
-            &larr; {t('admin.backToRoles', 'Back to Roles')}
+            &larr; {t('admin.roles.backToRoles')}
           </button>
           <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-h)' }}>
-            {isNew ? t('admin.createNewRole', 'Create New Role') : t('admin.roleDetails', 'Role Details')}
+            {isNew ? t('admin.roles.createNewRole') : t('admin.roles.roleDetails')}
           </h1>
         </div>
       </div>
 
       <div style={{ backgroundColor: 'var(--bg)', borderRadius: '8px', padding: '1.5rem', border: '1px solid var(--border)' }}>
-        <h3 style={{ marginTop: 0, marginBottom: '1.5rem' }}>{t('admin.roleInformation', 'Role Information')}</h3>
+        <h3 style={{ marginTop: 0, marginBottom: '1.5rem' }}>{t('admin.roles.roleInformation')}</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', opacity: canEdit ? 1 : 0.7 }}>
           <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>{t('admin.roleName', 'Role Name')}</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>{t('admin.roles.roleName')}</label>
             <input 
               type="text" 
               value={role.name}
@@ -118,7 +118,7 @@ const RoleDetailsFeature = () => {
           </div>
           
           <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>{t('admin.description', 'Description')}</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>{t('admin.roles.description')}</label>
             <input 
               type="text" 
               value={role.description || ''}
@@ -138,12 +138,12 @@ const RoleDetailsFeature = () => {
                 onChange={(e) => setRole({ ...role, is_active: e.target.checked })}
                 style={{ width: '18px', height: '18px', cursor: canEdit ? 'pointer' : 'not-allowed' }}
               />
-              <span style={{ fontWeight: 'bold' }}>{t('admin.isActive', 'Active')}</span>
+              <span style={{ fontWeight: 'bold' }}>{t('admin.roles.isActive')}</span>
             </label>
           </div>
         </div>
 
-        <h3 style={{ marginTop: '2.5rem', marginBottom: '1rem' }}>{t('admin.permissions', 'Permissions')}</h3>
+        <h3 style={{ marginTop: '2.5rem', marginBottom: '1rem' }}>{t('admin.roles.permissions')}</h3>
         <div style={{ pointerEvents: canEdit ? 'auto' : 'none', opacity: canEdit ? 1 : 0.7 }}>
           <PermissionTree 
             permissions={allPermissions}
@@ -160,13 +160,13 @@ const RoleDetailsFeature = () => {
               onClick={() => navigate.push('/admin/roles')}
               color="danger"
               icon="close"
-              text={t('common.cancel', 'Cancel')}
+              text={t('common.cancel')}
             />
             <SButton 
               onClick={handleSave}
               disabled={saving}
               icon="save"
-              text={saving ? t('common.saving', 'Saving...') : t('common.save', 'Save')}
+              text={saving ? t('common.saving') : t('common.save')}
               color="primary"
             />
           </>
@@ -175,7 +175,7 @@ const RoleDetailsFeature = () => {
               onClick={() => navigate.push('/admin/roles')}
               color="danger"
               icon="close"
-              text={t('common.close', 'Close')}
+              text={t('common.close')}
           />
         )}
       </div>

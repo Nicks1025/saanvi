@@ -183,7 +183,7 @@ const ChatRequestsModal = ({ isOpen, onClose, chatRealtime }) => {
                      return (
                        <div key={u.uuid} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', borderBottom: '1px solid var(--border)' }}>
                          <div>
-                            <div style={{fontWeight: 'bold'}}>{u.display_name || u.first_name || 'User'}</div>
+                            <div style={{fontWeight: 'bold'}}>{u.displayName || u.display_name || u.firstName || u.first_name || 'User'}</div>
                             <div style={{fontSize: '0.8rem', color: 'var(--text-secondary)'}}>{u.email}</div>
                          </div>
                          <div 

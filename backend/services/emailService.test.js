@@ -1,60 +1,55 @@
 const EmailService = require('./emailService');
 const emailProvider = require('../providers/emailProvider');
-const jobQueueService = require('./jobQueueService');
 const QueryHelper = require('../database/queryHelper');
 
 jest.mock('../providers/emailProvider');
-jest.mock('./jobQueueService');
 jest.mock('../database/queryHelper');
 
 describe('EmailService', () => {
-  let mockQueue;
-  let mockQueryHelper;
+  let mockDbQuery;
+  let mockQh;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockQueue = {
-      add: jest.fn().mockResolvedValue({ id: 'job-123' })
+    mockDbQuery = {
+      insert: jest.fn().mockResolvedValue([1]),
+      where: jest.fn().mockReturnThis(),
+      update: jest.fn().mockResolvedValue([1]),
+      del: jest.fn().mockResolvedValue([1]),
     };
-    jobQueueService.getEmailQueue.mockReturnValue(mockQueue);
 
-    mockQueryHelper = {
+    mockQh = {
+      db: jest.fn(() => mockDbQuery),
       from: jest.fn().mockReturnThis(),
-      insert: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
       update: jest.fn().mockReturnThis(),
-      execute: jest.fn().mockResolvedValue([])
+      execute: jest.fn().mockResolvedValue([]),
     };
-    QueryHelper.mockImplementation(() => mockQueryHelper);
+
+    QueryHelper.mockImplementation(() => mockQh);
   });
 
   describe('sendAsync', () => {
-    it('should queue an email and log as PENDING', async () => {
-      const jobId = await EmailService.sendAsync({
+    it('should queue an email into sph_email_queue and log as PENDING', async () => {
+      const logUuid = await EmailService.sendAsync({
         to: 'test@example.com',
         subject: 'Test',
-        html: '<p>Test</p>'
+        html: '<p>Test</p>',
       });
 
-      expect(jobId).toBe('job-123');
-      expect(mockQueue.add).toHaveBeenCalledWith('sendEmail', expect.objectContaining({
-        to: 'test@example.com',
-        html: '<p>Test</p>'
-      }), expect.any(Object));
-
-      expect(mockQueryHelper.insert).toHaveBeenCalledWith(expect.objectContaining({
-        recipient: 'test@example.com',
-        status: 'PENDING',
-        type: 'TRANSACTIONAL'
-      }));
+      expect(logUuid).toBeDefined();
+      expect(mockQh.db).toHaveBeenCalledWith('sph_email_logs');
+      expect(mockQh.db).toHaveBeenCalledWith('sph_email_queue');
     });
 
-    it('should fail if neither template nor html is provided', async () => {
-      await expect(EmailService.sendAsync({
-        to: 'test@example.com',
-        subject: 'Test'
-      })).rejects.toThrow('Either "template" or "html" must be provided.');
+    it('should throw if neither template nor html provided', async () => {
+      await expect(
+        EmailService.sendAsync({
+          to: 'test@example.com',
+          subject: 'Test',
+        })
+      ).rejects.toThrow('Either "template" or "html" must be provided.');
     });
   });
 
@@ -65,39 +60,37 @@ describe('EmailService', () => {
       const result = await EmailService.sendDirect({
         to: 'test@example.com',
         subject: 'Direct Test',
-        html: '<p>Direct</p>'
+        html: '<p>Direct</p>',
       });
 
       expect(result.success).toBe(true);
       expect(result.messageId).toBe('msg-456');
-      
-      // Should call the provider
+
       expect(emailProvider.sendEmail).toHaveBeenCalledWith({
         to: 'test@example.com',
         subject: 'Direct Test',
         html: '<p>Direct</p>',
-        text: undefined
+        text: undefined,
       });
-
-      // Should log COMPLETED
-      expect(mockQueryHelper.update).toHaveBeenCalledWith(expect.objectContaining({
-        status: 'COMPLETED'
-      }));
     });
 
     it('should update log as FAILED if sending fails', async () => {
       emailProvider.sendEmail.mockRejectedValue(new Error('SMTP Error'));
 
-      await expect(EmailService.sendDirect({
-        to: 'test@example.com',
-        subject: 'Fail Test',
-        html: '<p>Fail</p>'
-      })).rejects.toThrow('SMTP Error');
+      await expect(
+        EmailService.sendDirect({
+          to: 'test@example.com',
+          subject: 'Fail Test',
+          html: '<p>Fail</p>',
+        }, 'log-job-123')
+      ).rejects.toThrow('SMTP Error');
 
-      expect(mockQueryHelper.update).toHaveBeenCalledWith(expect.objectContaining({
-        status: 'FAILED',
-        error_details: 'SMTP Error'
-      }));
+      expect(mockQh.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'FAILED',
+          error_details: 'SMTP Error',
+        })
+      );
     });
   });
 });

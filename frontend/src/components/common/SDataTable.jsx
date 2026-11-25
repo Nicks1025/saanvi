@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import STextField from './STextField';
 import SButton from './SButton';
+import SIcon from './SIcon';
 import './SDataTable.css';
 
 import { GripVertical, Eye, Pencil, Archive, RefreshCw, Trash2, Send } from 'lucide-react';
@@ -30,6 +32,7 @@ const SDataTable = ({
   activeTab = null,
   onTabChange = null
 }) => {
+  const { t } = useTranslation();
   const { page: propPage, limit: propLimit, total: propTotal, onPageChange, onLimitChange } = pagination;
   const isExternalPagination = Boolean(onPageChange && onLimitChange);
 
@@ -44,82 +47,110 @@ const SDataTable = ({
     if ((actions && actions.length > 0) || (customActions && customActions.length > 0)) {
       cols.push({
         key: 'sdt_actions',
-        label: 'Actions',
+        label: t('common.actions'),
         sortable: false,
-        render: (row, rowIndex) => (
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        render: (row, _rowIndex) => (
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', justifyContent: 'center' }}>
             {actions.includes('view') && canExecuteAction('view', row) && (
-              <button
-                className="manage-btn"
+              <SIcon
+                name="eye"
+                size={18}
                 onClick={(e) => { e.stopPropagation(); onAction && onAction('view', row); }}
-                title="View"
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer' }}
-              >
-                <Eye size={18} />
-              </button>
+                title={t('common.view')}
+                aria-label={t('common.view')}
+                className="sdt-action-icon sdt-action-view"
+                subtle
+              />
             )}
             {actions.includes('edit') && canExecuteAction('edit', row) && (
-              <button
-                className="manage-btn"
+              <SIcon
+                name="edit"
+                size={18}
                 onClick={(e) => { e.stopPropagation(); onAction && onAction('edit', row); }}
-                title="Edit"
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer' }}
-              >
-                <Pencil size={18} />
-              </button>
+                title={t('common.edit')}
+                aria-label={t('common.edit')}
+                className="sdt-action-icon sdt-action-edit"
+                subtle
+              />
             )}
             {actions.includes('archive') && canExecuteAction('archive', row) && (
-              <button
-                className="manage-btn"
+              <SIcon
+                name="archive"
+                size={18}
+                color="warning"
                 onClick={(e) => { e.stopPropagation(); onAction && onAction('archive', row); }}
-                title="Archive"
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer', color: '#f59e0b' }}
-              >
-                <Archive size={18} />
-              </button>
+                title={t('common.archive')}
+                aria-label={t('common.archive')}
+                className="sdt-action-icon"
+                subtle
+              />
             )}
             {actions.includes('restore') && canExecuteAction('restore', row) && (
-              <button
-                className="manage-btn"
+              <SIcon
+                name="restore"
+                size={18}
+                color="success"
                 onClick={(e) => { e.stopPropagation(); onAction && onAction('restore', row); }}
-                title="Restore"
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer', color: '#10b981' }}
-              >
-                <RefreshCw size={18} />
-              </button>
+                title={t('common.restore')}
+                aria-label={t('common.restore')}
+                className="sdt-action-icon"
+                subtle
+              />
             )}
             {actions.includes('delete') && canExecuteAction('delete', row) && (
-              <button
-                className="manage-btn"
+              <SIcon
+                name="delete"
+                size={18}
+                color="danger"
                 onClick={(e) => { e.stopPropagation(); onAction && onAction('delete', row); }}
-                title="Delete"
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444' }}
-              >
-                <Trash2 size={18} />
-              </button>
+                title={t('common.delete')}
+                aria-label={t('common.delete')}
+                className="sdt-action-icon sdt-action-delete"
+                subtle
+              />
             )}
             {actions.includes('send') && canExecuteAction('send', row) && (
-              <button
-                className="manage-btn"
+              <SIcon
+                name="send"
+                size={18}
+                color="primary"
                 onClick={(e) => { e.stopPropagation(); onAction && onAction('send', row); }}
-                title="Send"
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer', color: '#3b82f6' }}
-              >
-                <Send size={18} />
-              </button>
-            )}
-            {customActions && customActions.map((action, idx) => (
-              <SButton
-                key={idx}
-                size="small"
-                color="secondary"
-                text={action.label}
-                icon={action.icon}
-                title={action.title || action.label}
-                onClick={(e) => { e.stopPropagation(); action.onClick(row); }}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer', ...action.style }}
+                title={t('common.send')}
+                aria-label={t('common.send')}
+                className="sdt-action-icon"
+                subtle
               />
-            ))}
+            )}
+            {customActions && customActions.map((action, idx) => {
+              const title = action.title || action.label;
+              if (!action.label && action.icon) {
+                return (
+                  <SIcon
+                    key={idx}
+                    icon={action.icon}
+                    size={18}
+                    title={title}
+                    aria-label={title}
+                    onClick={(e) => { e.stopPropagation(); action.onClick(row); }}
+                    className="sdt-action-icon"
+                    subtle
+                    style={action.style}
+                  />
+                );
+              }
+              return (
+                <SButton
+                  key={idx}
+                  size="small"
+                  color="secondary"
+                  text={action.label}
+                  icon={action.icon}
+                  title={title}
+                  onClick={(e) => { e.stopPropagation(); action.onClick(row); }}
+                  style={action.style}
+                />
+              );
+            })}
           </div>
         )
       });
@@ -309,7 +340,7 @@ const SDataTable = ({
         <table style={{ width: '100%', borderCollapse: 'collapse', borderTop: '1px solid var(--border, #e5e5e5)', borderBottom: '1px solid var(--border, #e5e5e5)', minWidth: '480px' }}>
           <thead>
             <tr>
-              {isDraggable && <th style={{ width: '40px', backgroundColor: '#f5f5f5', borderBottom: '1px solid var(--border)' }}></th>}
+              {isDraggable && <th style={{ width: '40px', backgroundColor: '#f5f5f5', borderBottom: '1px solid var(--border)', textAlign: 'center' }}></th>}
               {processedColumns.map((col, index) => {
                 const isObject = typeof col === 'object';
                 const label = isObject ? col.label : col;
@@ -321,7 +352,7 @@ const SDataTable = ({
                     key={index}
                     onClick={isSortable ? () => handleSort(colKey) : undefined}
                     style={{
-                      textAlign: 'left',
+                      textAlign: (isObject && col.align) ? col.align : 'center',
                       padding: '0.75rem 1rem',
                       borderBottom: '1px solid var(--border)',
                       backgroundColor: 'var(--code-bg)',
@@ -343,37 +374,48 @@ const SDataTable = ({
             </tr>
           </thead>
           <tbody>
-            {displayedData.map((row, rowIndex) => (
-              <tr
-                key={rowIndex}
-                draggable={isDraggable}
-                onDragStart={(e) => handleDragStart(e, rowIndex)}
-                onDragOver={(e) => handleDragOver(e, rowIndex)}
-                onDrop={(e) => handleDrop(e, rowIndex)}
-                style={{
-                  cursor: isDraggable ? 'grab' : 'default',
-                  opacity: draggedIndex === rowIndex ? 0.5 : 1,
-                  backgroundColor: 'var(--bg)'
-                }}
-              >
-                {isDraggable && (
-                  <td style={{ padding: '0.5rem 1rem', borderBottom: '1px solid var(--border)', color: 'var(--text-muted)' }}>
-                    <GripVertical size={16} />
-                  </td>
-                )}
-                {processedColumns.map((col, colIndex) => {
-                  const isObject = typeof col === 'object';
-                  const cellKey = isObject ? col.key : col;
-                  const cellContent = isObject && col.render ? col.render(row, rowIndex) : row[cellKey];
-
-                  return (
-                    <td key={colIndex} style={{ padding: '0.5rem 1rem', borderBottom: '1px solid var(--border)' }}>
-                      {cellContent}
-                    </td>
-                  );
-                })}
+            {displayedData.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={processedColumns.length + (isDraggable ? 1 : 0)}
+                  style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--text-muted)', borderBottom: '1px solid var(--border)' }}
+                >
+                  {t('common.noData') || 'No records found'}
+                </td>
               </tr>
-            ))}
+            ) : (
+              displayedData.map((row, rowIndex) => (
+                <tr
+                  key={rowIndex}
+                  draggable={isDraggable}
+                  onDragStart={(e) => handleDragStart(e, rowIndex)}
+                  onDragOver={(e) => handleDragOver(e, rowIndex)}
+                  onDrop={(e) => handleDrop(e, rowIndex)}
+                  style={{
+                    cursor: isDraggable ? 'grab' : 'default',
+                    opacity: draggedIndex === rowIndex ? 0.5 : 1,
+                    backgroundColor: 'var(--bg)'
+                  }}
+                >
+                  {isDraggable && (
+                    <td style={{ padding: '0.5rem 1rem', borderBottom: '1px solid var(--border)', color: 'var(--text-muted)', textAlign: 'center' }}>
+                      <GripVertical size={16} />
+                    </td>
+                  )}
+                  {processedColumns.map((col, colIndex) => {
+                    const isObject = typeof col === 'object';
+                    const cellKey = isObject ? col.key : col;
+                    const cellContent = isObject && col.render ? col.render(row, rowIndex) : row[cellKey];
+
+                    return (
+                      <td key={colIndex} style={{ padding: '0.5rem 1rem', borderBottom: '1px solid var(--border)', textAlign: (isObject && col.align) ? col.align : 'center' }}>
+                        {cellContent}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -389,12 +431,12 @@ const SDataTable = ({
           backgroundColor: 'var(--bg)'
         }}>
           <div style={{ color: 'var(--text)', fontSize: '0.875rem' }}>
-            {activeTotal} Records
+            {activeTotal} {t('common.dataTable.records')}
           </div>
 
           <div className="sdt-pagination-controls" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div className="sdt-hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ color: 'var(--text)', fontSize: '0.875rem' }}>Rows per page:</span>
+              <span style={{ color: 'var(--text)', fontSize: '0.875rem' }}>{t('common.dataTable.rowsPerPage')}</span>
               <div style={{ position: 'relative' }}>
                 <div
                   onClick={() => setIsLimitDropdownOpen(!isLimitDropdownOpen)}
@@ -469,13 +511,13 @@ const SDataTable = ({
                   cursor: activePage <= 1 ? 'not-allowed' : 'pointer'
                 }}
               >
-                <span className="sdt-hide-mobile">Prev</span>
+                <span className="sdt-hide-mobile">{t('common.prev')}</span>
                 <span className="sdt-show-mobile">&lt;</span>
               </button>
               <span style={{ fontSize: '0.875rem', color: 'var(--text)' }}>
-                <span className="sdt-hide-mobile">Page </span>
+                <span className="sdt-hide-mobile">{t('common.page')} </span>
                 {activePage}
-                <span className="sdt-hide-mobile"> of {Math.max(1, Math.ceil(activeTotal / activeLimit))}</span>
+                <span className="sdt-hide-mobile"> {t('common.of')} {Math.max(1, Math.ceil(activeTotal / activeLimit))}</span>
               </span>
               <button
                 onClick={() => handlePageChange(activePage + 1)}
@@ -489,7 +531,7 @@ const SDataTable = ({
                   cursor: activePage >= Math.ceil(activeTotal / activeLimit) ? 'not-allowed' : 'pointer'
                 }}
               >
-                <span className="sdt-hide-mobile">Next</span>
+                <span className="sdt-hide-mobile">{t('common.next')}</span>
                 <span className="sdt-show-mobile">&gt;</span>
               </button>
             </div>

@@ -1,65 +1,83 @@
 const BaseRepository = require('../../../base/baseRepository');
+const QueryHelper = require('../../../database/queryHelper');
 
 class EmailTemplateRepository extends BaseRepository {
+  constructor(context = null) {
+    super(context);
+    this.sql = new QueryHelper('sph_email_templates');
+    this.sqlLogs = new QueryHelper('sph_email_logs');
+  }
+
   async getAllTemplates() {
-    return await this.queryHelper.from('sph_email_templates')
-      .select('*')
-      .orderBy('created_at', false)
-      .execute();
+    const query = this.sql.select().field('*').orderBy('created_at', 'desc');
+    return this.runQuery(query);
   }
 
   async getTemplateByUuid(uuid) {
-    const result = await this.queryHelper.from('sph_email_templates')
-      .select('*')
-      .where('uuid', 'eq', uuid)
-      .execute();
-    return result[0] || null;
+    const query = this.sql.select().field('*').where('uuid', '=', uuid);
+    return this.runQueryFirst(query);
   }
 
   async getTemplateByKey(key) {
-    const result = await this.queryHelper.from('sph_email_templates')
-      .select('*')
-      .where('template_key', 'eq', key)
-      .execute();
-    return result[0] || null;
+    const query = this.sql.select().field('*').where('template_key', '=', key);
+    return this.runQueryFirst(query);
   }
 
   async createTemplate(data) {
-    return await this.queryHelper.from('sph_email_templates')
-      .insert(data)
-      .execute();
+    const query = this.sql.insert(data);
+    return this.execute(query);
   }
 
   async updateTemplate(uuid, data) {
     data.updated_at = new Date().toISOString();
-    return await this.queryHelper.from('sph_email_templates')
-      .where('uuid', 'eq', uuid)
-      .update(data)
-      .execute();
+    const query = this.sql.update(data).where('uuid', '=', uuid);
+    return this.execute(query);
   }
 
-  async getEmailLogs() {
-    return await this.queryHelper.from('sph_email_logs')
-      .select('*')
-      .orderBy('created_at', false)
-      .limit(100)
-      .execute();
+  async getEmailLogs(page = 1, limit = 10, search = '') {
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, parseInt(limit, 10) || 10);
+    const offset = (pageNum - 1) * limitNum;
+
+    const countQuery = this.sqlLogs.count('*', 'total');
+    if (search) {
+      const searchPattern = `%${search}%`;
+      countQuery.whereRaw('(recipient ILIKE ? OR subject ILIKE ? OR template_key ILIKE ?)', [searchPattern, searchPattern, searchPattern]);
+    }
+    const countRow = await this.runQueryFirst(countQuery);
+    const total = countRow ? parseInt(countRow.total || 0, 10) : 0;
+
+    const dataQuery = this.sqlLogs
+      .select()
+      .field('*')
+      .orderBy('created_at', 'desc')
+      .limit(limitNum)
+      .offset(offset);
+
+    if (search) {
+      const searchPattern = `%${search}%`;
+      dataQuery.whereRaw('(recipient ILIKE ? OR subject ILIKE ? OR template_key ILIKE ?)', [searchPattern, searchPattern, searchPattern]);
+    }
+    const logs = await this.runQuery(dataQuery);
+
+    return {
+      data: logs,
+      total,
+      page: pageNum,
+      limit: limitNum
+    };
   }
 
   async getLinkedWorkflows(_templateKey) {
-    // Workflows have been removed from the system. Templates can always be deleted.
     return [];
   }
 
   async deleteTemplate(uuid) {
-    return await this.queryHelper.from('sph_email_templates')
-      .where('uuid', 'eq', uuid)
-      .del()
-      .execute();
+    const query = this.sql.delete().where('uuid', '=', uuid);
+    return this.execute(query);
   }
 
   async getTableColumns(tableName) {
-    // Security: only allow tables with the sph_ prefix (or core user tables) to prevent arbitrary introspection
     const ALLOWED_PREFIXES = ['sph_', 'users', 'user_'];
     const isAllowed = ALLOWED_PREFIXES.some(prefix => tableName.startsWith(prefix));
     if (!isAllowed) {
@@ -68,14 +86,14 @@ class EmailTemplateRepository extends BaseRepository {
       throw err;
     }
 
-    const result = await this.queryHelper.db.raw(`
+    const rows = await this.queryRaw(`
       SELECT column_name
       FROM information_schema.columns
       WHERE table_name = ?
         AND table_schema = 'public'
       ORDER BY ordinal_position
     `, [tableName]);
-    return result.rows.map(r => r.column_name);
+    return rows.map(r => r.column_name);
   }
 }
 

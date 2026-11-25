@@ -1,9 +1,10 @@
 const BaseController = require('../../base/baseController');
+const SqlService = require('./sqlService');
 
 class SqlController extends BaseController {
-  constructor(sqlService) {
-    super();
-    this.sqlService = sqlService;
+  constructor(context = null) {
+    super(context);
+    this.sqlService = new SqlService(context);
   }
 
   /**
@@ -11,22 +12,22 @@ class SqlController extends BaseController {
    */
   async executeSql(req, res) {
     try {
-      const { databaseId, query } = req.body;
+      const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+      const { databaseId, query } = body;
       
       if (!databaseId) {
-        return this.sendError(res, 'Database ID is required.', 400);
+        return this.respondError('Database ID is required.', 400);
       }
       
       if (!query || typeof query !== 'string') {
-        return this.sendError(res, 'A valid SQL query string is required.', 400);
+        return this.respondError('A valid SQL query string is required.', 400);
       }
 
       const result = await this.sqlService.executeSql(databaseId, query);
       
-      return this.sendSuccess(res, result, 'Query executed successfully');
+      return this.respondOk(result, 'Query executed successfully');
     } catch (error) {
-      // Send safe error message back to the client
-      return this.sendError(res, error.message, 400);
+      return this.respondError(error.message, 400);
     }
   }
 }

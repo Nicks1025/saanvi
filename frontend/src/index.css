@@ -43,6 +43,29 @@ body {
   margin: 0;
   overflow-x: hidden;
   max-width: 100%;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scroller visually across all scrollable containers while maintaining scroll functionality */
+.admin-users-container,
+.s-data-table-container,
+.layout-main,
+.page-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.admin-users-container::-webkit-scrollbar,
+.s-data-table-container::-webkit-scrollbar,
+.layout-main::-webkit-scrollbar,
+.page-container::-webkit-scrollbar {
+  display: none;
 }
 
 #root {

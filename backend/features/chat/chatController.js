@@ -2,20 +2,21 @@ const BaseController = require('../../base/baseController');
 const { getIo } = require('../../socket');
 
 class ChatController extends BaseController {
-  async searchUsers(req, res) {
-    try {
-      const query = req.query.search || "";
-      const limit = parseInt(req.query.limit) || 50;
-      const result = await this.chatService.searchUsers(query, limit);
-      return this.sendSuccess(res, result, "Users retrieved");
-    } catch (e) {
-      return this.sendError(res, e.message, 500);
-    }
+  constructor(context = null) {
+    super(context);
+    const ChatService = require('./chatService');
+    this.chatService = new ChatService(context);
   }
 
-  constructor(chatService) {
-    super();
-    this.chatService = chatService;
+  async searchUsers(req, res) {
+    try {
+      const query = req.query.search || '';
+      const limit = parseInt(req.query.limit) || 50;
+      const result = await this.chatService.searchUsers(query, limit);
+      return this.respondOk(result, 'Users retrieved');
+    } catch (e) {
+      return this.respondError(e.message, 500);
+    }
   }
 
   // ---- Blocks ----
@@ -23,9 +24,9 @@ class ChatController extends BaseController {
     try {
       const { user_uuid } = req.body;
       const result = await this.chatService.blockUser(req.user.uuid, user_uuid);
-      return this.sendSuccess(res, result, 'User blocked successfully');
+      return this.respondOk(result, 'User blocked successfully');
     } catch (e) {
-      return this.sendError(res, e.message, 400);
+      return this.respondError(e.message, 400);
     }
   }
 
@@ -33,9 +34,9 @@ class ChatController extends BaseController {
     try {
       const { uuid } = req.params; // blocked user uuid
       const result = await this.chatService.unblockUser(req.user.uuid, uuid);
-      return this.sendSuccess(res, result, 'User unblocked successfully');
+      return this.respondOk(result, 'User unblocked successfully');
     } catch (e) {
-      return this.sendError(res, e.message, 400);
+      return this.respondError(e.message, 400);
     }
   }
 
@@ -50,18 +51,18 @@ class ChatController extends BaseController {
         io.to(`user:${receiver_uuid}`).emit('chat_request:new', result);
       }
       
-      return this.sendSuccess(res, result, 'Chat request sent');
+      return this.respondOk(result, 'Chat request sent');
     } catch (e) {
-      return this.sendError(res, e.message, 400);
+      return this.respondError(e.message, 400);
     }
   }
 
   async getChatRequests(req, res) {
     try {
       const result = await this.chatService.getChatRequests(req.user.uuid);
-      return this.sendSuccess(res, result, 'Chat requests retrieved');
+      return this.respondOk(result, 'Chat requests retrieved');
     } catch (e) {
-      return this.sendError(res, e.message, 500);
+      return this.respondError(e.message, 500);
     }
   }
 
@@ -85,9 +86,9 @@ class ChatController extends BaseController {
         }
       }
 
-      return this.sendSuccess(res, result, 'Chat request updated');
+      return this.respondOk(result, 'Chat request updated');
     } catch (e) {
-      return this.sendError(res, e.message, 400);
+      return this.respondError(e.message, 400);
     }
   }
 
@@ -95,9 +96,9 @@ class ChatController extends BaseController {
   async getConversations(req, res) {
     try {
       const result = await this.chatService.getConversations(req.user.uuid);
-      return this.sendSuccess(res, result, 'Conversations retrieved');
+      return this.respondOk(result, 'Conversations retrieved');
     } catch (e) {
-      return this.sendError(res, e.message, 500);
+      return this.respondError(e.message, 500);
     }
   }
 
@@ -113,9 +114,9 @@ class ChatController extends BaseController {
         io.to(`conversation:${uuid}`).emit('message:receive', result);
       }
 
-      return this.sendSuccess(res, result, 'Message sent');
+      return this.respondOk(result, 'Message sent');
     } catch (e) {
-      return this.sendError(res, e.message, 400);
+      return this.respondError(e.message, 400);
     }
   }
 
@@ -126,9 +127,9 @@ class ChatController extends BaseController {
       const cursor = req.query.cursor; // ISO timestamp
       const after = req.query.after; // ISO timestamp
       const result = await this.chatService.getMessages(req.user.uuid, uuid, limit, cursor, after);
-      return this.sendSuccess(res, result, 'Messages retrieved');
+      return this.respondOk(result, 'Messages retrieved');
     } catch (e) {
-      return this.sendError(res, e.message, 400);
+      return this.respondError(e.message, 400);
     }
   }
 
@@ -137,9 +138,9 @@ class ChatController extends BaseController {
       const { uuid } = req.params; // message uuid
       const { status } = req.body; // 'delivered' | 'seen'
       const result = await this.chatService.markMessageStatus(req.user.uuid, uuid, status);
-      return this.sendSuccess(res, result, 'Message status updated');
+      return this.respondOk(result, 'Message status updated');
     } catch (e) {
-      return this.sendError(res, e.message, 400);
+      return this.respondError(e.message, 400);
     }
   }
 
@@ -149,9 +150,9 @@ class ChatController extends BaseController {
       const { uuid } = req.params; // conversation uuid
       const { file_name, mime_type, file_size, category } = req.body;
       const result = await this.chatService.generateUploadUrl(req.user.uuid, uuid, file_name, mime_type, file_size, category);
-      return this.sendSuccess(res, result, 'Upload URL generated');
+      return this.respondOk(result, 'Upload URL generated');
     } catch (e) {
-      return this.sendError(res, e.message, 400);
+      return this.respondError(e.message, 400);
     }
   }
 
@@ -166,9 +167,9 @@ class ChatController extends BaseController {
         io.to(`conversation:${uuid}`).emit('message:receive', result);
       }
 
-      return this.sendSuccess(res, result, 'Upload completed and message sent');
+      return this.respondOk(result, 'Upload completed and message sent');
     } catch (e) {
-      return this.sendError(res, e.message, 400);
+      return this.respondError(e.message, 400);
     }
   }
 
@@ -179,10 +180,10 @@ class ChatController extends BaseController {
 
       // Hard limit enforced server-side
       if (!Array.isArray(attachments) || attachments.length === 0) {
-        return this.sendError(res, 'attachments must be a non-empty array', 400);
+        return this.respondError('attachments must be a non-empty array', 400);
       }
       if (attachments.length > 5) {
-        return this.sendError(res, 'Maximum 5 images per message', 400);
+        return this.respondError('Maximum 5 images per message', 400);
       }
 
       const result = await this.chatService.completeMultiUpload(req.user.uuid, uuid, message, attachments);
@@ -192,20 +193,19 @@ class ChatController extends BaseController {
         io.to(`conversation:${uuid}`).emit('message:receive', result);
       }
 
-      return this.sendSuccess(res, result, 'Multi-upload completed and message sent');
+      return this.respondOk(result, 'Multi-upload completed and message sent');
     } catch (e) {
-      return this.sendError(res, e.message, 400);
+      return this.respondError(e.message, 400);
     }
   }
-
 
   async getDownloadUrl(req, res) {
     try {
       const { messageUuid, attachmentUuid } = req.params;
       const result = await this.chatService.getDownloadUrl(req.user.uuid, messageUuid, attachmentUuid);
-      return this.sendSuccess(res, result, 'Download URL generated');
+      return this.respondOk(result, 'Download URL generated');
     } catch (e) {
-      return this.sendError(res, e.message, 400);
+      return this.respondError(e.message, 400);
     }
   }
 
@@ -215,9 +215,9 @@ class ChatController extends BaseController {
       const { uuid } = req.params; // conversation uuid
       const { file_name, mime_type, file_size } = req.body;
       const result = await this.chatService.generateWallpaperUploadUrl(req.user.uuid, uuid, file_name, mime_type, file_size);
-      return this.sendSuccess(res, result, 'Wallpaper upload URL generated');
+      return this.respondOk(result, 'Wallpaper upload URL generated');
     } catch (e) {
-      return this.sendError(res, e.message, 400);
+      return this.respondError(e.message, 400);
     }
   }
 
@@ -226,9 +226,9 @@ class ChatController extends BaseController {
       const { uuid } = req.params; // conversation uuid
       const { storage_key } = req.body;
       const result = await this.chatService.completeWallpaperUpload(req.user.uuid, uuid, storage_key);
-      return this.sendSuccess(res, result, 'Wallpaper upload completed');
+      return this.respondOk(result, 'Wallpaper upload completed');
     } catch (e) {
-      return this.sendError(res, e.message, 400);
+      return this.respondError(e.message, 400);
     }
   }
 
@@ -243,9 +243,9 @@ class ChatController extends BaseController {
         // notify others in conversation
         io.to(`conversation:${uuid}`).emit('conversation:background_updated', { conversation_uuid: uuid, background_data: result.wallpaper_url });
       }
-      return this.sendSuccess(res, result, 'Background updated successfully');
+      return this.respondOk(result, 'Background updated successfully');
     } catch (e) {
-      return this.sendError(res, e.message, 400);
+      return this.respondError(e.message, 400);
     }
   }
 
@@ -255,17 +255,15 @@ class ChatController extends BaseController {
       const { name, description, members } = req.body;
       let profileImageUrl = null;
       if (req.file) {
-        // Assume file handling logic similar to profile update
-        // (Normally upload logic will generate the URL)
-        profileImageUrl = req.file.path; // Or Supabase storage URL
+        profileImageUrl = req.file.path;
       } else if (req.body.profile_image_url) {
         profileImageUrl = req.body.profile_image_url;
       }
       
       const result = await this.chatService.createGroup(req.user.uuid, name, description, profileImageUrl, members);
-      return this.sendSuccess(res, result, 'Group created');
+      return this.respondOk(result, 'Group created');
     } catch (e) {
-      return this.sendError(res, e.message, 400);
+      return this.respondError(e.message, 400);
     }
   }
 
@@ -274,9 +272,9 @@ class ChatController extends BaseController {
       const { uuid } = req.params; // group uuid
       const { user_uuid } = req.body;
       const result = await this.chatService.addGroupMember(req.user.uuid, uuid, user_uuid);
-      return this.sendSuccess(res, result, 'Member added');
+      return this.respondOk(result, 'Member added');
     } catch (e) {
-      return this.sendError(res, e.message, 400);
+      return this.respondError(e.message, 400);
     }
   }
 
@@ -284,9 +282,9 @@ class ChatController extends BaseController {
     try {
       const { uuid, user_uuid } = req.params; // group uuid, user uuid
       const result = await this.chatService.removeGroupMember(req.user.uuid, uuid, user_uuid);
-      return this.sendSuccess(res, result, 'Member removed');
+      return this.respondOk(result, 'Member removed');
     } catch (e) {
-      return this.sendError(res, e.message, 400);
+      return this.respondError(e.message, 400);
     }
   }
   
@@ -295,9 +293,9 @@ class ChatController extends BaseController {
       const { uuid } = req.params; // group uuid
       const { name, description, profile_image_url } = req.body;
       const result = await this.chatService.updateGroup(req.user.uuid, uuid, name, description, profile_image_url);
-      return this.sendSuccess(res, result, 'Group updated');
+      return this.respondOk(result, 'Group updated');
     } catch (e) {
-      return this.sendError(res, e.message, 400);
+      return this.respondError(e.message, 400);
     }
   }
 }

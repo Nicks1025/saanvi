@@ -4,6 +4,7 @@ import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
 import InlineWallpaperCropper from './InlineWallpaperCropper';
 import SButton from '@/components/common/SButton';
+import SIcon from '@/components/common/SIcon';
 import { Users, MoreVertical, MessageSquare, ArrowLeft } from 'lucide-react';
 import { chatService } from '../chat.service';
 import { toast } from 'react-hot-toast';
@@ -71,7 +72,7 @@ const ChatWindow = ({ chatRealtime }) => {
 
   const handleAdjusterSave = async (data) => {
     try {
-      const toastId = toast.loading(t('chat.applyingBackground'));
+      const toastId = toast.loading(t('admin.chat.applyingBackground'));
       let finalBackgroundData;
 
       if (data.isNew) {
@@ -99,9 +100,9 @@ const ChatWindow = ({ chatRealtime }) => {
       const res = await chatService.updateBackground(activeConversation, finalBackgroundData);
       setLocalWallpaperUrl(res.data?.wallpaper_url || res.wallpaper_url);
       setAdjusterData(null);
-      toast.success(t('chat.wallpaperApplied'), { id: toastId });
+      toast.success(t('admin.chat.wallpaperApplied'), { id: toastId });
     } catch (err) {
-      toast.error(t('chat.failedWallpaper'));
+      toast.error(t('admin.chat.failedWallpaper'));
     }
   };
 
@@ -113,7 +114,7 @@ const ChatWindow = ({ chatRealtime }) => {
       setShowMenu(false);
       setShowThemeMenu(false);
     } catch (err) {
-      toast.error(t('chat.failedTheme'));
+      toast.error(t('admin.chat.failedTheme'));
     }
   };
 
@@ -122,7 +123,7 @@ const ChatWindow = ({ chatRealtime }) => {
       <div className="chat-window chat-window--empty">
         <div className="chat-window-empty-state">
            <MessageSquare size={48} className="chat-window-empty-icon" />
-           <h3>{t('chat.selectConversation')}</h3>
+           <h3>{t('admin.chat.selectConversation')}</h3>
         </div>
       </div>
     );
@@ -135,11 +136,11 @@ const ChatWindow = ({ chatRealtime }) => {
   let subtitle = '';
   
   if (conv.is_group) {
-     subtitle = t('chat.membersCount', { count: conv.members?.length || 0 });
+     subtitle = t('admin.chat.membersCount', { count: conv.members?.length || 0 });
   } else {
      const otherMember = conv.members?.find(m => m.uuid !== user.uuid);
-     title = otherMember ? otherMember.display_name : t('chat.unknown');
-     subtitle = otherMember && onlineUsers[otherMember.uuid] ? t('chat.online') : t('chat.offline');
+     title = otherMember ? otherMember.display_name : t('admin.chat.unknown');
+     subtitle = otherMember && onlineUsers[otherMember.uuid] ? t('admin.chat.online') : t('admin.chat.offline');
   }
 
   // Determine typing indicator text
@@ -147,7 +148,7 @@ const ChatWindow = ({ chatRealtime }) => {
     .filter(uuid => typingUsers[uuid])
     .map(uuid => {
         const member = conv.members?.find(m => m.uuid === uuid);
-        return member ? member.display_name : t('chat.unknown');
+        return member ? member.display_name : t('admin.chat.unknown');
     });
   
   const handleScroll = (e) => {
@@ -159,32 +160,37 @@ const ChatWindow = ({ chatRealtime }) => {
   };
 
   let typingText = '';
-  if (typingNames.length === 1) typingText = t('chat.isTyping', { names: typingNames[0] });
-  else if (typingNames.length > 1) typingText = t('chat.areTyping', { names: typingNames.join(', ') });
+  if (typingNames.length === 1) typingText = t('admin.chat.isTyping', { names: typingNames[0] });
+  else if (typingNames.length > 1) typingText = t('admin.chat.areTyping', { names: typingNames.join(', ') });
 
   return (
     <div className="chat-window">
       <div className="chat-window-header">
-         <button className="chat-mobile-back-btn" onClick={() => chatRealtime.setActiveConversation(null)}>
-           <ArrowLeft size={20} />
-         </button>
+         <SIcon
+           name="arrow-left"
+           size={20}
+           className="chat-mobile-back-btn"
+           onClick={() => chatRealtime.setActiveConversation(null)}
+           title={t('common.back')}
+           aria-label={t('common.back')}
+         />
          <div className="chat-list-item-avatar chat-list-item-avatar--no-margin">
             {conv.profile_image_url ? <img src={conv.profile_image_url} alt="avatar" /> : (conv.is_group ? <Users /> : (title ? title.charAt(0).toUpperCase() : '?'))}
          </div>
          <div className="chat-window-header-info">
-            <div className="chat-window-header-name">{title || t('chat.unnamed', 'Unnamed')}</div>
+            <div className="chat-window-header-name">{title || t('admin.chat.unnamed')}</div>
             <div className="chat-window-header-status">{subtitle}</div>
          </div>
          
          <div className="chat-window-actions" ref={menuRef}>
-            <SButton
-              color="ghost"
-              size="s"
-              icon="more"
+            <SIcon
+              name="more-vertical"
+              size={18}
               onClick={() => setShowMenu(!showMenu)}
-              label={t('chat.moreOptions', 'More options')}
-              title={t('chat.moreOptions', 'More options')}
+              title={t('admin.chat.moreOptions')}
+              aria-label={t('admin.chat.moreOptions')}
               className="chat-header-more-btn"
+              subtle
             />
             
             {showMenu && (
@@ -209,14 +215,14 @@ const ChatWindow = ({ chatRealtime }) => {
                      <SButton
                        color="ghost"
                        size="s"
-                       text={t('chat.theme')}
+                       text={t('admin.chat.theme')}
                        onClick={() => setShowThemeMenu(true)}
                        className="chat-dropdown-menu-item"
                      />
                      <SButton
                        color="ghost"
                        size="s"
-                       text={t('chat.wallpaper')}
+                       text={t('admin.chat.wallpaper')}
                        onClick={() => fileInputRef.current?.click()}
                        className="chat-dropdown-menu-item"
                      />
@@ -322,8 +328,8 @@ const ChatWindow = ({ chatRealtime }) => {
                 yesterday.setDate(yesterday.getDate() - 1);
                 
                 let dateLabel = '';
-                if (currentDate === today.toDateString()) dateLabel = t('chat.today');
-                else if (currentDate === yesterday.toDateString()) dateLabel = t('chat.yesterday');
+                if (currentDate === today.toDateString()) dateLabel = t('admin.chat.today');
+                else if (currentDate === yesterday.toDateString()) dateLabel = t('admin.chat.yesterday');
                 else dateLabel = new Date(msg.sent_at).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
 
                 return (

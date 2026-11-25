@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Shield, Loader2, ArrowLeft } from 'lucide-react';
+import { Shield, Loader2 } from 'lucide-react';
 import SButton from '@/components/common/SButton';
 import STextField from '@/components/common/STextField';
-import axios from '@/services/axios.client';
+import { verifyMfa } from './service/loginService';
+import { useTranslation } from 'react-i18next';
 
-const MfaVerificationFeature = ({ email, supabaseToken, onVerifySuccess, onCancel }) => {
+const MfaVerificationFeature = ({ email, mfaTicket, onVerifySuccess, onCancel }) => {
+  const { t } = useTranslation();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -16,10 +18,10 @@ const MfaVerificationFeature = ({ email, supabaseToken, onVerifySuccess, onCance
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post('/api/login/mfa-verify', { email, code, supabaseToken });
-      onVerifySuccess(response.data.data || response.data);
+      const data = await verifyMfa(email, code, mfaTicket);
+      onVerifySuccess(data);
     } catch (err) {
-      setError(err.response?.data?.error || err.response?.data?.message || err.message || 'Invalid verification code');
+      setError(err.response?.data?.error || err.response?.data?.message || err.message || t('admin.mfa.invalidCode'));
     } finally {
       setLoading(false);
     }
@@ -27,41 +29,43 @@ const MfaVerificationFeature = ({ email, supabaseToken, onVerifySuccess, onCance
 
   return (
     <div className="login-form">
-      <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-        <div style={{ display: 'inline-flex', padding: '1rem', background: '#f0fdf4', borderRadius: '50%', marginBottom: '1rem' }}>
+      <div className="mfa-verify-header text-center mb-6">
+        <div className="mfa-shield-icon-wrapper inline-flex p-4 rounded-full mb-4">
           <Shield size={32} color="#166534" />
         </div>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-h)', margin: 0 }}>Two-Factor Authentication</h2>
-        <p style={{ color: 'var(--text-2)', marginTop: '0.5rem' }}>
-          Enter the 6-digit code from your authenticator app.
+        <h2 className="text-2xl font-semibold m-0">{t('admin.mfa.title')}</h2>
+        <p className="text-secondary mt-2">
+          {t('admin.mfa.enterCode')}
         </p>
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '2rem' }}>
+        <div className="mb-6">
           <STextField 
             text={code}
             onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
             placeholder="0 0 0 0 0 0"
           />
-          {error && <p style={{ color: '#ef4444', fontSize: '0.9rem', marginTop: '0.5rem', textAlign: 'center' }}>{error}</p>}
+          {error && <p className="text-danger text-sm mt-2 text-center">{error}</p>}
         </div>
 
         <SButton 
           type="submit" 
           disabled={loading || code.length !== 6} 
-          className="w-full p-3 flex justify-center" color="primary"
+          className="w-full p-3 flex justify-center" 
+          color="primary"
         >
-          {loading ? <Loader2 className="spinner" size={20} /> : 'Verify'}
+          {loading ? <Loader2 className="spinner" size={20} /> : t('admin.mfa.verify')}
         </SButton>
         
         <SButton 
           type="button" 
           onClick={onCancel}
-          className="w-full p-3 mt-4" color="ghost"
+          className="w-full p-3 mt-4" 
+          color="ghost"
           icon="back"
         >
-          Back to Login
+          {t('admin.mfa.backToLogin')}
         </SButton>
       </form>
     </div>

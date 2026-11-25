@@ -1,10 +1,12 @@
 const BaseService = require('../../base/baseService');
+const HealthRepository = require('./healthRepository');
 const { supabaseAdmin } = require('../../services/supabaseAdmin');
 const RedisHelper = require('../../redis/redisHelper');
 
 class HealthService extends BaseService {
-  constructor(repository) {
-    super(repository);
+  constructor(context = null) {
+    super(context);
+    this.repository = new HealthRepository(context);
   }
 
   async withTimeout(promise, ms, name) {
@@ -46,9 +48,8 @@ class HealthService extends BaseService {
 
   async checkSupabaseDatabase() {
     return this.measureAsync(async () => {
-      // Execute a lightweight query via existing queryHelper
-      const res = await this.repository.queryHelper.queryRaw('SELECT 1 as ping');
-      if (!res) throw new Error('Empty response from DB');
+      const res = await this.repository.checkDatabaseHealth();
+      if (!res?.healthy) throw new Error(res?.error || 'Database ping failed');
     }, 'Database');
   }
 

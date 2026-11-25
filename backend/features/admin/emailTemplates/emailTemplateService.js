@@ -1,7 +1,12 @@
 const BaseService = require('../../../base/baseService');
+const EmailTemplateRepository = require('./emailTemplateRepository');
 const EmailService = require('../../../services/emailService');
 
 class EmailTemplateService extends BaseService {
+  constructor(context = null) {
+    super(context);
+    this.repository = new EmailTemplateRepository(context);
+  }
 
   async getAllTemplates() {
     return await this.repository.getAllTemplates();
@@ -92,9 +97,6 @@ class EmailTemplateService extends BaseService {
     const template = await this.getTemplate(uuid);
     if (!template) throw new Error('Template not found.');
 
-    // We enqueue a job using jobQueueService (BullMQ), which the emailWorker will process 
-    // or the .NET worker can process if it's listening to this queue.
-    // The requirement states to test via the centralized email infrastructure.
     const jobId = await EmailService.sendAsync({
       template: template.template_key,
       to: recipient_email,
@@ -104,8 +106,22 @@ class EmailTemplateService extends BaseService {
     return { success: true, message: 'Test email queued successfully.', job_id: jobId };
   }
 
-  async getEmailLogs() {
-    return await this.repository.getEmailLogs();
+  async getEmailLogs(page, limit, search) {
+    const result = await this.repository.getEmailLogs(page, limit, search);
+    return {
+      data: (result.data || []).map(row => ({
+        uuid: row.uuid,
+        recipient: row.recipient,
+        templateKey: row.template_key,
+        subject: row.subject,
+        status: row.status,
+        errorMessage: row.error_message,
+        createdAt: row.created_at
+      })),
+      total: result.total,
+      page: result.page,
+      limit: result.limit
+    };
   }
 
   async deleteTemplate(uuid) {

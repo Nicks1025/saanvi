@@ -2,11 +2,12 @@
  * validations.js
  * Centralised, reusable validation functions for the Saanvi application.
  * Single source of truth — used by SignupFeature, SettingsFeature (Change Password), etc.
- */
+*/
 
 // ---------------------------------------------------------------------------
 // Basic validators
 // ---------------------------------------------------------------------------
+import { isValidPhoneNumber } from 'react-phone-number-input';
 
 export const validateRequired = (value, label = 'This field') => {
   if (value === null || value === undefined || (typeof value === 'string' && !value.trim())) {
@@ -36,11 +37,10 @@ export const validateEmail = (value) => {
   return null;
 };
 
+
 export const validatePhone = (value) => {
-  if (!value || !value.trim()) return 'Phone number is required';
-  const digits = value.replace(/\D/g, '');
-  if (digits.length === 0) return 'Phone number is required';
-  if (digits.length !== 10) return 'Phone number must be exactly 10 digits';
+  if (!value || !String(value).trim()) return 'Phone number is required';
+  if (!isValidPhoneNumber(String(value))) return 'Please enter a valid phone number';
   return null;
 };
 
@@ -100,10 +100,10 @@ export const getPasswordRequirements = (password, { firstName = '', lastName = '
     (displayName && displayName.trim() && lower.includes(displayName.trim().toLowerCase()));
 
   return [
-    { key: 'length',  label: '8 or more characters',           met: pw.length >= 8 },
-    { key: 'number',  label: 'Contains a number',              met: /\d/.test(pw) },
-    { key: 'special', label: 'Contains a special character',   met: /[!@#$%^&*(),.?":{}|<>]/.test(pw) },
-    { key: 'noName',  label: 'Does not contain your name',     met: pw.length > 0 && !nameContained },
+    { key: 'length', label: '8 or more characters', met: pw.length >= 8 },
+    { key: 'number', label: 'Contains a number', met: /\d/.test(pw) },
+    { key: 'special', label: 'Contains a special character', met: /[!@#$%^&*(),.?":{}|<>]/.test(pw) },
+    { key: 'noName', label: 'Does not contain your name', met: pw.length > 0 && !nameContained },
   ];
 };
 
