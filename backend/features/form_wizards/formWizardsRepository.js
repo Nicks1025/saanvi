@@ -1,186 +1,254 @@
 const BaseRepository = require('../../base/baseRepository');
+const QueryHelper = require('../../database/queryHelper');
 
 class FormWizardsRepository extends BaseRepository {
+  constructor(context = null) {
+    super(context);
+    this.sqlWizards = new QueryHelper('sph_form_wizard');
+    this.sqlPhases = new QueryHelper('sph_form_wizard_phase');
+    this.sqlSteps = new QueryHelper('sph_form_wizard_step');
+    this.sqlObjects = new QueryHelper('sph_object');
+  }
+
   // --- Wizards ---
   async listWizards(createdBy) {
-    return await this.queryHelper
-      .from('sph_form_wizard')
-      .where('created_by', 'eq', createdBy)
-      .where('archived_at', 'is', null)
-      .orderBy('created_at', false)
-      .execute();
+    const query = this.sqlWizards
+      .select()
+      .field('*')
+      .where('created_by', '=', createdBy)
+      .whereNull('archived_at')
+      .orderBy('created_at', 'desc');
+
+    return this.runQuery(query);
   }
 
   async getWizardByUuid(uuid, createdBy) {
-    const results = await this.queryHelper
-      .from('sph_form_wizard')
-      .where('uuid', 'eq', uuid)
-      .where('created_by', 'eq', createdBy)
-      .where('archived_at', 'is', null)
-      .execute();
-    return results[0] || null;
+    const query = this.sqlWizards
+      .select()
+      .field('*')
+      .where('uuid', '=', uuid)
+      .whereNull('archived_at');
+
+    if (createdBy) {
+      query.where('created_by', '=', createdBy);
+    }
+
+    return this.runQueryFirst(query);
   }
-  
+
   async getWizardByName(name) {
-    const results = await this.queryHelper
-      .from('sph_form_wizard')
-      .where('name', 'eq', name)
-      .where('archived_at', 'is', null)
-      .execute();
-    return results[0] || null;
+    const query = this.sqlWizards
+      .select()
+      .field('*')
+      .where('name', '=', name)
+      .whereNull('archived_at');
+
+    return this.runQueryFirst(query);
+  }
+
+  async getWizardByUrl(url) {
+    if (!url) return null;
+    const query = this.sqlWizards
+      .select()
+      .field('*')
+      .where('url', '=', url)
+      .whereNull('archived_at');
+
+    return this.runQueryFirst(query);
+  }
+
+  async getPublicWizardByIdentifier(identifier) {
+    if (!identifier) return null;
+    const query = this.sqlWizards
+      .select()
+      .field('*')
+      .whereNull('archived_at')
+      .whereRaw('(url = ? OR name = ?)', [identifier, identifier]);
+
+    return this.runQueryFirst(query);
   }
 
   async createWizard(data) {
-    const result = await this.queryHelper
-      .from('sph_form_wizard')
-      .insert(data)
-      .execute();
-    return result[0];
+    const query = this.sqlWizards.insert(data);
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   async updateWizard(uuid, createdBy, data) {
     data.updated_at = new Date();
-    const result = await this.queryHelper
-      .from('sph_form_wizard')
-      .where('uuid', 'eq', uuid)
-      .where('created_by', 'eq', createdBy)
+    const query = this.sqlWizards
       .update(data)
-      .execute();
-    return result[0];
+      .where('uuid', '=', uuid);
+
+    if (createdBy) {
+      query.where('created_by', '=', createdBy);
+    }
+
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   async deleteWizard(uuid, createdBy) {
-    const result = await this.queryHelper
-      .from('sph_form_wizard')
-      .where('uuid', 'eq', uuid)
-      .where('created_by', 'eq', createdBy)
+    const query = this.sqlWizards
       .delete()
-      .execute();
-    return result[0];
+      .where('uuid', '=', uuid);
+
+    if (createdBy) {
+      query.where('created_by', '=', createdBy);
+    }
+
+    const result = await this.execute(query);
+    return result.rows[0] || { uuid };
   }
 
   // --- Phases ---
   async listPhases(wizardUuid) {
-    return await this.queryHelper
-      .from('sph_form_wizard_phase')
-      .where('wizard_uuid', 'eq', wizardUuid)
-      .where('archived_at', 'is', null)
-      .orderBy('display_order', true)
-      .execute();
+    const query = this.sqlPhases
+      .select()
+      .field('*')
+      .where('wizard_uuid', '=', wizardUuid)
+      .whereNull('archived_at')
+      .orderBy('display_order', 'asc');
+
+    return this.runQuery(query);
   }
 
   async getPhaseByUuid(uuid, wizardUuid) {
-    const results = await this.queryHelper
-      .from('sph_form_wizard_phase')
-      .where('uuid', 'eq', uuid)
-      .where('wizard_uuid', 'eq', wizardUuid)
-      .where('archived_at', 'is', null)
-      .execute();
-    return results[0] || null;
+    const query = this.sqlPhases
+      .select()
+      .field('*')
+      .where('uuid', '=', uuid)
+      .whereNull('archived_at');
+
+    if (wizardUuid) {
+      query.where('wizard_uuid', '=', wizardUuid);
+    }
+
+    return this.runQueryFirst(query);
   }
 
   async createPhase(data) {
-    const result = await this.queryHelper
-      .from('sph_form_wizard_phase')
-      .insert(data)
-      .execute();
-    return result[0];
+    const query = this.sqlPhases.insert(data);
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   async updatePhase(uuid, wizardUuid, data) {
     data.updated_at = new Date();
-    const result = await this.queryHelper
-      .from('sph_form_wizard_phase')
-      .where('uuid', 'eq', uuid)
-      .where('wizard_uuid', 'eq', wizardUuid)
+    const query = this.sqlPhases
       .update(data)
-      .execute();
-    return result[0];
+      .where('uuid', '=', uuid);
+
+    if (wizardUuid) {
+      query.where('wizard_uuid', '=', wizardUuid);
+    }
+
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   async deletePhase(uuid, wizardUuid) {
-    const result = await this.queryHelper
-      .from('sph_form_wizard_phase')
-      .where('uuid', 'eq', uuid)
-      .where('wizard_uuid', 'eq', wizardUuid)
+    const query = this.sqlPhases
       .delete()
-      .execute();
-    return result[0];
+      .where('uuid', '=', uuid);
+
+    if (wizardUuid) {
+      query.where('wizard_uuid', '=', wizardUuid);
+    }
+
+    const result = await this.execute(query);
+    return result.rows[0] || { uuid };
   }
 
   // --- Steps ---
   async listSteps(phaseUuid) {
-    return await this.queryHelper
-      .from('sph_form_wizard_step')
-      .where('phase_uuid', 'eq', phaseUuid)
-      .where('archived_at', 'is', null)
-      .orderBy('display_order', true)
-      .execute();
+    const query = this.sqlSteps
+      .select()
+      .field('*')
+      .where('phase_uuid', '=', phaseUuid)
+      .whereNull('archived_at')
+      .orderBy('display_order', 'asc');
+
+    return this.runQuery(query);
   }
-  
+
   async getStepByUuid(uuid, phaseUuid) {
-    const results = await this.queryHelper
-      .from('sph_form_wizard_step')
-      .where('uuid', 'eq', uuid)
-      .where('phase_uuid', 'eq', phaseUuid)
-      .where('archived_at', 'is', null)
-      .execute();
-    return results[0] || null;
+    const query = this.sqlSteps
+      .select()
+      .field('*')
+      .where('uuid', '=', uuid)
+      .whereNull('archived_at');
+
+    if (phaseUuid) {
+      query.where('phase_uuid', '=', phaseUuid);
+    }
+
+    return this.runQueryFirst(query);
   }
 
   async createStep(data) {
-    const result = await this.queryHelper
-      .from('sph_form_wizard_step')
-      .insert(data)
-      .execute();
-    return result[0];
+    const query = this.sqlSteps.insert(data);
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   async updateStep(uuid, phaseUuid, data) {
     data.updated_at = new Date();
-    const result = await this.queryHelper
-      .from('sph_form_wizard_step')
-      .where('uuid', 'eq', uuid)
-      .where('phase_uuid', 'eq', phaseUuid)
+    const query = this.sqlSteps
       .update(data)
-      .execute();
-    return result[0];
+      .where('uuid', '=', uuid);
+
+    if (phaseUuid) {
+      query.where('phase_uuid', '=', phaseUuid);
+    }
+
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   async deleteStep(uuid, phaseUuid) {
-    const result = await this.queryHelper
-      .from('sph_form_wizard_step')
-      .where('uuid', 'eq', uuid)
-      .where('phase_uuid', 'eq', phaseUuid)
+    const query = this.sqlSteps
       .delete()
-      .execute();
-    return result[0];
+      .where('uuid', '=', uuid);
+
+    if (phaseUuid) {
+      query.where('phase_uuid', '=', phaseUuid);
+    }
+
+    const result = await this.execute(query);
+    return result.rows[0] || { uuid };
   }
 
   // --- Helpers to Validate Object/Template Relationship ---
   async isTemplateBelongsToObject(templateUuid, objectUuid) {
-    // 1. Get the object to find its slug
-    const objResults = await this.queryHelper
-      .from('sph_object')
-      .where('uuid', 'eq', objectUuid)
-      .execute();
-    
-    if (objResults.length === 0) return false;
-    
-    const slug = objResults[0].object_slug.replace(/-/g, '_');
+    if (!templateUuid || !objectUuid) return false;
+
+    const obj = await this.runQueryFirst(
+      this.sqlObjects
+        .select()
+        .field('object_slug')
+        .where('uuid', '=', objectUuid)
+        .whereNull('archived_at')
+    );
+
+    if (!obj || !obj.object_slug) return false;
+
+    const slug = obj.object_slug.toLowerCase().replace(/[^a-z0-9_]/g, '_');
     const prefix = slug.startsWith('sph_object_') ? slug : `sph_object_${slug}`;
     const templatesTable = `${prefix}_templates`;
-    
-    // 2. Check if the template exists in that object's template table
+
     try {
-      const tplResults = await this.queryHelper
-        .from(templatesTable)
-        .where('uuid', 'eq', templateUuid)
-        .where('archived_at', 'is', null)
-        .execute();
-      return tplResults.length > 0;
-    } catch(e) {
-      return false; // Table might not exist or error
+      const tplSql = new QueryHelper(templatesTable);
+      const tpl = await this.runQueryFirst(
+        tplSql
+          .select()
+          .field('uuid')
+          .where('uuid', '=', templateUuid)
+          .whereNull('archived_at')
+      );
+      return Boolean(tpl);
+    } catch (e) {
+      return false;
     }
   }
 }

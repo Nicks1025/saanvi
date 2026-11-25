@@ -1,39 +1,51 @@
 const BaseRepository = require('../../base/baseRepository');
+const QueryHelper = require('../../database/queryHelper');
 
 class ObjectsRepository extends BaseRepository {
+  constructor(context = null) {
+    super(context);
+    this.sql = new QueryHelper('sph_object');
+  }
+
   async listObjects(createdBy) {
-    return await this.queryHelper
-      .from('sph_object')
-      .where('created_by', 'eq', createdBy)
-      .where('archived_at', 'is', null)
-      .orderBy('created_at', false)
-      .execute();
+    const query = this.sql
+      .select()
+      .field('*')
+      .where('created_by', '=', createdBy)
+      .whereNull('archived_at')
+      .orderBy('created_at', 'desc');
+
+    return this.runQuery(query);
   }
 
   async getObjectByUuid(uuid, createdBy) {
-    const results = await this.queryHelper
-      .from('sph_object')
-      .where('uuid', 'eq', uuid)
-      .where('created_by', 'eq', createdBy)
-      .where('archived_at', 'is', null)
-      .execute();
-    return results[0] || null;
+    const query = this.sql
+      .select()
+      .field('*')
+      .where('uuid', '=', uuid)
+      .whereNull('archived_at');
+
+    if (createdBy) {
+      query.where('created_by', '=', createdBy);
+    }
+
+    return this.runQueryFirst(query);
   }
 
   async getObjectBySlug(slug) {
-    const results = await this.queryHelper
-      .from('sph_object')
-      .where('object_slug', 'eq', slug)
-      .where('archived_at', 'is', null)
-      .execute();
-    return results[0] || null;
+    const query = this.sql
+      .select()
+      .field('*')
+      .where('object_slug', '=', slug)
+      .whereNull('archived_at');
+
+    return this.runQueryFirst(query);
   }
 
   async createObject(data) {
-    const result = await this.queryHelper
-      .from('sph_object')
-      .insert(data)
-      .execute();
+    const query = this.sql.insert(data);
+    const result = await this.execute(query);
+    const createdObject = result.rows[0];
 
     // Create dynamic tables
     const safeSlug = data.object_slug.toLowerCase().replace(/[^a-z0-9_]/g, '_');
@@ -42,7 +54,7 @@ class ObjectsRepository extends BaseRepository {
     const templatesTable = `${prefix}_templates`;
     const recordTable = `${prefix}_record`;
 
-    await this.queryHelper.db.raw(`
+    await this.queryRaw(`
       CREATE TABLE IF NOT EXISTS ?? (
           uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
           field_name VARCHAR(100) NOT NULL UNIQUE,
@@ -59,7 +71,7 @@ class ObjectsRepository extends BaseRepository {
       );
     `, [fieldsTable]);
 
-    await this.queryHelper.db.raw(`
+    await this.queryRaw(`
       CREATE TABLE IF NOT EXISTS ?? (
           uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
           name VARCHAR(255) NOT NULL,
@@ -70,7 +82,7 @@ class ObjectsRepository extends BaseRepository {
       );
     `, [templatesTable]);
 
-    await this.queryHelper.db.raw(`
+    await this.queryRaw(`
       CREATE TABLE IF NOT EXISTS ?? (
           uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
           record_data JSONB NOT NULL DEFAULT '{}',
@@ -79,18 +91,21 @@ class ObjectsRepository extends BaseRepository {
       );
     `, [recordTable]);
 
-    return result[0];
+    return createdObject;
   }
 
   async updateObject(uuid, createdBy, data) {
     data.updated_at = new Date();
-    const result = await this.queryHelper
-      .from('sph_object')
-      .where('uuid', 'eq', uuid)
-      .where('created_by', 'eq', createdBy)
+    const query = this.sql
       .update(data)
-      .execute();
-    return result[0];
+      .where('uuid', '=', uuid);
+
+    if (createdBy) {
+      query.where('created_by', '=', createdBy);
+    }
+
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   async deleteObject(uuid, createdBy) {
@@ -100,29 +115,34 @@ class ObjectsRepository extends BaseRepository {
     // Drop dynamic tables
     const safeSlug = object.object_slug.toLowerCase().replace(/[^a-z0-9_]/g, '_');
     const prefix = safeSlug.startsWith('sph_object_') ? safeSlug : `sph_object_${safeSlug}`;
-    await this.queryHelper.db.raw('DROP TABLE IF EXISTS ?? CASCADE', [`${prefix}_record`]);
-    await this.queryHelper.db.raw('DROP TABLE IF EXISTS ?? CASCADE', [`${prefix}_template_fields`]);
-    await this.queryHelper.db.raw('DROP TABLE IF EXISTS ?? CASCADE', [`${prefix}_templates`]);
-    await this.queryHelper.db.raw('DROP TABLE IF EXISTS ?? CASCADE', [`${prefix}_fields`]);
 
-    const result = await this.queryHelper
-      .from('sph_object')
-      .where('uuid', 'eq', uuid)
-      .where('created_by', 'eq', createdBy)
+    await this.queryRaw('DROP TABLE IF EXISTS ?? CASCADE', [`${prefix}_record`]);
+    await this.queryRaw('DROP TABLE IF EXISTS ?? CASCADE', [`${prefix}_template_fields`]);
+    await this.queryRaw('DROP TABLE IF EXISTS ?? CASCADE', [`${prefix}_templates`]);
+    await this.queryRaw('DROP TABLE IF EXISTS ?? CASCADE', [`${prefix}_fields`]);
+
+    const query = this.sql
       .delete()
-      .execute();
-    return result[0];
+      .where('uuid', '=', uuid);
+
+    if (createdBy) {
+      query.where('created_by', '=', createdBy);
+    }
+
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   // --- Fields (Dynamic Tables) ---
 
   async _getPrefixByObjectUuid(objectUuid) {
-    const objectResults = await this.queryHelper
-      .from('sph_object')
-      .where('uuid', 'eq', objectUuid)
-      .execute();
-    if (objectResults.length === 0) throw new Error('Object not found');
-    const slug = objectResults[0].object_slug.toLowerCase().replace(/[^a-z0-9_]/g, '_');
+    const query = this.sql
+      .select()
+      .field('object_slug')
+      .where('uuid', '=', objectUuid);
+    const object = await this.runQueryFirst(query);
+    if (!object) throw new Error('Object not found');
+    const slug = object.object_slug.toLowerCase().replace(/[^a-z0-9_]/g, '_');
     return slug.startsWith('sph_object_') ? slug : `sph_object_${slug}`;
   }
 
@@ -130,17 +150,19 @@ class ObjectsRepository extends BaseRepository {
     try {
       const prefix = await this._getPrefixByObjectUuid(objectUuid);
       try {
-        return await this.queryHelper
-          .from(`${prefix}_fields`)
-          .where('archived_at', 'is', null)
-          .orderBy('display_order', true)
-          .execute();
+        const query = new QueryHelper(`${prefix}_fields`)
+          .select()
+          .field('*')
+          .whereNull('archived_at')
+          .orderBy('display_order', 'asc');
+        return await this.runQuery(query);
       } catch (e) {
-        return await this.queryHelper
-          .from(`${prefix}_fields`)
-          .where('archived_at', 'is', null)
-          .orderBy('created_at', true)
-          .execute();
+        const fallbackQuery = new QueryHelper(`${prefix}_fields`)
+          .select()
+          .field('*')
+          .whereNull('archived_at')
+          .orderBy('created_at', 'asc');
+        return await this.runQuery(fallbackQuery);
       }
     } catch (e) {
       return [];
@@ -149,20 +171,20 @@ class ObjectsRepository extends BaseRepository {
 
   async getFieldByUuid(objectUuid, uuid) {
     const prefix = await this._getPrefixByObjectUuid(objectUuid);
-    const results = await this.queryHelper
-      .from(`${prefix}_fields`)
-      .where('uuid', 'eq', uuid)
-      .execute();
-    return results[0] || null;
+    const query = new QueryHelper(`${prefix}_fields`)
+      .select()
+      .field('*')
+      .where('uuid', '=', uuid);
+    return this.runQueryFirst(query);
   }
 
   async _ensureDisplayOrderColumn(tableName) {
     try {
-      await this.queryHelper.db.raw(`
+      await this.queryRaw(`
         ALTER TABLE ?? ADD COLUMN IF NOT EXISTS display_order INTEGER NOT NULL DEFAULT 0
       `, [tableName]);
     } catch (e) {
-      // Ignore
+      // Ignore if column already exists
     }
   }
 
@@ -172,12 +194,9 @@ class ObjectsRepository extends BaseRepository {
     await this._ensureDisplayOrderColumn(tableName);
 
     const { object_uuid, ...fieldData } = data;
-
-    const result = await this.queryHelper
-      .from(tableName)
-      .insert(fieldData)
-      .execute();
-    return result[0];
+    const query = new QueryHelper(tableName).insert(fieldData);
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   async updateField(objectUuid, uuid, data) {
@@ -186,23 +205,20 @@ class ObjectsRepository extends BaseRepository {
     await this._ensureDisplayOrderColumn(tableName);
 
     data.updated_at = new Date();
-
-    const result = await this.queryHelper
-      .from(tableName)
-      .where('uuid', 'eq', uuid)
+    const query = new QueryHelper(tableName)
       .update(data)
-      .execute();
-    return result[0];
+      .where('uuid', '=', uuid);
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   async deleteField(objectUuid, uuid) {
     const prefix = await this._getPrefixByObjectUuid(objectUuid);
-    const result = await this.queryHelper
-      .from(`${prefix}_fields`)
-      .where('uuid', 'eq', uuid)
+    const query = new QueryHelper(`${prefix}_fields`)
       .delete()
-      .execute();
-    return result[0];
+      .where('uuid', '=', uuid);
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   // --- Templates ---
@@ -210,52 +226,47 @@ class ObjectsRepository extends BaseRepository {
   async listTemplates(objectUuid) {
     try {
       const prefix = await this._getPrefixByObjectUuid(objectUuid);
-      const tableName = `${prefix}_templates`;
-
-      return await this.queryHelper
-        .from(tableName)
-        .where('archived_at', 'is', null)
-        .orderBy('created_at', false)
-        .execute();
-    } catch (e) { return []; }
+      const query = new QueryHelper(`${prefix}_templates`)
+        .select()
+        .field('*')
+        .whereNull('archived_at')
+        .orderBy('created_at', 'desc');
+      return await this.runQuery(query);
+    } catch (e) {
+      return [];
+    }
   }
 
   async getActiveTemplate(objectUuid) {
     try {
       const prefix = await this._getPrefixByObjectUuid(objectUuid);
-      const tableName = `${prefix}_templates`;
-
-      const results = await this.queryHelper
-        .from(tableName)
-        .where('is_active', 'eq', true)
-        .where('archived_at', 'is', null)
-        .execute();
-      return results[0] || null;
-    } catch (e) { return null; }
+      const query = new QueryHelper(`${prefix}_templates`)
+        .select()
+        .field('*')
+        .where('is_active', '=', true)
+        .whereNull('archived_at');
+      return await this.runQueryFirst(query);
+    } catch (e) {
+      return null;
+    }
   }
 
   async getTemplateByUuid(objectUuid, uuid) {
     const prefix = await this._getPrefixByObjectUuid(objectUuid);
-    const tableName = `${prefix}_templates`;
-
-    const results = await this.queryHelper
-      .from(tableName)
-      .where('uuid', 'eq', uuid)
-      .execute();
-    return results[0] || null;
+    const query = new QueryHelper(`${prefix}_templates`)
+      .select()
+      .field('*')
+      .where('uuid', '=', uuid);
+    return this.runQueryFirst(query);
   }
 
   async createTemplate(objectUuid, data) {
     const prefix = await this._getPrefixByObjectUuid(objectUuid);
     const tableName = `${prefix}_templates`;
-
     const { object_uuid, ...templateData } = data;
-
-    const result = await this.queryHelper
-      .from(tableName)
-      .insert(templateData)
-      .execute();
-    return result[0];
+    const query = new QueryHelper(tableName).insert(templateData);
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   async updateTemplate(objectUuid, uuid, data) {
@@ -263,73 +274,83 @@ class ObjectsRepository extends BaseRepository {
     const tableName = `${prefix}_templates`;
 
     data.updated_at = new Date();
-    const result = await this.queryHelper
-      .from(tableName)
-      .where('uuid', 'eq', uuid)
+    const query = new QueryHelper(tableName)
       .update(data)
-      .execute();
-    return result[0];
+      .where('uuid', '=', uuid);
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   async deleteTemplate(objectUuid, uuid) {
     const prefix = await this._getPrefixByObjectUuid(objectUuid);
-    const result = await this.queryHelper
-      .from(`${prefix}_templates`)
-      .where('uuid', 'eq', uuid)
+    const query = new QueryHelper(`${prefix}_templates`)
       .delete()
-      .execute();
-    return result[0];
+      .where('uuid', '=', uuid);
+    const result = await this.execute(query);
+    return result.rows[0];
   }
-
-
 
   // --- Records ---
   async listRecords(objectUuid) {
     const prefix = await this._getPrefixByObjectUuid(objectUuid);
-    return await this.queryHelper
-      .from(`${prefix}_record`)
-      .orderBy('created_at', false)
-      .execute();
+    const query = new QueryHelper(`${prefix}_record`)
+      .select()
+      .field('*')
+      .orderBy('created_at', 'desc');
+    return this.runQuery(query);
+  }
+
+  async getRecordByUuid(objectUuid, recordUuid) {
+    const prefix = await this._getPrefixByObjectUuid(objectUuid);
+    const query = new QueryHelper(`${prefix}_record`)
+      .select()
+      .field('*')
+      .where('uuid', '=', recordUuid);
+    return this.runQueryFirst(query);
+  }
+
+  async countRecords(objectUuid) {
+    const prefix = await this._getPrefixByObjectUuid(objectUuid);
+    const table = `${prefix}_record`;
+    const rows = await this.queryRaw(`SELECT COUNT(*) AS count FROM ??`, [table]);
+    return parseInt(rows[0]?.count || 0, 10);
   }
 
   async countEmptyRecordsForField(objectUuid, fieldName) {
     const prefix = await this._getPrefixByObjectUuid(objectUuid);
     const table = `${prefix}_record`;
-    const result = await this.queryHelper.db.raw(`
+    const rows = await this.queryRaw(`
       SELECT COUNT(*) AS count FROM ??
       WHERE (record_data->>?) IS NULL
          OR TRIM((record_data->>?)) = ''
     `, [table, fieldName, fieldName]);
-    return parseInt(result.rows[0]?.count || 0, 10);
+    return parseInt(rows[0]?.count || 0, 10);
   }
 
   async createRecord(objectUuid, recordData) {
     const prefix = await this._getPrefixByObjectUuid(objectUuid);
-    const result = await this.queryHelper
-      .from(`${prefix}_record`)
-      .insert({ record_data: JSON.stringify(recordData) })
-      .execute();
-    return result[0];
+    const query = new QueryHelper(`${prefix}_record`)
+      .insert({ record_data: JSON.stringify(recordData) });
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   async updateRecord(objectUuid, recordUuid, recordData) {
     const prefix = await this._getPrefixByObjectUuid(objectUuid);
-    const result = await this.queryHelper
-      .from(`${prefix}_record`)
-      .where('uuid', 'eq', recordUuid)
+    const query = new QueryHelper(`${prefix}_record`)
       .update({ record_data: JSON.stringify(recordData), updated_at: new Date() })
-      .execute();
-    return result[0];
+      .where('uuid', '=', recordUuid);
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 
   async deleteRecord(objectUuid, recordUuid) {
     const prefix = await this._getPrefixByObjectUuid(objectUuid);
-    const result = await this.queryHelper
-      .from(`${prefix}_record`)
-      .where('uuid', 'eq', recordUuid)
+    const query = new QueryHelper(`${prefix}_record`)
       .delete()
-      .execute();
-    return result[0];
+      .where('uuid', '=', recordUuid);
+    const result = await this.execute(query);
+    return result.rows[0];
   }
 }
 

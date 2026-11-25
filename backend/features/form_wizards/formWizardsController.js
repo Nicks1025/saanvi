@@ -1,123 +1,155 @@
 const BaseController = require('../../base/baseController');
+const FormWizardsService = require('./formWizardsService');
 
 class FormWizardsController extends BaseController {
-  constructor(formWizardsService) {
-    super();
-    this.formWizardsService = formWizardsService;
+  constructor(context = null) {
+    super(context);
+    this.formWizardsService = new FormWizardsService(context);
   }
 
   // --- Wizards ---
-  listWizards = async (req, res) => {
-    const userUuid = req.user.uuid;
-    const wizards = await this.formWizardsService.listWizards(userUuid);
-    this.sendSuccess(res, wizards);
-  };
+  async listWizards(req, res) {
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const wizards = await this.formWizardsService.listWizards(user.uuid);
+    return this.respondOk(wizards);
+  }
 
-  getWizard = async (req, res) => {
-    const { uuid } = req.params;
-    const userUuid = req.user.uuid;
-    const wizard = await this.formWizardsService.getWizard(uuid, userUuid);
-    this.sendSuccess(res, wizard);
-  };
+  async getWizard(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const wizard = await this.formWizardsService.getWizard(params.uuid, user.uuid);
+    return this.respondOk(wizard);
+  }
 
-  createWizard = async (req, res) => {
-    const userUuid = req.user.uuid;
-    const wizard = await this.formWizardsService.createWizard(req.body, userUuid);
-    this.sendSuccess(res, wizard, 'Wizard created successfully');
-  };
+  async createWizard(req, res) {
+    const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const wizard = await this.formWizardsService.createWizard(body, user.uuid);
+    return this.respondOk(wizard, 'Wizard created successfully', 201);
+  }
 
-  updateWizard = async (req, res) => {
-    const { uuid } = req.params;
-    const userUuid = req.user.uuid;
-    const wizard = await this.formWizardsService.updateWizard(uuid, userUuid, req.body);
-    this.sendSuccess(res, wizard, 'Wizard updated successfully');
-  };
+  async updateWizard(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const wizard = await this.formWizardsService.updateWizard(params.uuid, user.uuid, body);
+    return this.respondOk(wizard, 'Wizard updated successfully');
+  }
 
-  deleteWizard = async (req, res) => {
-    const { uuid } = req.params;
-    const userUuid = req.user.uuid;
-    await this.formWizardsService.deleteWizard(uuid, userUuid);
-    this.sendSuccess(res, null, 'Wizard deleted successfully');
-  };
+  async deleteWizard(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    await this.formWizardsService.deleteWizard(params.uuid, user.uuid);
+    return this.respondOk(null, 'Wizard deleted successfully');
+  }
 
   // --- Phases ---
-  listPhases = async (req, res) => {
-    const { wizardUuid } = req.params;
-    const userUuid = req.user.uuid;
-    const phases = await this.formWizardsService.listPhases(wizardUuid, userUuid);
-    this.sendSuccess(res, phases);
-  };
+  async listPhases(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const phases = await this.formWizardsService.listPhases(params.wizardUuid, user.uuid);
+    return this.respondOk(phases);
+  }
 
-  createPhase = async (req, res) => {
-    const { wizardUuid } = req.params;
-    const userUuid = req.user.uuid;
-    const phase = await this.formWizardsService.createPhase(wizardUuid, userUuid, req.body);
-    this.sendSuccess(res, phase, 'Phase created successfully');
-  };
+  async createPhase(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const phase = await this.formWizardsService.createPhase(params.wizardUuid, user.uuid, body);
+    return this.respondOk(phase, 'Phase created successfully', 201);
+  }
 
-  updatePhase = async (req, res) => {
-    const { wizardUuid, phaseUuid } = req.params;
-    const userUuid = req.user.uuid;
-    const phase = await this.formWizardsService.updatePhase(wizardUuid, phaseUuid, userUuid, req.body);
-    this.sendSuccess(res, phase, 'Phase updated successfully');
-  };
+  async updatePhase(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const phase = await this.formWizardsService.updatePhase(params.wizardUuid, params.phaseUuid, user.uuid, body);
+    return this.respondOk(phase, 'Phase updated successfully');
+  }
 
-  deletePhase = async (req, res) => {
-    const { wizardUuid, phaseUuid } = req.params;
-    const userUuid = req.user.uuid;
-    await this.formWizardsService.deletePhase(wizardUuid, phaseUuid, userUuid);
-    this.sendSuccess(res, null, 'Phase deleted successfully');
-  };
+  async deletePhase(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    await this.formWizardsService.deletePhase(params.wizardUuid, params.phaseUuid, user.uuid);
+    return this.respondOk(null, 'Phase deleted successfully');
+  }
 
   // --- Steps ---
-  listSteps = async (req, res) => {
-    const { wizardUuid, phaseUuid } = req.params;
-    const userUuid = req.user.uuid;
-    const steps = await this.formWizardsService.listSteps(wizardUuid, phaseUuid, userUuid);
-    this.sendSuccess(res, steps);
-  };
+  async listSteps(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const steps = await this.formWizardsService.listSteps(params.wizardUuid, params.phaseUuid, user.uuid);
+    return this.respondOk(steps);
+  }
 
-  createStep = async (req, res) => {
-    const { wizardUuid, phaseUuid } = req.params;
-    const userUuid = req.user.uuid;
-    const step = await this.formWizardsService.createStep(wizardUuid, phaseUuid, userUuid, req.body);
-    this.sendSuccess(res, step, 'Step created successfully');
-  };
+  async createStep(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const step = await this.formWizardsService.createStep(params.wizardUuid, params.phaseUuid, user.uuid, body);
+    return this.respondOk(step, 'Step created successfully', 201);
+  }
 
-  updateStep = async (req, res) => {
-    const { wizardUuid, phaseUuid, stepUuid } = req.params;
-    const userUuid = req.user.uuid;
-    const step = await this.formWizardsService.updateStep(wizardUuid, phaseUuid, stepUuid, userUuid, req.body);
-    this.sendSuccess(res, step, 'Step updated successfully');
-  };
+  async updateStep(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    const step = await this.formWizardsService.updateStep(params.wizardUuid, params.phaseUuid, params.stepUuid, user.uuid, body);
+    return this.respondOk(step, 'Step updated successfully');
+  }
 
-  deleteStep = async (req, res) => {
-    const { wizardUuid, phaseUuid, stepUuid } = req.params;
-    const userUuid = req.user.uuid;
-    await this.formWizardsService.deleteStep(wizardUuid, phaseUuid, stepUuid, userUuid);
-    this.sendSuccess(res, null, 'Step deleted successfully');
-  };
+  async deleteStep(req, res) {
+    const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+    const user = (req && req.user) || (this.context && this.context.user) || {};
+    await this.formWizardsService.deleteStep(params.wizardUuid, params.phaseUuid, params.stepUuid, user.uuid);
+    return this.respondOk(null, 'Step deleted successfully');
+  }
 
   // --- Public External Endpoints ---
-  getPublicWizard = async (req, res) => {
+  async getPublicWizard(req, res) {
     try {
-      const { name } = req.params;
-      const wizard = await this.formWizardsService.getPublicWizard(name);
-      this.sendSuccess(res, wizard);
+      const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+      const wizard = await this.formWizardsService.getPublicWizard(params.name);
+      return this.respondOk(wizard);
     } catch (err) {
-      this.sendError(res, err);
+      return this.respondError(err, 400);
     }
-  };
+  }
 
-  submitPublicWizard = async (req, res) => {
+  async submitPublicWizard(req, res) {
     try {
-      const { name } = req.params;
-      const result = await this.formWizardsService.submitPublicWizard(name, req.body);
-      this.sendSuccess(res, result, 'Wizard submitted successfully');
+      const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+      const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+      const result = await this.formWizardsService.submitPublicWizard(params.name, body);
+      return this.respondOk(result, 'Wizard submitted successfully');
     } catch (err) {
-      this.sendError(res, err);
+      return this.respondError(err, 400);
     }
-  };
+  }
+
+  // --- Internal Wizard Endpoints ---
+  async getInternalWizard(req, res) {
+    try {
+      const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+      const user = (req && req.user) || (this.context && this.context.user) || {};
+      const wizard = await this.formWizardsService.getInternalWizard(params.pageUrl, user.uuid);
+      return this.respondOk(wizard);
+    } catch (err) {
+      return this.respondError(err, 400);
+    }
+  }
+
+  async submitInternalWizard(req, res) {
+    try {
+      const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+      const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+      const user = (req && req.user) || (this.context && this.context.user) || {};
+      const result = await this.formWizardsService.submitInternalWizard(params.pageUrl, body, user.uuid);
+      return this.respondOk(result, 'Record created successfully');
+    } catch (err) {
+      return this.respondError(err, 400);
+    }
+  }
 }
 
 module.exports = FormWizardsController;

@@ -1,13 +1,13 @@
 const Joi = require('joi');
 const ApiSchema = require('../../base/apiSchema');
-const wordSearchController = require('./wordSearchController');
+const WordSearchController = require('./wordSearchController');
 
 const start = {
   path: '/start',
   verb: 'POST',
   auditMessage: 'starting word search puzzle',
   handler: {
-    controller: wordSearchController,
+    controller: WordSearchController,
     method: 'start'
   },
   middleware: {
@@ -25,7 +25,7 @@ const validateWord = {
   verb: 'POST',
   auditMessage: 'validating word selection',
   handler: {
-    controller: wordSearchController,
+    controller: WordSearchController,
     method: 'validateWord'
   },
   middleware: {
@@ -51,7 +51,7 @@ const completeGame = {
   verb: 'POST',
   auditMessage: 'completing word search game',
   handler: {
-    controller: wordSearchController,
+    controller: WordSearchController,
     method: 'completeGame'
   },
   middleware: {
@@ -71,7 +71,7 @@ const getHint = {
   verb: 'POST',
   auditMessage: 'getting hint for word search',
   handler: {
-    controller: wordSearchController,
+    controller: WordSearchController,
     method: 'getHint'
   },
   middleware: {
@@ -90,7 +90,7 @@ const abortGame = {
   verb: 'POST',
   auditMessage: 'aborting word search game',
   handler: {
-    controller: wordSearchController,
+    controller: WordSearchController,
     method: 'abortGame'
   },
   middleware: {

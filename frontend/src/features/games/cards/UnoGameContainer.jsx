@@ -146,7 +146,7 @@ export const UnoGameContainer = () => {
       return (
         <div className="flex flex-col items-center justify-center w-full h-full min-h-[400px] text-white">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mb-4"></div>
-          <p className="text-gray-400">{t('games.uno.rejoining', 'Rejoining table...')}</p>
+          <p className="text-gray-400">{t('games.uno.rejoining')}</p>
         </div>
       );
     }

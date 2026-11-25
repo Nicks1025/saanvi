@@ -1,24 +1,15 @@
 const Joi = require('joi');
 const ApiSchema = require('../../base/apiSchema');
-const LoginRepository = require('./loginRepository');
-const LoginService = require('./loginService');
 const LoginController = require('./loginController');
-
-const repository = new LoginRepository();
-const service = new LoginService(repository);
-const controller = new LoginController(service);
 
 const login = {
   path: '/',
   verb: 'POST',
   auditMessage: 'user login',
   handler: {
-    controller: controller,
+    controller: LoginController,
     method: 'login'
   },
-  // Login does not require verifyToken middleware, so we specifically omit requirePermission
-  // However, ApiSchema currently injects verifyToken if requirePermission is absent OR present?
-  // Wait, I need to make sure ApiSchema doesn't block unauthenticated routes if middleware is omitted.
   request: {
     body: Joi.object({
       email: Joi.string().email().required(),
@@ -32,7 +23,7 @@ const googleLogin = {
   verb: 'POST',
   auditMessage: 'user google login',
   handler: {
-    controller: controller,
+    controller: LoginController,
     method: 'googleLogin'
   },
   request: {
@@ -47,14 +38,14 @@ const mfaVerifyApi = {
   verb: 'POST',
   auditMessage: 'user mfa verification',
   handler: {
-    controller: controller,
+    controller: LoginController,
     method: 'mfaVerify'
   },
   request: {
     body: Joi.object({
       email: Joi.string().email().required(),
       code: Joi.string().length(6).required(),
-      supabaseToken: Joi.string().required()
+      mfaTicket: Joi.string().required()
     })
   }
 };
@@ -64,7 +55,7 @@ const refreshTokenApi = {
   verb: 'POST',
   auditMessage: 'refresh access token',
   handler: {
-    controller: controller,
+    controller: LoginController,
     method: 'refreshToken'
   }
 };
@@ -74,7 +65,7 @@ const logoutApi = {
   verb: 'POST',
   auditMessage: 'user logout',
   handler: {
-    controller: controller,
+    controller: LoginController,
     method: 'logout'
   }
 };

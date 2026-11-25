@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Pause, Play, X, Send } from 'lucide-react';
-import SButton from '@/components/common/SButton';
+import SIcon from '@/components/common/SIcon';
 
 /**
  * VoiceRecorder
@@ -148,14 +147,13 @@ const VoiceRecorder = ({ onSend, onCancel }) => {
 
   return (
     <div className="voice-recorder">
-      <SButton
-        color="danger"
-        size="s"
-        icon="close"
+      <SIcon
+        name="close"
+        size={18}
         onClick={handleCancel}
-        label="Cancel recording"
         title="Cancel recording"
-        className="voice-recorder-btn"
+        aria-label="Cancel recording"
+        className="voice-recorder-btn danger"
       />
 
       <div className="voice-recorder-indicator">
@@ -166,23 +164,21 @@ const VoiceRecorder = ({ onSend, onCancel }) => {
         <span className="voice-recorder-time">{formatTime(elapsed)}</span>
       </div>
 
-      <SButton
-        color="ghost"
-        size="s"
-        icon={isPaused ? "play" : "pause"}
+      <SIcon
+        name={isPaused ? 'play' : 'pause'}
+        size={18}
         onClick={handlePauseResume}
-        label={isPaused ? 'Resume recording' : 'Pause recording'}
         title={isPaused ? 'Resume recording' : 'Pause recording'}
+        aria-label={isPaused ? 'Resume recording' : 'Pause recording'}
         className="voice-recorder-btn"
       />
 
-      <SButton
-        color="primary"
-        size="s"
-        icon="send"
+      <SIcon
+        name="send"
+        size={18}
         onClick={handleSend}
-        label="Send voice message"
         title="Send voice message"
+        aria-label="Send voice message"
         className="voice-recorder-send-btn"
       />
     </div>

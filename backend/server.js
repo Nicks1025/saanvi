@@ -23,13 +23,22 @@ for (const envVar of requiredEnvVars) {
 }
 
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
+app.use(cookieParser());
 app.use(express.json());
 
 // Load Routes
 require('./routes')(app);
+
+// Centralized Error Handling Middleware
+const errorHandler = require('./base/errorHandler');
+app.use(errorHandler);
 
 // Serve translations
 app.use('/api/locales', express.static(path.join(__dirname, 'language')));

@@ -1,5 +1,5 @@
-const wordSearchRepository = require('./wordSearchRepository');
 const BaseService = require('../../base/baseService');
+const WordSearchRepository = require('./wordSearchRepository');
 
 const DIRECTIONS = {
   HORIZONTAL: [0, 1],
@@ -34,18 +34,19 @@ const DIFFICULTY_CONFIG = {
 };
 
 class WordSearchService extends BaseService {
-  constructor(repository) {
-    super(repository);
+  constructor(context = null) {
+    super(context);
+    this.repository = new WordSearchRepository(context);
   }
   
   async startPuzzle(difficulty) {
     const config = DIFFICULTY_CONFIG[difficulty];
     if (!config) throw new Error('Invalid difficulty');
 
-    let allWords = await wordSearchRepository.getRandomWords(difficulty, config.wordCount);
+    let allWords = await this.repository.getRandomWords(difficulty, config.wordCount);
     // If not enough words, fetch all and filter
     if (!allWords || allWords.length < config.wordCount) {
-      allWords = await wordSearchRepository.getRandomWords('easy', 50); // Fallback
+      allWords = await this.repository.getRandomWords('easy', 50); // Fallback
     }
 
     // Shuffle and pick
@@ -79,7 +80,7 @@ class WordSearchService extends BaseService {
       game_date: null
     };
 
-    await wordSearchRepository.createPuzzle(puzzleData);
+    await this.repository.createPuzzle(puzzleData);
 
     const puzzleWordsData = puzzle.placements.map((p, i) => ({
       uuid: this.generateUuid(),
@@ -93,7 +94,7 @@ class WordSearchService extends BaseService {
       word_order: i
     }));
 
-    await wordSearchRepository.createPuzzleWords(puzzleWordsData);
+    await this.repository.createPuzzleWords(puzzleWordsData);
 
     // Return sanitized puzzle
     return {
@@ -106,12 +107,11 @@ class WordSearchService extends BaseService {
   }
 
   async validateWord(puzzleUuid, start, end) {
-    const puzzleWords = await wordSearchRepository.getPuzzleWords(puzzleUuid);
+    const puzzleWords = await this.repository.getPuzzleWords(puzzleUuid);
     if (!puzzleWords || puzzleWords.length === 0) {
       throw new Error('Puzzle not found or has no words');
     }
 
-    // Check if any word matches the exact start/end coordinates or reverse (if user dragged backwards)
     for (const pw of puzzleWords) {
       const matchForward = (pw.start_row === start.row && pw.start_column === start.column && 
                             pw.end_row === end.row && pw.end_column === end.column);
@@ -131,10 +131,10 @@ class WordSearchService extends BaseService {
   }
 
   async completeGame(puzzleUuid, foundWords, elapsedSeconds) {
-    const puzzle = await wordSearchRepository.getPuzzle(puzzleUuid);
+    const puzzle = await this.repository.getPuzzle(puzzleUuid);
     if (!puzzle) throw new Error('Puzzle not found');
 
-    const puzzleWords = await wordSearchRepository.getPuzzleWords(puzzleUuid);
+    const puzzleWords = await this.repository.getPuzzleWords(puzzleUuid);
     
     // Verify all words found
     if (foundWords.length !== puzzleWords.length) {
@@ -155,16 +155,16 @@ class WordSearchService extends BaseService {
     let baseScore = config.wordCount * 100;
     
     // Time penalty
-    const expectedTime = config.wordCount * 15; // 15 seconds per word expected
+    const expectedTime = config.wordCount * 15;
     const timeDiff = elapsedSeconds - expectedTime;
     if (timeDiff > 0) {
-      baseScore -= (timeDiff * 2); // lose 2 points per second over expected
+      baseScore -= (timeDiff * 2);
     }
 
-    const finalScore = Math.max(10, baseScore); // Minimum 10 points
+    const finalScore = Math.max(10, baseScore);
 
     // Clean up puzzle to save DB space
-    await wordSearchRepository.deletePuzzle(puzzleUuid);
+    await this.repository.deletePuzzle(puzzleUuid);
 
     return {
       completed: true,
@@ -175,12 +175,12 @@ class WordSearchService extends BaseService {
 
   async abortGame(puzzleUuid) {
     if (!puzzleUuid) throw new Error('Puzzle UUID is required');
-    await wordSearchRepository.deletePuzzle(puzzleUuid);
+    await this.repository.deletePuzzle(puzzleUuid);
     return { success: true };
   }
 
   async getHint(puzzleUuid, wordUuid) {
-    const puzzleWords = await wordSearchRepository.getPuzzleWords(puzzleUuid);
+    const puzzleWords = await this.repository.getPuzzleWords(puzzleUuid);
     const word = puzzleWords.find(pw => pw.word_uuid === wordUuid);
     
     if (!word) throw new Error('Word not found in puzzle');
@@ -215,7 +215,6 @@ class WordSearchService extends BaseService {
         const endCol = startCol + dir[1] * (word.length - 1);
 
         if (endRow >= 0 && endRow < size && endCol >= 0 && endCol < size) {
-          // Check overlap
           let canPlace = true;
           for (let i = 0; i < word.length; i++) {
             const r = startRow + dir[0] * i;
@@ -243,7 +242,7 @@ class WordSearchService extends BaseService {
         }
       }
 
-      if (!placed) return null; // failed to place word
+      if (!placed) return null;
     }
 
     // Fill remaining
@@ -269,4 +268,4 @@ class WordSearchService extends BaseService {
   }
 }
 
-module.exports = new WordSearchService(wordSearchRepository);
+module.exports = WordSearchService;

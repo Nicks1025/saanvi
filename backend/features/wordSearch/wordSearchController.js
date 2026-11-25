@@ -1,77 +1,82 @@
 const BaseController = require('../../base/baseController');
-const wordSearchService = require('./wordSearchService');
+const WordSearchService = require('./wordSearchService');
 
 class WordSearchController extends BaseController {
+  constructor(context = null) {
+    super(context);
+    this.wordSearchService = new WordSearchService(context);
+  }
   
   async start(req, res) {
     try {
-      const { difficulty } = req.body;
+      const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+      const { difficulty } = body;
       if (!['easy', 'medium', 'hard'].includes(difficulty)) {
-        return this.sendError(res, 400, 'Invalid difficulty');
+        return this.respondError('Invalid difficulty', 400);
       }
 
-      const puzzle = await wordSearchService.startPuzzle(difficulty);
-      return this.sendSuccess(res, puzzle);
+      const puzzle = await this.wordSearchService.startPuzzle(difficulty);
+      return this.respondOk(puzzle);
     } catch (error) {
-      this.sendError(res, error);
+      return this.respondError(error, 400);
     }
   }
 
   async validateWord(req, res) {
     try {
-      const { puzzleUuid, start, end } = req.body;
+      const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+      const { puzzleUuid, start, end } = body;
       if (!puzzleUuid || !start || !end) {
-        return this.sendError(res, 400, 'Missing required fields');
+        return this.respondError('Missing required fields', 400);
       }
 
-      const result = await wordSearchService.validateWord(puzzleUuid, start, end);
-      return this.sendSuccess(res, result);
+      const result = await this.wordSearchService.validateWord(puzzleUuid, start, end);
+      return this.respondOk(result);
     } catch (error) {
-      this.sendError(res, error);
+      return this.respondError(error, 400);
     }
   }
 
   async completeGame(req, res) {
     try {
-      const { puzzleUuid, foundWords, elapsedSeconds } = req.body;
+      const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+      const { puzzleUuid, foundWords, elapsedSeconds } = body;
       if (!puzzleUuid || !Array.isArray(foundWords) || typeof elapsedSeconds !== 'number') {
-        return this.sendError(res, 400, 'Invalid request payload');
+        return this.respondError('Invalid request payload', 400);
       }
 
-      const result = await wordSearchService.completeGame(puzzleUuid, foundWords, elapsedSeconds);
-      return this.sendSuccess(res, result);
+      const result = await this.wordSearchService.completeGame(puzzleUuid, foundWords, elapsedSeconds);
+      return this.respondOk(result);
     } catch (error) {
-      this.sendError(res, error);
+      return this.respondError(error, 400);
     }
   }
 
   async getHint(req, res) {
     try {
-      const { puzzleUuid, wordUuid } = req.body;
+      const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+      const { puzzleUuid, wordUuid } = body;
       if (!puzzleUuid || !wordUuid) {
-        return this.sendError(res, 400, 'Missing required fields');
+        return this.respondError('Missing required fields', 400);
       }
 
-      const hint = await wordSearchService.getHint(puzzleUuid, wordUuid);
-      return this.sendSuccess(res, hint);
+      const hint = await this.wordSearchService.getHint(puzzleUuid, wordUuid);
+      return this.respondOk(hint);
     } catch (error) {
-      this.sendError(res, error);
+      return this.respondError(error, 400);
     }
   }
 
   async abortGame(req, res) {
     try {
-      const { puzzleUuid } = req.body;
-      if (!puzzleUuid) {
-        return this.sendError(res, 400, 'Missing required fields');
-      }
-
-      const result = await wordSearchService.abortGame(puzzleUuid);
-      return this.sendSuccess(res, result);
+      const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+      const { puzzleUuid } = body;
+      const result = await this.wordSearchService.abortGame(puzzleUuid);
+      return this.respondOk(result);
     } catch (error) {
-      this.sendError(res, error);
+      return this.respondError(error, 400);
     }
   }
 }
 
-module.exports = new WordSearchController();
+module.exports = WordSearchController;

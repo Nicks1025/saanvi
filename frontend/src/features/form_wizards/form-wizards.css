@@ -1,0 +1,78 @@
+.wizard-url-link {
+  color: var(--accent);
+  text-decoration: none;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.wizard-url-link:hover {
+  text-decoration: underline;
+}
+
+.s-button.wizard-copy-btn {
+  color: var(--accent);
+}
+
+.s-button.wizard-copy-btn:hover {
+  text-decoration: underline;
+}
+
+.wizard-name-link {
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.wizard-name-link:hover {
+  text-decoration: underline;
+}
+
+.wizard-usage-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wizard-usage-label-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wizard-field-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-h, var(--text));
+}
+
+.wizard-usage-toggle-group {
+  display: inline-flex;
+  align-self: flex-start;
+  gap: 8px;
+}
+
+.wizard-field-error {
+  color: var(--error, #ef4444);
+  font-size: 0.85rem;
+}
+
+.wizard-target-url-preview {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.wizard-target-url-code {
+  color: var(--accent);
+  font-weight: 500;
+  font-family: monospace;
+}
+
+.wizard-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding-top: 1rem;
+}

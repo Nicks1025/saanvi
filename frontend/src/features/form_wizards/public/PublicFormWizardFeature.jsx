@@ -2,14 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { Check } from 'lucide-react';
 import SButton from '@/components/common/SButton';
-import DynamicFormRenderer from '@/components/common/DynamicFormRenderer';
+import DynamicFormRenderer from '@/components/common/dynamic_form';
 import * as formWizardsService from '../formWizardsService';
 import './PublicFormWizard.css';
 
 const PublicFormWizardFeature = () => {
-  const { name } = useParams();
+  const { t } = useTranslation();
+  const params = useParams();
+  const identifier = params?.targetUrl || params?.name;
 
   const [wizardData, setWizardData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -24,23 +27,27 @@ const PublicFormWizardFeature = () => {
   });
 
   useEffect(() => {
-    fetchWizard();
-  }, [name]);
+    if (identifier) {
+      fetchWizard();
+    }
+  }, [identifier]);
 
   const fetchWizard = async () => {
     try {
-      const res = await formWizardsService.getPublicWizard(name);
+      const res = await formWizardsService.getPublicWizard(identifier);
       const data = res.wizard ? res : res.data;
       setWizardData(data);
       if (data && data.fields) {
         const initialData = {};
         data.fields.forEach(f => {
-          if (f.default_value) initialData[f.field_name] = f.default_value;
+          const fieldKey = f.fieldName;
+          const defaultVal = f.defaultValue;
+          if (defaultVal) initialData[fieldKey] = defaultVal;
         });
         reset(initialData);
       }
     } catch (err) {
-      toast.error('Failed to load wizard or it does not exist');
+      toast.error(t('admin.wizards.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -50,21 +57,21 @@ const PublicFormWizardFeature = () => {
     return (
       <div className="pfw-loading">
         <div className="pfw-spinner" />
-        <p>Loading...</p>
+        <p>{t('admin.wizards.loading')}</p>
       </div>
     );
   }
 
   if (!wizardData) {
-    return <div className="pfw-error">Wizard not found.</div>;
+    return <div className="pfw-error">{t('admin.wizards.notFound')}</div>;
   }
 
   if (isSuccess) {
     return (
       <div className="pfw-success">
         <div className="pfw-success-icon"><Check size={40} strokeWidth={3} /></div>
-        <h1>Submitted Successfully!</h1>
-        <p>Your information has been received. Thank you!</p>
+        <h1>{t('admin.wizards.successTitle')}</h1>
+        <p>{t('admin.wizards.successDesc')}</p>
       </div>
     );
   }
@@ -72,46 +79,16 @@ const PublicFormWizardFeature = () => {
   const { wizard, phases, fields } = wizardData;
 
   const currentPhase = phases[currentPhaseIndex];
-  if (!currentPhase) return <div className="pfw-error">No phases configured for this wizard.</div>;
+  if (!currentPhase) return <div className="pfw-error">{t('admin.wizards.noPhases')}</div>;
 
   const currentStep = currentPhase.steps[currentStepIndex];
-  if (!currentStep) return <div className="pfw-error">No steps configured for this phase.</div>;
+  if (!currentStep) return <div className="pfw-error">{t('admin.wizards.noSteps')}</div>;
 
-  const getStepFields = () => {
-    const layout = currentStep.template?.layout || [];
-    return layout.reduce((acc, layoutField) => {
-      const fieldDef = fields.find(f => f.uuid === layoutField.field_uuid);
-      if (fieldDef) acc.push({ ...fieldDef, ...layoutField });
-      return acc;
-    }, []);
-  };
-
-  // Groups step fields into rows/columns matching the template layout grid
-  const getStepRows = () => {
-    const stepFields = getStepFields();
-    if (stepFields.length === 0) return [];
-
-    const rowMap = {};
-    stepFields.forEach(field => {
-      const r = field.row_number ?? 0;
-      const c = field.column_number ?? 0;
-      if (!rowMap[r]) rowMap[r] = {};
-      if (!rowMap[r][c]) rowMap[r][c] = [];
-      rowMap[r][c].push(field);
-    });
-
-    return Object.keys(rowMap)
-      .sort((a, b) => Number(a) - Number(b))
-      .map(r => ({
-        rowKey: r,
-        cols: Object.keys(rowMap[r])
-          .sort((a, b) => Number(a) - Number(b))
-          .map(c => ({ colKey: c, fields: rowMap[r][c], width: rowMap[r][c][0]?.width || 12 }))
-      }));
-  };
+  const stepLayout = currentStep.template?.layout || [];
+  const stepFields = fields.filter((f) => stepLayout.some((l) => l.field_uuid === f.uuid));
 
   const handleNext = async () => {
-    const requiredFieldNames = getStepFields().map(f => f.field_name);
+    const requiredFieldNames = stepFields.map((f) => f.fieldName);
     const isStepValid = await trigger(requiredFieldNames);
     if (!isStepValid) return;
 
@@ -141,16 +118,14 @@ const PublicFormWizardFeature = () => {
 
   const submitForm = async () => {
     try {
-      await formWizardsService.submitPublicWizard(name, getValues());
+      await formWizardsService.submitPublicWizard(identifier, getValues());
       setIsSuccess(true);
-      toast.success('Submitted successfully!');
+      toast.success(t('admin.wizards.submittedSuccess'));
     } catch (err) {
-      toast.error(err.response?.data?.error || err.response?.data?.message || 'Submission failed');
+      toast.error(err.response?.data?.error || err.response?.data?.message || t('admin.wizards.submissionFailed'));
     }
   };
 
-  const stepFields = getStepFields();
-  const stepRows = getStepRows();
   const isFirstStep = currentPhaseIndex === 0 && currentStepIndex === 0;
   const isLastStep = currentPhaseIndex === phases.length - 1 && currentStepIndex === currentPhase.steps.length - 1;
 
@@ -165,7 +140,7 @@ const PublicFormWizardFeature = () => {
       return;
     }
     // Going forward — validate current step first
-    const requiredFieldNames = getStepFields().map(f => f.field_name);
+    const requiredFieldNames = stepFields.map(f => f.fieldName);
     const isValid = await trigger(requiredFieldNames);
     if (!isValid) return;
     const globalIdx = phases.slice(0, currentPhaseIndex).reduce((acc, p) => acc + p.steps.length, 0) + currentStepIndex;
@@ -181,7 +156,7 @@ const PublicFormWizardFeature = () => {
       return;
     }
     // Going forward — validate current step first
-    const requiredFieldNames = getStepFields().map(f => f.field_name);
+    const requiredFieldNames = stepFields.map(f => f.fieldName);
     const isValid = await trigger(requiredFieldNames);
     if (!isValid) return;
     const globalIdx = phases.slice(0, currentPhaseIndex).reduce((acc, p) => acc + p.steps.length, 0) + currentStepIndex;
@@ -256,43 +231,26 @@ const PublicFormWizardFeature = () => {
           )}
 
             <div className="pfw-form-body">
-              {stepRows.length === 0 ? (
-                <p style={{ color: 'var(--text-secondary)', textAlign: 'center' }}>No fields in this step.</p>
+              {stepFields.length === 0 ? (
+                <p style={{ color: 'var(--text-secondary)', textAlign: 'center' }}>{t('admin.wizards.noFields')}</p>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                  {stepRows.map(({ rowKey, cols }) => (
-                    <div key={rowKey} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                      {cols.map(({ colKey, fields: colFields, width }) => (
-                        <div
-                          key={colKey}
-                          style={{
-                            flex: `0 0 calc(${(width / 12) * 100}% - 0.5rem)`,
-                            minWidth: '150px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '1rem'
-                          }}
-                        >
-                          {colFields.map((field, idx) => (
-                            <DynamicFormRenderer key={`${field.uuid}-${idx}`} fields={[field]} control={control} />
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
+                <DynamicFormRenderer
+                  fields={fields}
+                  layout={stepLayout}
+                  control={control}
+                />
               )}
             </div>
 
           <div className="pfw-form-footer">
             <SButton
-              text="← Back"
+              text={t('admin.wizards.prev')}
               onClick={handleBack}
               disabled={isFirstStep}
               color="secondary"
             />
             <SButton
-              text={isLastStep ? 'Submit' : 'Next →'}
+              text={isLastStep ? t('admin.wizards.submit') : t('admin.wizards.next')}
               onClick={handleNext}
               color="primary"
               disabled={isSubmitting}

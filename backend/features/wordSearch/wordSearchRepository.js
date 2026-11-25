@@ -2,54 +2,54 @@ const QueryHelper = require('../../database/queryHelper');
 const BaseRepository = require('../../base/baseRepository');
 
 class WordSearchRepository extends BaseRepository {
+  constructor(context = null) {
+    super(context);
+    this.sqlWords = new QueryHelper('words');
+    this.sqlPuzzles = new QueryHelper('word_search_puzzles');
+    this.sqlPuzzleWords = new QueryHelper('word_search_puzzle_words');
+  }
 
   async getRandomWords(difficulty, count) {
-    const words = await this.queryHelper
-      .from('words')
-      .select('uuid, word, length, difficulty')
-      // .where('difficulty', 'eq', difficulty) // we will fetch all and filter/randomize in service to avoid empty sets if difficulty has few words
-      .execute();
-      
-    return words;
+    const query = this.sqlWords
+      .select()
+      .field('uuid')
+      .field('word')
+      .field('length')
+      .field('difficulty');
+    return this.runQuery(query);
   }
 
   async createPuzzle(puzzleData) {
-    const result = await this.queryHelper
-      .from('word_search_puzzles')
-      .insert(puzzleData)
-      .execute();
-    return puzzleData.uuid; // Assuming single insert, return the UUID we created
+    const query = this.sqlPuzzles.insert(puzzleData);
+    await this.execute(query);
+    return puzzleData.uuid;
   }
 
   async createPuzzleWords(wordsData) {
-    await this.queryHelper
-      .from('word_search_puzzle_words')
-      .insert(wordsData)
-      .execute();
+    if (!wordsData || wordsData.length === 0) return;
+    const query = this.sqlPuzzleWords.insert(wordsData);
+    await this.execute(query);
   }
 
   async getPuzzle(puzzleUuid) {
-    const puzzles = await this.queryHelper
-      .from('word_search_puzzles')
-      .select('*')
-      .where('uuid', 'eq', puzzleUuid)
-      .execute();
-    return puzzles && puzzles.length > 0 ? puzzles[0] : null;
+    const query = this.sqlPuzzles
+      .select()
+      .field('*')
+      .where('uuid', '=', puzzleUuid);
+    return this.runQueryFirst(query);
   }
 
   async getPuzzleWords(puzzleUuid) {
-    const words = await this.queryHelper
-      .from('word_search_puzzle_words', 'pw')
-      .join('words', 'w', 'pw.word_uuid = w.uuid')
-      .select('pw.*')
-      .field('w.word')
-      .field('w.length')
-      .where('pw.puzzle_uuid', 'eq', puzzleUuid)
-      .execute();
-      
-    // Format to match old nested format if necessary, or service can just use flat rows.
-    // The previous service expected `words` as an object: p.words.word, p.words.length
-    return words.map(row => ({
+    const query = this.sqlPuzzleWords
+      .select()
+      .field('word_search_puzzle_words.*')
+      .field('words.word')
+      .field('words.length')
+      .join('words', 'word_search_puzzle_words.word_uuid', 'words.uuid')
+      .where('word_search_puzzle_words.puzzle_uuid', '=', puzzleUuid);
+
+    const rows = await this.runQuery(query);
+    return rows.map(row => ({
       ...row,
       words: {
         word: row.word,
@@ -59,18 +59,13 @@ class WordSearchRepository extends BaseRepository {
   }
 
   async deletePuzzle(puzzleUuid) {
-    await this.queryHelper
-      .from('word_search_puzzle_words')
-      .where('puzzle_uuid', 'eq', puzzleUuid)
-      .delete()
-      .execute();
-      
-    await this.queryHelper
-      .from('word_search_puzzles')
-      .where('uuid', 'eq', puzzleUuid)
-      .delete()
-      .execute();
+    await this.execute(
+      this.sqlPuzzleWords.delete().where('puzzle_uuid', '=', puzzleUuid)
+    );
+    await this.execute(
+      this.sqlPuzzles.delete().where('uuid', '=', puzzleUuid)
+    );
   }
 }
 
-module.exports = new WordSearchRepository();
+module.exports = WordSearchRepository;

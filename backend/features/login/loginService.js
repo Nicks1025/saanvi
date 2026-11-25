@@ -3,11 +3,14 @@ const argon2 = require('argon2');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
 const crypto = require('crypto');
-const { supabaseAdmin } = require('../../services/supabaseAdmin');
+const { supabaseAdmin, getUserSupabaseClient, syncSupabaseAuth } = require('../../services/supabaseAdmin');
+const { getAccessTokenExpiry, getRefreshTokenExpiryMs } = require('./tokenConfig');
+const LoginRepository = require('./loginRepository');
 
 class LoginService extends BaseService {
-  constructor(loginRepository) {
-    super(loginRepository);
+  constructor(context = null) {
+    super(context);
+    this.repository = new LoginRepository(context);
   }
 
   /**
@@ -21,7 +24,7 @@ class LoginService extends BaseService {
       throw new Error('No user exists with this email, please register youself.');
     }
     if (user.status === 'archived') {
-       throw new Error('Your account has been suspended by Admin, please contact admin to get your query resolved.');
+      throw new Error('Your account has been suspended by Admin, please contact admin to get your query resolved.');
     }
 
     if (user.status === 'locked') {
@@ -31,7 +34,7 @@ class LoginService extends BaseService {
     // 2. Verify password hash first to prevent enumeration
     try {
       const isPasswordValid = await argon2.verify(user.password_hash, password);
-      
+
       if (!isPasswordValid) {
         throw new Error('Invalid email or password.');
       }
@@ -47,27 +50,29 @@ class LoginService extends BaseService {
     // 4. Generate tokens
     const { accessToken, refreshToken } = await this.generateTokens(user);
 
-    // 4. Sync with Supabase Auth to get an access token for MFA
-    let supabaseToken = null;
-    try {
-      supabaseToken = await this.syncSupabaseAuth(user.email);
-    } catch (e) {
-      console.error('[Supabase Sync Error]', e);
-    }
-
     if (user.is_mfa_enabled) {
+      const secret = process.env.JWT_SECRET;
+      if (!secret) {
+        throw new Error('Server configuration error: JWT_SECRET missing.');
+      }
+      const mfaTicket = jwt.sign(
+        { email: user.email, purpose: 'mfa_login' },
+        secret,
+        { expiresIn: '5m' }
+      );
       return {
         mfaRequired: true,
         email: user.email,
-        supabaseToken
+        mfaTicket
       };
     }
 
-    // 5. Return success result
+    // 5. Update last_login_at timestamp and return success result
+    await this.repository.updateLastLogin(user.uuid);
+
     return {
       token: accessToken,
-      refreshToken,
-      supabaseToken
+      refreshToken
     };
   }
 
@@ -114,27 +119,29 @@ class LoginService extends BaseService {
     // 2. Generate tokens
     const { accessToken, refreshToken } = await this.generateTokens(user);
 
-    // 3. Sync with Supabase Auth to get an access token for MFA
-    let supabaseToken = null;
-    try {
-      supabaseToken = await this.syncSupabaseAuth(user.email);
-    } catch (e) {
-      console.error('[Supabase Sync Error]', e);
-    }
-
     if (user.is_mfa_enabled) {
+      const secret = process.env.JWT_SECRET;
+      if (!secret) {
+        throw new Error('Server configuration error: JWT_SECRET missing.');
+      }
+      const mfaTicket = jwt.sign(
+        { email: user.email, purpose: 'mfa_login' },
+        secret,
+        { expiresIn: '5m' }
+      );
       return {
         mfaRequired: true,
         email: user.email,
-        supabaseToken
+        mfaTicket
       };
     }
 
-    // 4. Return success result
+    // 3. Update last_login_at timestamp and return success result
+    await this.repository.updateLastLogin(user.uuid);
+
     return {
       token: accessToken,
-      refreshToken,
-      supabaseToken
+      refreshToken
     };
   }
 
@@ -143,56 +150,40 @@ class LoginService extends BaseService {
    * so we can acquire a valid GoTrue session for MFA operations.
    */
   async syncSupabaseAuth(email) {
-    let supabaseUserId = null;
-    try {
-      const result = await this.repository.queryHelper.queryRaw('SELECT id FROM auth.users WHERE email = ?', [email]);
-      if (result && result.rows && result.rows.length > 0) {
-        supabaseUserId = result.rows[0].id;
-      }
-    } catch (e) {
-      console.warn('Could not query auth.users directly', e.message);
-    }
-
-    const tempPassword = crypto.randomBytes(24).toString('hex') + 'Aa1!';
-
-    if (!supabaseUserId) {
-      const { data, error } = await supabaseAdmin.auth.admin.createUser({
-        email,
-        password: tempPassword,
-        email_confirm: true
-      });
-      if (!error && data.user) {
-        supabaseUserId = data.user.id;
-      }
-    } else {
-      await supabaseAdmin.auth.admin.updateUserById(supabaseUserId, { password: tempPassword });
-    }
-
-    const { data: authData, error: signInError } = await supabaseAdmin.auth.signInWithPassword({ 
-      email, 
-      password: tempPassword 
-    });
-
-    if (signInError) {
-      console.error('[Supabase Auth Sync Error]', signInError);
-      return null;
-    }
-    
-    return authData.session.access_token;
+    return await syncSupabaseAuth(email, this.repository.queryHelper);
   }
 
   /**
    * Processes the second step of MFA login: verifies the TOTP code against Supabase Auth,
    * then issues the final custom JWT.
    */
-  async processMfaVerify(email, code, supabaseToken) {
+  async processMfaVerify(email, code, mfaTicket) {
+    if (!mfaTicket) {
+      throw new Error('MFA ticket is required.');
+    }
+
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      throw new Error('Server configuration error: JWT_SECRET missing.');
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(mfaTicket, secret);
+    } catch (e) {
+      throw new Error('Invalid or expired MFA ticket.');
+    }
+
+    if (decoded.email !== email || decoded.purpose !== 'mfa_login') {
+      throw new Error('Invalid MFA ticket.');
+    }
+
     const user = await this.repository.getUserByEmail(email);
     if (!user) throw new Error('Invalid email or password.');
 
-    const { createClient } = require('@supabase/supabase-js');
-    const userSupabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
-      global: { headers: { Authorization: `Bearer ${supabaseToken}` } }
-    });
+    const token = await this.syncSupabaseAuth(email);
+    if (!token) throw new Error('Failed to synchronize MFA session.');
+    const userSupabase = getUserSupabaseClient(token);
 
     const { data: factors, error: factorsError } = await userSupabase.auth.mfa.listFactors();
     if (factorsError || !factors || !factors.totp || factors.totp.length === 0) {
@@ -219,13 +210,14 @@ class LoginService extends BaseService {
     // Generate final tokens
     const { accessToken, refreshToken } = await this.generateTokens(user);
 
+    await this.repository.updateLastLogin(user.uuid);
+
     return {
       token: accessToken,
-      refreshToken,
-      supabaseToken
+      refreshToken
     };
   }
-  async generateTokens(user) {
+  async generateTokens(user, transaction = null) {
     const tokenPayload = {
       uuid: user.uuid,
       email: user.email,
@@ -237,16 +229,18 @@ class LoginService extends BaseService {
       permissions: user.permissions || []
     };
 
-    const secret = process.env.JWT_SECRET || 'fallback_secret';
-    const accessToken = jwt.sign(tokenPayload, secret, { expiresIn: '15m' });
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      throw new Error('Server configuration error: JWT_SECRET missing.');
+    }
+    const accessToken = jwt.sign(tokenPayload, secret, { expiresIn: getAccessTokenExpiry() });
 
     const refreshToken = crypto.randomBytes(40).toString('hex');
     const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
-    
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiration
 
-    await this.repository.saveRefreshToken(user.uuid, tokenHash, expiresAt.toISOString());
+    const expiresAt = new Date(Date.now() + getRefreshTokenExpiryMs());
+
+    await this.repository.saveRefreshToken(user.uuid, tokenHash, expiresAt.toISOString(), transaction);
 
     return { accessToken, refreshToken };
   }
@@ -257,25 +251,24 @@ class LoginService extends BaseService {
     }
 
     const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
-    
-    const tokenRecord = await this.repository.getValidRefreshToken(tokenHash);
 
-    if (!tokenRecord) {
-      // Possible token reuse attack or simply expired
-      throw new Error('Invalid or expired refresh token');
-    }
+    return await this.repository.transaction(async (trx) => {
+      // 1. Atomically consume the existing refresh token
+      const tokenRecord = await this.repository.consumeRefreshToken(tokenHash, trx);
 
-    // Revoke the old token (Refresh Token Rotation)
-    await this.repository.revokeRefreshTokenById(tokenRecord.uuid);
+      if (!tokenRecord) {
+        throw new Error('Invalid or expired refresh token');
+      }
 
-    // Fetch latest user details to get fresh permissions
-    const user = await this.repository.getUserByUuid(tokenRecord.user_uuid);
-    if (!user || user.status !== 'active') {
-      throw new Error('User is inactive or deleted');
-    }
+      // 2. Retrieve user's latest account status, roles and permissions inside transaction
+      const user = await this.repository.getUserByUuid(tokenRecord.user_uuid, trx);
+      if (!user || user.status !== 'active') {
+        throw new Error('User is inactive or deleted');
+      }
 
-    // Generate new token pair
-    return await this.generateTokens(user);
+      // 3. Generate replacement tokens and persist replacement refresh token inside the same transaction
+      return await this.generateTokens(user, trx);
+    });
   }
 
   async logout(refreshToken) {

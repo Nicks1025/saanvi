@@ -2,6 +2,7 @@ import React, { useEffect, useCallback, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { X, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import SButton from '@/components/common/SButton';
+import SIcon from '@/components/common/SIcon';
 import { downloadAttachment } from '../../attachmentUtils';
 import { useAttachment, ATTACHMENT_STATES } from "../../hooks/useAttachment";
 import { CircularProgress } from '../common/CircularProgress';
@@ -68,32 +69,40 @@ const ImageLightbox = ({ messageUuid, attachments, index, onClose, onNav }) => {
     >
       {/* Header Actions */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, padding: '20px', display: 'flex', justifyContent: 'space-between', zIndex: 10 }}>
-        <button
+        <SIcon
+          name="x"
+          size={32}
           onClick={onClose}
           aria-label="Close viewer"
-          style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', padding: '8px' }}
-        >
-          <X size={32} />
-        </button>
-        <button
+          title="Close viewer"
+          color="#fff"
+          style={{ padding: '8px' }}
+          subtle
+        />
+        <SIcon
+          name="download"
+          size={32}
           onClick={(e) => { e.stopPropagation(); if (isDownloaded && localUrl) downloadAttachment(localUrl, currentAlt); }}
           aria-label="Save media"
-          style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', padding: '8px', opacity: isDownloaded ? 1 : 0.5 }}
+          title="Save media"
+          color="#fff"
+          style={{ padding: '8px', opacity: isDownloaded ? 1 : 0.5 }}
           disabled={!isDownloaded}
-        >
-          <Download size={32} />
-        </button>
+          subtle
+        />
       </div>
 
       {/* Prev */}
       {hasPrev && (
-        <button
+        <SIcon
+          name="chevron-left"
+          size={36}
           onClick={(e) => { e.stopPropagation(); setZoom(false); onNav(index - 1); }}
           aria-label="Previous media"
-          style={{ background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', zIndex: 10, cursor: 'pointer', borderRadius: '50%', padding: '8px' }}
-        >
-          <ChevronLeft size={36} />
-        </button>
+          title="Previous media"
+          color="#fff"
+          style={{ background: 'rgba(0,0,0,0.5)', position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', zIndex: 10, borderRadius: '50%', padding: '8px' }}
+        />
       )}
 
       {/* Main Content */}
@@ -141,7 +150,7 @@ const ImageLightbox = ({ messageUuid, attachments, index, onClose, onNav }) => {
                   cursor: 'pointer'
                 }}
               >
-                <Download size={32} />
+                <SIcon name="download" size={32} color="#fff" />
               </button>
             )}
           </div>
@@ -149,13 +158,15 @@ const ImageLightbox = ({ messageUuid, attachments, index, onClose, onNav }) => {
       </div>
 
       {hasNext && (
-        <button
+        <SIcon
+          name="chevron-right"
+          size={36}
           onClick={(e) => { e.stopPropagation(); setZoom(false); onNav(index + 1); }}
           aria-label="Next media"
-          style={{ background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', zIndex: 10, cursor: 'pointer', borderRadius: '50%', padding: '8px' }}
-        >
-          <ChevronRight size={36} />
-        </button>
+          title="Next media"
+          color="#fff"
+          style={{ background: 'rgba(0,0,0,0.5)', position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', zIndex: 10, borderRadius: '50%', padding: '8px' }}
+        />
       )}
 
       {/* Thumbnail Reel */}

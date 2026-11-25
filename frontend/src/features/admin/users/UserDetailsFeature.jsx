@@ -66,7 +66,7 @@ const UserDetailsFeature = () => {
       const userRolesData = await usersService.getUserRoles(uuid);
       setSelectedRoles(userRolesData || []);
     } catch (err) {
-      toast.error(t('admin.failedLoadUser', 'Failed to load user details'));
+      toast.error(t('common.toaster.failedLoadUser'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -87,7 +87,7 @@ const UserDetailsFeature = () => {
       // Save roles
       await usersService.updateUserRoles(uuid, selectedRoles);
 
-      toast.success(t('admin.userUpdated', 'User updated successfully'));
+      toast.success(t('common.toaster.userUpdated'));
 
       // Update local view state
       setUser(prev => ({
@@ -97,7 +97,7 @@ const UserDetailsFeature = () => {
 
       navigate.push('/admin/users');
     } catch (err) {
-      toast.error(err?.response?.data?.error || t('admin.updateUserFailed', 'Failed to update user'));
+      toast.error(err?.response?.data?.error || t('common.toaster.updateUserFailed'));
       console.error(err);
     } finally {
       setSaving(false);
@@ -108,8 +108,8 @@ const UserDetailsFeature = () => {
     navigate.push('/admin/users');
   };
 
-  if (loading) return <div style={{ padding: '2rem' }}>{t('common.loading', 'Loading...')}</div>;
-  if (!user) return <div style={{ padding: '2rem' }}>{t('admin.userNotFound', 'User not found')}</div>;
+  if (loading) return <div style={{ padding: '2rem' }}>{t('common.loading')}</div>;
+  if (!user) return <div style={{ padding: '2rem' }}>{t('admin.user.userNotFound')}</div>;
 
   return (
     <div className="admin-users-container page-container">
@@ -119,42 +119,42 @@ const UserDetailsFeature = () => {
             onClick={() => navigate.push('/admin/users')}
             style={{ background: 'none', border: 'none', color: 'var(--text)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: 0, marginBottom: '0.5rem' }}
           >
-            &larr; {t('admin.backToUsers', 'Back to Users')}
+            &larr; {t('admin.user.backToUsers')}
           </button>
           <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-h)' }}>
-            {t('admin.userDetails', 'User Details')}
+            {t('admin.user.userDetails')}
           </h1>
         </div>
 
       </div>
 
       <div style={{ backgroundColor: 'var(--bg)', borderRadius: '8px', padding: '1.5rem', border: '1px solid var(--border)' }}>
-        <h3 style={{ marginTop: 0, marginBottom: '1.5rem' }}>{t('admin.profileInformation', 'Profile Information')}</h3>
+        <h3 style={{ marginTop: 0, marginBottom: '1.5rem' }}>{t('admin.user.profileInformation')}</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2rem' }}>
           <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text)' }}>{t('admin.firstName', 'First Name')}</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text)' }}>{t('admin.user.firstName')}</label>
             <input
               type="text"
               readOnly
               disabled
-              value={user.first_name || '-'}
+              value={user.firstName || '-'}
               style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--border)', outline: 'none', background: 'var(--code-bg)', color: 'var(--text)', cursor: 'not-allowed' }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text)' }}>{t('admin.lastName', 'Last Name')}</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text)' }}>{t('admin.user.lastName')}</label>
             <input
               type="text"
               readOnly
               disabled
-              value={user.last_name || '-'}
+              value={user.lastName || '-'}
               style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--border)', outline: 'none', background: 'var(--code-bg)', color: 'var(--text)', cursor: 'not-allowed' }}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text)' }}>{t('admin.email.title', 'Email')}</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text)' }}>{t('admin.user.email')}</label>
             <input
               type="text"
               readOnly
@@ -165,17 +165,17 @@ const UserDetailsFeature = () => {
           </div>
 
           <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text)' }}>{t('admin.status', 'Account Status')}</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text)' }}>{t('admin.user.status')}</label>
             {isEditMode ? (
               <select
                 value={editForm.status}
                 onChange={(e) => setEditForm(prev => ({ ...prev, status: e.target.value }))}
                 style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--border)', outline: 'none', background: 'transparent', color: 'var(--text)' }}
               >
-                <option value="active">{t('admin.statusActive', 'Active')}</option>
-                <option value="inactive">{t('admin.statusInactive', 'Inactive')}</option>
-                <option value="locked">{t('admin.statusLocked', 'Locked')}</option>
-                <option value="archived">{t('admin.statusArchived', 'Archived')}</option>
+                <option value="active">{t('admin.user.statusActive')}</option>
+                <option value="inactive">{t('admin.user.statusInactive')}</option>
+                <option value="locked">{t('admin.user.statusLocked')}</option>
+                <option value="archived">{t('admin.user.statusArchived')}</option>
               </select>
             ) : (
               <input
@@ -189,14 +189,14 @@ const UserDetailsFeature = () => {
           </div>
 
           <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text)' }}>{t('admin.roles', 'Role')}</label>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text)' }}>{t('admin.roles.roles')}</label>
             {isEditMode ? (
               <select
                 value={selectedRoles.length > 0 ? selectedRoles[0] : ''}
                 onChange={(e) => setSelectedRoles(e.target.value ? [e.target.value] : [])}
                 style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--border)', outline: 'none', background: 'transparent', color: 'var(--text)' }}
               >
-                <option value="">{t('admin.selectRolePlaceholder', 'Select a role...')}</option>
+                <option value="">{t('admin.user.selectRolePlaceholder')}</option>
                 {allRoles.map(role => (
                   <option key={role.uuid} value={role.uuid}>{role.name}</option>
                 ))}
@@ -211,6 +211,17 @@ const UserDetailsFeature = () => {
               />
             )}
           </div>
+
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', color: 'var(--text)' }}>{t('admin.user.lastLoginAt')}</label>
+            <input
+              type="text"
+              readOnly
+              disabled
+              value={user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : '-'}
+              style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid var(--border)', outline: 'none', background: 'var(--code-bg)', color: 'var(--text)', cursor: 'not-allowed' }}
+            />
+          </div>
         </div>
       </div>
 
@@ -221,13 +232,13 @@ const UserDetailsFeature = () => {
               onClick={cancelEdit}
               color="danger"
               icon="close"
-              text={t('common.cancel', 'Cancel')}
+              text={t('common.cancel')}
             />
             <SButton
               onClick={handleSave}
               disabled={saving}
               icon="save"
-              text={saving ? t('common.saving', 'Saving...') : t('admin.saveChanges', 'Save Changes')}
+              text={saving ? t('common.saving') : t('admin.user.saveChanges')}
               color="primary"
             />
           </>
@@ -236,7 +247,7 @@ const UserDetailsFeature = () => {
             onClick={() => navigate.push('/admin/users')}
             color="danger"
             icon="close"
-            text={t('common.close', 'Close')}
+            text={t('common.close')}
           />
         )}
       </div>

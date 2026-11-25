@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, Music, Download } from 'lucide-react';
 import SButton from '@/components/common/SButton';
+import SIcon from '@/components/common/SIcon';
 import { downloadAttachment } from '../../attachmentUtils';
 import { useAttachment, ATTACHMENT_STATES } from "../../hooks/useAttachment";
 import { CircularProgress } from '../common/CircularProgress';
@@ -41,7 +42,7 @@ const AudioMessage = ({ messageUuid, attachment, isSender }) => {
       audio.pause();
     } else {
       document.querySelectorAll('audio').forEach(a => { if (a !== audio) a.pause(); });
-      audio.play().catch(() => {});
+      audio.play().catch(() => { });
     }
   };
 
@@ -59,22 +60,22 @@ const AudioMessage = ({ messageUuid, attachment, isSender }) => {
   return (
     <div className="msg-audio-content">
       {isDownloaded && localUrl && (
-      // eslint-disable-next-line jsx-a11y/media-has-caption
-      <audio
-        ref={audioRef}
-        src={localUrl}
-        preload="metadata"
-        onLoadedMetadata={(e) => setDuration(e.target.duration)}
-        onTimeUpdate={(e) => {
-          const d = e.target.duration || 0;
-          const c = e.target.currentTime;
-          setCurrentTime(c);
-          setProgress(d ? c / d : 0);
-        }}
-        onPlay={() => setPlaying(true)}
-        onPause={() => setPlaying(false)}
-        onEnded={() => { setPlaying(false); setProgress(0); setCurrentTime(0); if (audioRef.current) audioRef.current.currentTime = 0; }}
-      />
+        // eslint-disable-next-line jsx-a11y/media-has-caption
+        <audio
+          ref={audioRef}
+          src={localUrl}
+          preload="metadata"
+          onLoadedMetadata={(e) => setDuration(e.target.duration)}
+          onTimeUpdate={(e) => {
+            const d = e.target.duration || 0;
+            const c = e.target.currentTime;
+            setCurrentTime(c);
+            setProgress(d ? c / d : 0);
+          }}
+          onPlay={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
+          onEnded={() => { setPlaying(false); setProgress(0); setCurrentTime(0); if (audioRef.current) audioRef.current.currentTime = 0; }}
+        />
       )}
       <div className="msg-audio-layout">
         <div className="msg-audio-icon">
@@ -83,19 +84,18 @@ const AudioMessage = ({ messageUuid, attachment, isSender }) => {
         <div className="msg-audio-info">
           <span className="msg-audio-name">{displayName}</span>
           <div className="msg-audio-controls" style={{ opacity: isDownloaded ? 1 : 0.5 }}>
-            
+
             {isDownloading ? (
               <div style={{ marginRight: '8px' }}>
                 <CircularProgress progress={downloadProgress} onCancel={cancel} size={28} strokeWidth={2} />
               </div>
             ) : (
               <SButton
-                className="msg-audio-playbtn"
+                className="msg-audio-playbtn p-2 min-w-unset text-primary"
                 onClick={handlePlayPause}
                 aria-label={!isDownloaded ? 'Download audio' : playing ? 'Pause audio' : 'Play audio'}
                 color="ghost"
                 size="small"
-                className="p-2 min-w-unset text-primary"
               >
                 {!isDownloaded ? <Download size={16} /> : playing ? <Pause size={16} /> : <Play size={16} />}
               </SButton>
@@ -120,20 +120,20 @@ const AudioMessage = ({ messageUuid, attachment, isSender }) => {
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <SButton
+          <SIcon
+            name="download"
+            size={18}
             onClick={() => {
               if (isDownloaded && localUrl) {
                 downloadAttachment(localUrl, displayName);
               }
             }}
             aria-label="Download audio file"
-            color="ghost"
-            size="small"
-            style={{ padding: '4px', minWidth: 'unset', color: 'inherit', opacity: isDownloaded ? 0.7 : 0.3 }}
+            title="Download audio file"
+            style={{ opacity: isDownloaded ? 0.7 : 0.3 }}
             disabled={!isDownloaded}
-          >
-            <Download size={18} />
-          </SButton>
+            subtle
+          />
         </div>
       </div>
     </div>

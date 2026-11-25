@@ -1,6 +1,7 @@
 import { Providers } from './providers';
 import '@/index.css';
 import '@/App.css';
+import 'nprogress/nprogress.css';
 
 export const metadata = {
   title: 'Saanvi — Play, Explore & Grow',
@@ -58,7 +59,7 @@ export default function RootLayout({ children }) {
           })();
         `}} />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <div id="root" className="app-container" style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%', minHeight: '100vh' }}>
           <Providers>{children}</Providers>
         </div>

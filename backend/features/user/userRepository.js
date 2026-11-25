@@ -1,13 +1,20 @@
 const BaseRepository = require('../../base/baseRepository');
+const QueryHelper = require('../../database/queryHelper');
 
 class UserRepository extends BaseRepository {
+  constructor(context = null) {
+    super(context);
+    this.sql = new QueryHelper('users', 'u');
+    this.sqlUsersSimple = new QueryHelper('users');
+    this.sqlUserDetails = new QueryHelper('user_details');
+  }
+
   /**
    * Retrieves safe user profile data by UUID.
    */
   async getUserByUuid(uuid) {
-    // 1. Fetch base user and user_details using left joins
-    const usersData = await this.queryHelper
-      .from('users', 'u')
+    const query = this.sql
+      .select()
       .field('u.uuid')
       .field('u.email')
       .field('u.is_mfa_enabled')
@@ -16,7 +23,6 @@ class UserRepository extends BaseRepository {
       .field('u.language')
       .field('u.theme')
       .field('u.font')
-      .leftJoin('user_details', 'ud', 'u.uuid = ud.user_uuid')
       .field('ud.first_name')
       .field('ud.last_name')
       .field('ud.display_name')
@@ -24,15 +30,14 @@ class UserRepository extends BaseRepository {
       .field('ud.date_of_birth')
       .field('ud.gender')
       .field('ud.profile_image_url')
-      .where('u.uuid', 'eq', uuid)
-      .where('u.archived_at', 'is', null)
-      .execute();
+      .leftJoin('user_details as ud', 'u.uuid', 'ud.user_uuid')
+      .where('u.uuid', '=', uuid)
+      .whereNull('u.archived_at');
 
-    if (!usersData || usersData.length === 0) {
+    const user = await this.runQueryFirst(query);
+    if (!user) {
       return null;
     }
-
-    const user = usersData[0];
 
     return {
       uuid: user.uuid,
@@ -56,19 +61,19 @@ class UserRepository extends BaseRepository {
    * UPSERT user profile details.
    */
   async upsertUserProfile(profileData) {
-    const { 
-      uuid, user_uuid, first_name, last_name, display_name, 
-      phone_number, date_of_birth, gender, profile_image_url 
+    const {
+      uuid, user_uuid, first_name, last_name, display_name,
+      phone_number, date_of_birth, gender, profile_image_url
     } = profileData;
 
-    // Check if record exists
-    const existing = await this.queryHelper
-      .from('user_details')
-      .where('user_uuid', 'eq', user_uuid)
-      .execute();
+    const checkQuery = this.sqlUserDetails
+      .select()
+      .field('uuid')
+      .where('user_uuid', '=', user_uuid);
 
-    if (existing && existing.length > 0) {
-      // Update
+    const existing = await this.runQueryFirst(checkQuery);
+
+    if (existing) {
       const payload = {};
       if (first_name !== undefined) payload.first_name = first_name;
       if (last_name !== undefined) payload.last_name = last_name;
@@ -77,19 +82,15 @@ class UserRepository extends BaseRepository {
       if (date_of_birth !== undefined) payload.date_of_birth = date_of_birth;
       if (gender !== undefined) payload.gender = gender;
       if (profile_image_url !== undefined) payload.profile_image_url = profile_image_url;
-      
       payload.updated_at = new Date().toISOString();
 
-      await this.queryHelper
-        .from('user_details')
-        .update(payload)
-        .where('user_uuid', 'eq', user_uuid)
-        .execute();
+      const updateQuery = this.sqlUserDetails
+        .where('user_uuid', '=', user_uuid)
+        .update(payload);
+      await this.execute(updateQuery);
     } else {
-      // Insert
-      await this.queryHelper
-        .from('user_details')
-        .insert([{
+      const insertQuery = this.sqlUserDetails
+        .insert({
           uuid,
           user_uuid,
           first_name: first_name || null,
@@ -99,8 +100,8 @@ class UserRepository extends BaseRepository {
           date_of_birth: date_of_birth || null,
           gender: gender || null,
           profile_image_url: profile_image_url || null
-        }])
-        .execute();
+        });
+      await this.execute(insertQuery);
     }
     return true;
   }
@@ -110,54 +111,63 @@ class UserRepository extends BaseRepository {
    */
   async updateUserSettings(uuid, settings) {
     const { language, theme, font } = settings;
-    
-    // Only update the fields that are provided, but default to undefined if not in payload
+
     const payload = {};
     if (language !== undefined) payload.language = language;
     if (theme !== undefined) payload.theme = theme;
     if (font !== undefined) payload.font = font;
 
     if (Object.keys(payload).length === 0) {
-      return true; // Nothing to update
+      return true;
     }
 
-    await this.queryHelper
-      .from('users')
-      .update(payload)
-      .where('uuid', 'eq', uuid)
-      .execute();
+    const query = this.sqlUsersSimple
+      .where('uuid', '=', uuid)
+      .update(payload);
+    await this.execute(query);
 
     return true;
   }
+
   /**
    * Retrieves the user's password hash.
    */
   async getPasswordHash(uuid) {
-    const result = await this.queryHelper
-      .from('users')
+    const query = this.sqlUsersSimple
+      .select()
       .field('password_hash')
-      .where('uuid', 'eq', uuid)
-      .execute();
-      
-    if (result && result.length > 0) {
-      return result[0].password_hash;
-    }
-    return null;
+      .where('uuid', '=', uuid);
+    const result = await this.runQueryFirst(query);
+    return result?.password_hash || null;
   }
 
   /**
    * Updates the user's password hash.
    */
   async updatePassword(uuid, passwordHash) {
-    await this.queryHelper
-      .from('users')
+    const query = this.sqlUsersSimple
+      .where('uuid', '=', uuid)
       .update({
         password_hash: passwordHash,
         password_changed_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      })
-      .where('uuid', 'eq', uuid)
-      .execute();
+      });
+    await this.execute(query);
+    return true;
+  }
+
+  /**
+   * Transactionally soft-deletes a user and marks status as deleted.
+   */
+  async deleteUserData(uuid) {
+    const query = this.sqlUsersSimple
+      .where('uuid', '=', uuid)
+      .update({
+        archived_at: new Date().toISOString(),
+        status: 'deleted',
+        updated_at: new Date().toISOString()
+      });
+    await this.execute(query);
     return true;
   }
 }

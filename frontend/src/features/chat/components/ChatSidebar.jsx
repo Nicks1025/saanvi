@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuth } from '@/store/AuthContext';
 import { MessageSquare, Users, UserPlus, Check, CheckCheck, Image as ImageIcon, Video, Mic, FileText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import SButton from '@/components/common/SButton';
+import SIcon from '@/components/common/SIcon';
 
 const ChatSidebar = ({ chatRealtime, onShowRequests }) => {
   const { t } = useTranslation();
@@ -12,14 +12,23 @@ const ChatSidebar = ({ chatRealtime, onShowRequests }) => {
   return (
     <div className="chat-sidebar">
       <div className="chat-sidebar-header">
-        <h2>{t('chat.title')}</h2>
-        <div style={{display: 'flex', gap: '8px'}}>
-          <SButton onClick={onShowRequests} title={t('chat.chatRequests')} aria-label={t('chat.chatRequests')} color="ghost" size="xs">
-             <UserPlus size={20} />
-          </SButton>
-          <SButton title={t('chat.newGroup')} aria-label={t('chat.newGroup')} color="ghost" size="xs">
-             <Users size={20} />
-          </SButton>
+        <h2>{t('admin.chat.title')}</h2>
+        <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+          <SIcon
+            name="user-plus"
+            size={20}
+            onClick={onShowRequests}
+            title={t('admin.chat.chatRequests')}
+            aria-label={t('admin.chat.chatRequests')}
+            subtle
+          />
+          <SIcon
+            name="users"
+            size={20}
+            title={t('admin.chat.newGroup')}
+            aria-label={t('admin.chat.newGroup')}
+            subtle
+          />
         </div>
       </div>
       
@@ -31,12 +40,12 @@ const ChatSidebar = ({ chatRealtime, onShowRequests }) => {
 
           if (!conv.is_group) {
              const otherMember = conv.members?.find(m => m.uuid !== user.uuid);
-             name = otherMember ? otherMember.display_name : t('chat.unknown');
+             name = otherMember ? otherMember.display_name : t('admin.chat.unknown');
              avatar = otherMember?.profile_image_url;
              isOnline = otherMember ? onlineUsers[otherMember.uuid] : false;
           }
 
-          let lastMessageText = conv.last_message ? conv.last_message.message : t('chat.noMessagesYet', 'No messages yet');
+          let lastMessageText = conv.last_message ? conv.last_message.message : t('admin.chat.noMessagesYet');
           let messageIcon = null;
           let tickIcon = null;
 
@@ -46,16 +55,16 @@ const ChatSidebar = ({ chatRealtime, onShowRequests }) => {
                const type = attachments[0].attachment_type || attachments[0].mime_type || '';
                if (type.includes('image') || type === 'image') {
                   messageIcon = <ImageIcon size={14} className="last-msg-icon" style={{ marginRight: '4px', display: 'inline-block', verticalAlign: 'middle' }} />;
-                  lastMessageText = lastMessageText || t('chat.image', 'Image');
+                  lastMessageText = lastMessageText || t('admin.chat.image');
                } else if (type.includes('video') || type === 'video') {
                   messageIcon = <Video size={14} className="last-msg-icon" style={{ marginRight: '4px', display: 'inline-block', verticalAlign: 'middle' }} />;
-                  lastMessageText = lastMessageText || t('chat.video', 'Video');
+                  lastMessageText = lastMessageText || t('admin.chat.video');
                } else if (type.includes('audio') || type === 'voice') {
                   messageIcon = <Mic size={14} className="last-msg-icon" style={{ marginRight: '4px', display: 'inline-block', verticalAlign: 'middle' }} />;
-                  lastMessageText = lastMessageText || t('chat.voice', 'Voice');
+                  lastMessageText = lastMessageText || t('admin.chat.voice');
                } else {
                   messageIcon = <FileText size={14} className="last-msg-icon" style={{ marginRight: '4px', display: 'inline-block', verticalAlign: 'middle' }} />;
-                  lastMessageText = lastMessageText || t('chat.file', 'File');
+                  lastMessageText = lastMessageText || t('admin.chat.file');
                }
             }
 

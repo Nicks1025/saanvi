@@ -58,26 +58,32 @@
   min-width: 0;
   min-height: 0;
   height: calc(100vh - 64px);
-    overflow-y: auto;
+  overflow-y: auto;
   overflow-x: hidden;
-  }
-  
-  .layout-main-full {
-    height: 100vh;
-    overflow: hidden;
-  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
-  .layout-main-game {
-    overflow: hidden;
-  }
+.layout-main::-webkit-scrollbar {
+  display: none;
+}
   
-  /* Backdrop overlay for mobile sidebar */
-  .layout-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 199;
-    backdrop-filter: blur(2px);
+.layout-main-full {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.layout-main-game {
+  overflow: hidden;
+}
+  
+/* Backdrop overlay for mobile sidebar */
+.layout-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 199;
+  backdrop-filter: blur(2px);
 }
 
 .content-container {
@@ -91,9 +97,9 @@
   flex-direction: column;
   min-height: 0;
   overflow-y: auto;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
   
 .content-container::-webkit-scrollbar {
   display: none;
@@ -113,6 +119,12 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   box-sizing: border-box;
   overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.page-container::-webkit-scrollbar {
+  display: none;
 }
 
 .app-header {

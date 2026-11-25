@@ -1,10 +1,11 @@
 const BaseService = require('../../base/baseService');
+const AdminRepository = require('./adminRepository');
 const { parse } = require('pgsql-ast-parser');
 
 class SqlService extends BaseService {
-  constructor(queryHelper) {
-    super();
-    this.queryHelper = queryHelper;
+  constructor(context = null) {
+    super(context);
+    this.repository = new AdminRepository(context);
   }
 
   /**
@@ -104,8 +105,7 @@ class SqlService extends BaseService {
     const startTime = Date.now();
     let result;
     try {
-      // 2. Execute via the restricted queryHelper method
-      result = await this.queryHelper.executeRawAdminSql(sqlString);
+      result = await this.repository.executeRaw(sqlString);
     } catch (error) {
       const err = new Error(`Database execution error: ${error.message}`);
       err.code = error.code;
@@ -120,7 +120,7 @@ class SqlService extends BaseService {
       rows: result.rows || [],
       rowCount: result.rowCount !== undefined ? result.rowCount : (result.rows ? result.rows.length : 0),
       command: result.command || 'UNKNOWN',
-      fields: result.fields ? result.fields.map(f => f.name) : []
+      fields: result.fields ? result.fields.map(f => (typeof f === 'string' ? f : (f.name || f))) : []
     };
   }
 }

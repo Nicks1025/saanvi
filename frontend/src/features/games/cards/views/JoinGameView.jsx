@@ -4,6 +4,7 @@ import { GAME_SCREENS } from '../types';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import SButton from '@/components/common/SButton';
+import SIcon from '@/components/common/SIcon';
 
 export const JoinGameView = ({ onNavigate, onJoinRoom }) => {
   const { t } = useTranslation();
@@ -14,7 +15,7 @@ export const JoinGameView = ({ onNavigate, onJoinRoom }) => {
   const handleJoin = (codeToJoin) => {
     const raw = (codeToJoin || roomInput).trim().toUpperCase();
     if (!raw) {
-      setErrorMessage(t('games.uno.enter_room_error', 'Please enter a room code or invite link.'));
+      setErrorMessage(t('games.uno.enter_room_error'));
       return;
     }
 
@@ -40,17 +41,17 @@ export const JoinGameView = ({ onNavigate, onJoinRoom }) => {
           color="secondary"
           className="back-nav-btn"
           onClick={() => onNavigate(GAME_SCREENS.LOBBY)}
-          aria-label={t('games.uno.back_to_lobby', 'Back to Lobby')}
+          aria-label={t('games.uno.back_to_lobby')}
           icon="back"
-          text={t('games.uno.back_to_lobby', 'Back to Lobby')}
+          text={t('games.uno.back_to_lobby')}
         />
       </div>
 
       <div className="join-form-card">
         <div className="form-card-header">
-          <div className="header-badge">{t('games.uno.enter_multiplayer', 'ENTER MULTIPLAYER')}</div>
-          <h2>{t('games.uno.join_table', 'Join a Game Table')}</h2>
-          <p>{t('games.uno.join_table_desc', 'Enter the 5-character room code or paste the game invite link.')}</p>
+          <div className="header-badge">{t('games.uno.enter_multiplayer')}</div>
+          <h2>{t('games.uno.join_table')}</h2>
+          <p>{t('games.uno.join_table_desc')}</p>
         </div>
 
         <div className="join-input-section">
@@ -72,12 +73,15 @@ export const JoinGameView = ({ onNavigate, onJoinRoom }) => {
               }}
             />
             {roomInput && (
-              <SButton
-                color="secondary"
+              <SIcon
+                name="close"
+                size={16}
+                color="muted"
                 className="clear-code-btn"
                 onClick={() => setRoomInput('')}
+                title="Clear input"
                 aria-label="Clear input"
-                icon="close"
+                subtle
               />
             )}
           </div>
@@ -96,7 +100,7 @@ export const JoinGameView = ({ onNavigate, onJoinRoom }) => {
             disabled={isLoading}
             loading={isLoading}
             icon={isLoading ? null : "check-circle"}
-            text={isLoading ? t('games.uno.connecting_room', 'Connecting to Room...') : t('games.uno.join_game', 'Join Game')}
+            text={isLoading ? t('games.uno.connecting_room') : t('games.uno.join_game')}
           />
         </div>
 

@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS sph_form_wizard (
     uuid UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     object_uuid UUID NOT NULL REFERENCES sph_object(uuid) ON DELETE CASCADE,
     name VARCHAR(255) UNIQUE NOT NULL,
+    url VARCHAR(255) UNIQUE,
     type VARCHAR(50) NOT NULL CHECK (type IN ('INTERNAL', 'EXTERNAL')),
     created_by UUID REFERENCES users(uuid) ON DELETE CASCADE,
     updated_by UUID REFERENCES users(uuid) ON DELETE SET NULL,
@@ -30,6 +31,7 @@ CREATE TABLE IF NOT EXISTS sph_form_wizard (
 
 CREATE INDEX IF NOT EXISTS idx_sph_form_wizard_created_by ON sph_form_wizard(created_by);
 CREATE INDEX IF NOT EXISTS idx_sph_form_wizard_object_uuid ON sph_form_wizard(object_uuid);
+CREATE INDEX IF NOT EXISTS idx_sph_form_wizard_url ON sph_form_wizard(url);
 
 -- Table: sph_form_wizard_phase
 CREATE TABLE IF NOT EXISTS sph_form_wizard_phase (

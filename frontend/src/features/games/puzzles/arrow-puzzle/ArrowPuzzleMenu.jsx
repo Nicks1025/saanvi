@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { SHAPES } from './engine/PuzzleEngine.js'; // Note: SHAPES will need to be exported from PuzzleEngine now
 import { GameBoard } from './components/GameBoard';
 import SButton from '@/components/common/SButton';
-import axiosClient from '@/services/axios.client.js';
+import { getArrowPuzzleProgress, generateArrowPuzzle } from './arrowPuzzleService';
 import './arrow-puzzle.css';
 
 export const ArrowPuzzleMenu = () => {
@@ -16,13 +16,13 @@ export const ArrowPuzzleMenu = () => {
   useEffect(() => {
     const fetchProgress = async () => {
       try {
-        const res = await axiosClient.get('/api/games/arrow-puzzle/progress');
-        if (res.data) {
+        const data = await getArrowPuzzleProgress();
+        if (data) {
           const nextLevels = {};
           // The backend returns uppercase keys (e.g. SQUARE), but the UI uses PascalCase (e.g. Square)
-          for (const shape in res.data) {
+          for (const shape in data) {
             const formattedShape = shape.charAt(0).toUpperCase() + shape.slice(1).toLowerCase();
-            nextLevels[formattedShape] = res.data[shape] + 1;
+            nextLevels[formattedShape] = data[shape] + 1;
           }
           setProgress(nextLevels);
         }
@@ -37,9 +37,8 @@ export const ArrowPuzzleMenu = () => {
       try {
         const promises = Object.values(SHAPES).map(async (shape) => {
           try {
-            const res = await axiosClient.get(`/api/games/arrow-puzzle/generate?shape=${shape}&level=1`);
-            const data = res.data || res; // depending on axios response formatting
-            return { shape, puzzle: data };
+            const puzzle = await generateArrowPuzzle({ shape, level: 1 });
+            return { shape, puzzle };
           } catch (e) {
             return null;
           }

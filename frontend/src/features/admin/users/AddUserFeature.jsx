@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import SButton from '@/components/common/SButton';
-import DynamicFormRenderer from '@/components/common/DynamicFormRenderer';
+import DynamicFormRenderer from '@/components/common/dynamic_form';
 import { createUser, getFormConfig } from './usersService';
 import toast from 'react-hot-toast';
 import { Loader2, UserPlus } from 'lucide-react';
@@ -61,15 +61,17 @@ const AddUserFeature = () => {
     <div className="admin-users-container page-container">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
         <div>
-          <button
+          <SButton
             onClick={() => navigate.push('/admin/users')}
-            style={{ background: 'none', border: 'none', color: 'var(--text)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: 0, marginBottom: '0.5rem' }}
+            color="ghost"
+            icon="back"
+            className="mb-2"
           >
-            &larr; {t('admin.backToUsers', 'Back to Users')}
-          </button>
+            {t('admin.user.backToUsers')}
+          </SButton>
           <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-h)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <UserPlus size={22} />
-            {t('admin.addUser', 'Add User')}
+            {t('admin.user.addUser')}
           </h1>
         </div>
       </div>
@@ -97,7 +99,7 @@ const AddUserFeature = () => {
               color: 'var(--text)',
               lineHeight: '1.5'
             }}>
-              🔐 {t('admin.passwordGenDesc', "Password will be randomly generated and securely sent to the user's email address.")}
+              🔐 {t('admin.user.passwordGenDesc')}
             </div>
 
             {/* Actions — Submit + Cancel at bottom right */}
@@ -105,7 +107,7 @@ const AddUserFeature = () => {
               <SButton
                 type="button"
                 color="danger"
-                text={t('common.cancel', 'Cancel')}
+                text={t('common.cancel')}
                 onClick={handleCancel}
               />
               <SButton
@@ -113,7 +115,7 @@ const AddUserFeature = () => {
                 color="primary"
                 disabled={!isValid || isSubmitting}
                 icon={isSubmitting ? <Loader2 className="spin" size={16} /> : null}
-                text={isSubmitting ? t('common.creating', 'Creating...') : t('admin.createUser', 'Create User')}
+                text={isSubmitting ? t('common.creating') : t('admin.user.createUser')}
                 style={!isValid ? undefined : { background: 'var(--accent)', color: 'white', border: 'none', fontWeight: 600 }}
               />
             </div>

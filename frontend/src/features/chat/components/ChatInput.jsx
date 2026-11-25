@@ -8,6 +8,7 @@ import AttachmentPopover from './AttachmentPopover';
 import VoiceRecorder from './VoiceRecorder';
 import ImagePreviewStrip from './ImagePreviewStrip';
 import SButton from '@/components/common/SButton';
+import SIcon from '@/components/common/SIcon';
 import STextField from '@/components/common/STextField';
 import { generatePreviewBase64 } from '../attachmentUtils';
 import { chatStorage } from '../chatStorage';
@@ -80,7 +81,7 @@ const ChatInput = ({ chatRealtime, user }) => {
     } catch (err) {
       console.error('[ChatInput] Upload failed:', err);
       updateOptimisticMessage(activeConversation, tempId, { status: 'failed' });
-      toast.error(t('chat.failedUpload'));
+      toast.error(t('admin.chat.failedUpload'));
     }
   };
 
@@ -98,7 +99,7 @@ const ChatInput = ({ chatRealtime, user }) => {
           .then(() => removeOptimisticMessage(activeConversation, msg.uuid))
           .catch(err => {
             updateOptimisticMessage(activeConversation, msg.uuid, { status: 'failed' });
-            toast.error(err.message || t('chat.failedSend'));
+            toast.error(err.message || t('admin.chat.failedSend'));
           });
       }
     };
@@ -135,7 +136,7 @@ const ChatInput = ({ chatRealtime, user }) => {
       })
       .catch((err) => {
         updateOptimisticMessage(activeConversation, tempId, { status: 'failed' });
-        toast.error(err.message || t('chat.failedSend'));
+        toast.error(err.message || t('admin.chat.failedSend'));
       });
   };
 
@@ -155,7 +156,7 @@ const ChatInput = ({ chatRealtime, user }) => {
     setShowAttachmentPopover(false);
 
     if (files.length > MAX_IMAGES) {
-      toast.error(t('chat.maxImagesError', { max: MAX_IMAGES }));
+      toast.error(t('admin.chat.maxImagesError', { max: MAX_IMAGES }));
       return;
     }
 
@@ -165,7 +166,7 @@ const ChatInput = ({ chatRealtime, user }) => {
       const validation = validateFileForCategory(file, 'images');
       if (!validation.valid) { toast.error(validation.error); continue; }
       if (file.size > MAX_FILE_SIZE) {
-        toast.error(t('chat.fileTooLarge', { name: file.name, max: formatFileSize(MAX_FILE_SIZE) }));
+        toast.error(t('admin.chat.fileTooLarge', { name: file.name, max: formatFileSize(MAX_FILE_SIZE) }));
         continue;
       }
       valid.push(file);
@@ -178,7 +179,7 @@ const ChatInput = ({ chatRealtime, user }) => {
     // Check combined total
     const combined = [...selectedImages.map(i => i.file), ...valid];
     if (combined.length > MAX_IMAGES) {
-      toast.error(t('chat.maxImagesTotalError', { max: MAX_IMAGES, selected: selectedImages.length }));
+      toast.error(t('admin.chat.maxImagesTotalError', { max: MAX_IMAGES, selected: selectedImages.length }));
       return;
     }
 
@@ -206,7 +207,7 @@ const ChatInput = ({ chatRealtime, user }) => {
     const activeFiles = filesOverride || selectedImages;
     if (!activeConversation || !activeFiles.length) return;
     if (activeFiles.length > MAX_IMAGES) {
-      toast.error(t('chat.maxImagesPerMessage', { max: MAX_IMAGES }));
+      toast.error(t('admin.chat.maxImagesPerMessage', { max: MAX_IMAGES }));
       return;
     }
 
@@ -271,7 +272,7 @@ const ChatInput = ({ chatRealtime, user }) => {
     const validation = validateFileForCategory(file, category);
     if (!validation.valid) { toast.error(validation.error); return; }
     if (file.size > MAX_FILE_SIZE) {
-      toast.error(t('chat.fileTooLarge', { name: file.name, max: formatFileSize(MAX_FILE_SIZE) }));
+      toast.error(t('admin.chat.fileTooLarge', { name: file.name, max: formatFileSize(MAX_FILE_SIZE) }));
       return;
     }
 
@@ -320,7 +321,7 @@ const ChatInput = ({ chatRealtime, user }) => {
     setIsRecording(false);
     if (!activeConversation) return;
     setLoading(true);
-    setUploadProgress(t('chat.uploadingVoice'));
+    setUploadProgress(t('admin.chat.uploadingVoice'));
     try {
       const ext = mimeType.includes('ogg') ? 'ogg' : mimeType.includes('mp4') ? 'mp4' : 'webm';
       const fileName = `voice-message.${ext}`;
@@ -335,7 +336,7 @@ const ChatInput = ({ chatRealtime, user }) => {
         throw new Error(`Storage upload failed (${uploadRes.status}): ${errorText}`);
       }
 
-      setUploadProgress(t('chat.sending'));
+      setUploadProgress(t('admin.chat.sending'));
       
       // Save locally for sender
       await chatStorage.saveAttachment(uploadData.attachmentUuid, blob);
@@ -351,7 +352,7 @@ const ChatInput = ({ chatRealtime, user }) => {
       });
     } catch (err) {
       console.error('[ChatInput] Voice upload failed:', err);
-      toast.error(err.response?.data?.error || err.message || t('chat.failedVoice'));
+      toast.error(err.response?.data?.error || err.message || t('admin.chat.failedVoice'));
     } finally {
       setLoading(false);
       setUploadProgress(null);
@@ -362,7 +363,7 @@ const ChatInput = ({ chatRealtime, user }) => {
 
   const handleMicClick = async () => {
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
-      toast.error(t('chat.voiceUnsupported'));
+      toast.error(t('admin.chat.voiceUnsupported'));
       return;
     }
     try {
@@ -371,9 +372,9 @@ const ChatInput = ({ chatRealtime, user }) => {
       setIsRecording(true);
     } catch (err) {
       if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        toast.error(t('chat.micPermissionDenied'));
+        toast.error(t('admin.chat.micPermissionDenied'));
       } else {
-        toast.error(t('chat.micError', { error: err.message }));
+        toast.error(t('admin.chat.micError', { error: err.message }));
       }
     }
   };
@@ -431,32 +432,30 @@ const ChatInput = ({ chatRealtime, user }) => {
       <div className="chat-composer-input-pill">
         <STextField
           className="chat-composer-input"
-          placeholder={t('chat.typeMessage')}
+          placeholder={t('admin.chat.typeMessage')}
           text={text}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           onBlur={handleBlur}
           disabled={isDisabled}
-          aria-label={t('chat.typeMessage')}
+          aria-label={t('admin.chat.typeMessage')}
           marginBottom="0"
           width="100%"
         />
 
         <div className="chat-composer-attachment-wrapper">
-          <SButton
+          <SIcon
             ref={attachmentBtnRef}
-            type="button"
+            name="paperclip"
+            size={20}
             className="chat-composer-icon-btn"
             onClick={handleAttachmentToggle}
             disabled={isDisabled}
-            title={t('chat.addAttachment')}
-            aria-label={t('chat.addAttachment')}
+            title={t('admin.chat.addAttachment')}
+            aria-label={t('admin.chat.addAttachment')}
             aria-expanded={showAttachmentPopover}
             aria-haspopup="menu"
-            color="ghost"
-          >
-            <Paperclip size={20} />
-          </SButton>
+          />
 
           <AttachmentPopover
             isOpen={showAttachmentPopover}
@@ -473,8 +472,8 @@ const ChatInput = ({ chatRealtime, user }) => {
           className="chat-composer-send-btn"
           onClick={handleSend}
           disabled={loading || !activeConversation}
-          title={t('chat.sendMessage')}
-          aria-label={t('chat.sendMessage')}
+          title={t('admin.chat.sendMessage')}
+          aria-label={t('admin.chat.sendMessage')}
           color="primary"
         >
           <Send size={20} style={{ transform: 'translateX(-1px) translateY(1px)' }} />
@@ -484,8 +483,8 @@ const ChatInput = ({ chatRealtime, user }) => {
             className="chat-composer-send-btn"
             onClick={handleMicClick}
             disabled={!activeConversation || loading}
-            title={t('chat.recordVoice')}
-            aria-label={t('chat.recordVoice')}
+            title={t('admin.chat.recordVoice')}
+            aria-label={t('admin.chat.recordVoice')}
             color="primary"
           >
             <Mic size={20} />

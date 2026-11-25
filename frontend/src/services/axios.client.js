@@ -1,5 +1,5 @@
 import $axios from 'axios';
-import { generateRequestId } from '../common/general-utils';
+import { generateRequestId } from '../common/general-utils.js';
 import Cookies from 'js-cookie';
 
 // Mocks for missing Vue/Nuxt infrastructure in this React app
@@ -15,7 +15,6 @@ const setCookie = (name, value) => {
 };
 
 import NProgress from 'nprogress';
-import 'nprogress/nprogress.css';
 
 NProgress.configure({ showSpinner: false, speed: 400, minimum: 0.1 });
 
@@ -40,6 +39,7 @@ function handleNuxtLoadingProgress() {
 // Setup base URL
 $axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
 $axios.defaults.headers.common['Content-Type'] = 'application/json';
+$axios.defaults.withCredentials = true;
 
 let responseCount = 0;
 let axiosClient = $axios;
@@ -75,6 +75,42 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
+let refreshPromise = null;
+
+export const refreshAuthToken = () => {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  refreshPromise = new Promise((resolve, reject) => {
+    $axios.post('/api/login/refresh-token', {}, { withCredentials: true })
+      .then((responseData) => {
+        const token = responseData?.data?.token || responseData?.token;
+        if (token) {
+          Cookies.set('auth_token', token, { expires: 7, path: '/' });
+          $axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+          processQueue(null, token);
+          resolve(token);
+        } else {
+          throw new Error('No token returned');
+        }
+      })
+      .catch((err) => {
+        processQueue(err, null);
+        if (err.response?.status === 401) {
+          Cookies.remove('auth_token', { path: '/' });
+          Cookies.remove('supabase_token', { path: '/' });
+        }
+        reject(err);
+      })
+      .finally(() => {
+        refreshPromise = null;
+      });
+  });
+
+  return refreshPromise;
+};
+
 $axios.interceptors.response.use(
   (response) => {
     handleNuxtLoadingProgress();
@@ -82,7 +118,7 @@ $axios.interceptors.response.use(
     if (response?.headers?.['maxage']) {
       setCookie('sessionTimeout', new Date().getTime() + Number(response.headers['maxage']));
     }
-    if (response?.headers?.['session-expired']) {
+    if (response?.headers?.['session-expired'] && window.location.pathname !== '/login') {
       if (responseCount === 0) {
         window.location.href = '/login?reason=invalidsession';
       }
@@ -102,6 +138,7 @@ $axios.interceptors.response.use(
       const path = window.location.pathname;
       if (
         path !== '/login' &&
+        !path.startsWith('/signup') &&
         !path.startsWith('/verify-otp') &&
         !path.startsWith('/form') &&
         !path.startsWith('/reset-password') &&
@@ -157,55 +194,35 @@ $axios.interceptors.response.use(
       }
 
       if (er.config.url === '/api/login/refresh-token') {
-         Cookies.remove('auth_token');
-         window.location.href = '/login?reason=session_expired';
-         return Promise.reject(er);
+        if (er.response?.status === 401) {
+          Cookies.remove('auth_token', { path: '/' });
+          Cookies.remove('supabase_token', { path: '/' });
+        }
+        return Promise.reject(er);
       }
 
       if (
         !path.startsWith('/login') &&
+        !path.startsWith('/signup') &&
         !path.startsWith('/verify-otp') &&
         !path.startsWith('/forgot-password') &&
         !path.startsWith('/reset-password')
       ) {
         const originalRequest = er.config;
         if (!originalRequest._retry) {
-          if (isRefreshing) {
-            return new Promise(function(resolve, reject) {
-              failedQueue.push({ resolve, reject });
-            }).then(token => {
+          originalRequest._retry = true;
+
+          return refreshAuthToken()
+            .then((token) => {
               originalRequest.headers['Authorization'] = 'Bearer ' + token;
               return $axios(originalRequest);
-            }).catch(err => Promise.reject(err));
-          }
-
-          originalRequest._retry = true;
-          isRefreshing = true;
-
-          return new Promise(function (resolve, reject) {
-            $axios.post('/api/login/refresh-token', {}, { withCredentials: true })
-              .then((responseData) => {
-                const token = responseData?.data?.token;
-                if (token) {
-                  Cookies.set('auth_token', token);
-                  $axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-                  originalRequest.headers['Authorization'] = 'Bearer ' + token;
-                  processQueue(null, token);
-                  resolve($axios(originalRequest));
-                } else {
-                  throw new Error('No token returned');
-                }
-              })
-              .catch((err) => {
-                processQueue(err, null);
-                Cookies.remove('auth_token');
+            })
+            .catch((err) => {
+              if (err.response?.status === 401) {
                 window.location.href = '/login?reason=session_expired';
-                reject(err);
-              })
-              .finally(() => {
-                isRefreshing = false;
-              });
-          });
+              }
+              return Promise.reject(err);
+            });
         }
       }
     }

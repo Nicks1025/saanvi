@@ -1,5 +1,5 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import SIcon from '@/components/common/SIcon';
 
 export const CircularProgress = ({ progress = 0, onCancel, size = 48, strokeWidth = 4, className = '' }) => {
   const radius = (size - strokeWidth) / 2;
@@ -45,24 +45,15 @@ export const CircularProgress = ({ progress = 0, onCancel, size = 48, strokeWidt
           style={{ transition: 'stroke-dashoffset 0.1s ease-out' }}
         />
       </svg>
-      <button 
-        type="button" 
+      <SIcon
+        name="x"
+        size={Math.round(size * 0.45)}
+        color="#ffffff"
         onClick={(e) => { e.stopPropagation(); onCancel?.(); }}
+        title="Cancel download"
         aria-label="Cancel download"
-        style={{
-          background: 'transparent',
-          border: 'none',
-          color: '#ffffff',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1,
-          padding: 0
-        }}
-      >
-        <X size={size * 0.45} />
-      </button>
+        style={{ zIndex: 1 }}
+      />
     </div>
   );
 };

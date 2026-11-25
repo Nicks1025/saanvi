@@ -1,128 +1,439 @@
-# Backend Architecture Instruction Set
+# Saanvi Backend Architecture & Development Standards
 
-This document outlines the strict rules and regulations for all future backend feature development. **These rules must be followed before implementing any new feature.**
+Authoritative standard for the hardened Sofy-inspired backend architecture across the Saanvi application.
 
-## 1. Directory & Class Structure
-Every new feature must reside in `backend/features/<featureName>/` and contain exactly four files using a class-based design:
-- `<featureName>api.js`: Defines Express endpoints and handles dependency injection.
-- `<featureName>controller.js`: Extends `BaseController`. Handles request validation, extracts ONLY necessary parameters, and calls the service. **NO SQL or business logic.**
-- `<featureName>Service.js`: Extends `BaseService`. Houses all business rules, calculations, and logic. Calls the repository. **NO SQL or HTTP parsing.**
-- `<featureName>Repository.js`: Extends `BaseRepository`. Owns all feature-specific database queries. Builds queries using `this.queryHelper` and calls `this.queryHelper.execute()`.
+---
 
-## 2. Database Isolation (The Golden Rule)
-- **NEVER** import or use `@supabase/supabase-js` or any other database client directly within a repository, service, or controller.
-- **NEVER** directly call Supabase methods such as `supabase.from(...)`, `supabase.rpc(...)`, or `supabase.auth(...)` inside a repository.
-- The `execute()` function lives EXCLUSIVELY inside `backend/database/queryHelper.js`.
-- Do not create a separate `execute.js` file. 
-- All database communication MUST flow through: `Repository -> this.queryHelper -> execute() -> Supabase`.
+## 1. Architectural Overview
 
-## 3. Environment & Configuration
-- All secrets, API keys, and connection strings must be stored in `.env`.
-- Never hardcode credentials in the source code.
-- Do not hardcode configurable limits (e.g., `MAX_IMAGES`, `MAX_FILE_SIZE`) in the source code. Always read these from environment variables (`process.env` on backend, `import.meta.env` on frontend) with safe fallbacks.
-- `server.js` is responsible for failing fast at startup if critical environment variables (like `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`) are missing.
+The backend strictly adheres to a 5-tier layered architecture:
 
-## 4. Error Handling
-- Do not swallow database errors silently.
-- Securely log database errors on the backend inside `queryHelper.js` without exposing credentials or internal database schemas.
-- Throw generic exceptions up to the repository/service layer to be handled by the controller's standard response formatting.
+```text
+API Definition (ApiSchema)
+      │
+      ▼
+Controller extends BaseController
+      │
+      ▼
+Service extends BaseService
+      │
+      ▼
+Repository extends BaseRepository
+      │
+      ▼
+DbDriver (Knex / PostgreSQL)
+```
 
-## 5. Dependency Management
-- Maintain a lightweight setup. Do not introduce ORMs (like Prisma/TypeORM) or unnecessary abstractions unless explicitly required. The `queryHelper.js` is the sole database abstraction.
+- **QueryHelper**: Query construction ONLY. Table-bound in repository constructors, producing independent, reusable query chains. Tracks explicit query types (`SELECT`, `INSERT`, `UPDATE`, `DELETE`).
+- **ApiContext**: Request-scoped container carrying request, response, authenticated user, request ID, scoped logger, shared DbDriver, and active transaction.
+- **DbDriver**: Central database execution boundary managing the shared Knex pool, transactions, and PostgreSQL error metadata.
+- **Centralized Error Handler**: Uniform error handler preventing internal leaks on 500 errors and guaranteeing canonical envelopes.
 
-## 6. Frontend Architecture & API Calls
-- **NEVER** make direct API calls (e.g., using `fetch` or `axios`) inside a React component.
-- All API interactions MUST be abstracted into a dedicated `service/` folder within the respective feature directory.
-- React components should only import and invoke these service functions to maintain separation of concerns.
+---
 
-## 7. Localization (i18n)
-- **NEVER** use static hardcoded text strings in the frontend UI.
-- All user-facing text MUST be made dynamic using `react-i18next` (`useTranslation` hook or `t` function).
-- Ensure all text keys are added to both `en.json` and `hi.json` language files in the backend.
+## 2. Core Architectural Invariants
 
-## 8. Authorization & Role-Based Access Control (RBAC)
-- **Role-Based Authorization**: Saanvi uses strict role-based authorization. Users receive permissions exclusively through roles.
-- **Authorization Chain**: The mapping strictly follows: `User -> user_roles -> roles -> role_permissions -> permissions`.
-- **NO Direct Mapping**: There is NO direct user-to-permission relationship. The `user_permissions` table MUST NOT be used or recreated. Never store calculated effective permissions directly against users.
-- **Effective Permissions**: Effective permissions are the union of permissions from all active roles. Duplicate effective permissions must be removed. Users can have multiple roles.
-- **Naming Convention**: Permission names MUST strictly follow the folder structure (e.g., `admin.users`, `games.words.wordsearch`).
-- **Centralized Security**: Backend authorization is the definitive security boundary. Every protected API MUST enforce its required permission using the centralized middleware (`requirePermission('...')`). Do NOT implement custom permission checks inside individual controllers.
-- **Frontend Page Authorization**: Every protected frontend page MUST declare its required permission. Frontend permission checks are for UX only.
-- **Frontend UX vs Security**: Hiding navigation links is strictly for UX. It does not replace backend API security. Never trust frontend permission state for backend validation.
-- **Status Codes**: Use `401 Unauthorized` for unauthenticated requests, and `403 Forbidden` for authenticated but unauthorized requests.
-- **Database Rules**: `permissions` is the master table. Only actual permission UUIDs may be assigned to roles. Do not use hardcoded `isAdmin` authorization.
-- **Permission Tree UI**: Permission management MUST use a hierarchical permission tree. Parent/group tree nodes in the permission tree are UI-only and must NEVER be stored in `role_permissions`. Only actual permission UUIDs may be assigned to roles. The tree component must support arbitrary permission depth and its search functionality must preserve the relevant parent hierarchy.
+1. **API References Controller Classes**: Endpoint definitions point directly to the Controller class and method name:
+   ```javascript
+   handler: {
+     controller: UserController,
+     method: 'getUser'
+   }
+   ```
+2. **ApiSchema Constructs Request-Scoped Controllers**:
+   `ApiSchema` instantiates the Controller per request with the active `ApiContext`:
+   ```javascript
+   const context = new ApiContext(req, res);
+   const ControllerClass = endpoint.handler.controller;
+   const controller = new ControllerClass(context);
+   await controller[endpoint.handler.method](req, res);
+   ```
+   No legacy factories or fallback `try { new C() } catch { C() }` are permitted.
+3. **Controllers Construct Services**:
+   Controllers instantiate domain services passing `this.context`.
+4. **Services Construct Repositories**:
+   Services instantiate domain repositories passing `this.context`.
+5. **Repositories Initialize Table-Bound QueryHelpers**:
+   Initialized once in the constructor (`this.sql = new QueryHelper('table_name', 'alias')`).
+6. **QueryHelper Uses `.select().field()`**:
+   SELECT queries require explicit field selection. Bare `.select()` does not add `*`. To select all fields, explicitly call `.select().field('*')`. Building an empty SELECT throws an error.
+7. **Query-State Isolation & Type Tracking**:
+   Every query chain spawned from `this.sql` (`.select()`, `.insert()`, `.update()`, `.delete()`) is completely isolated. Active query chains track their query type and cannot transition between incompatible types (e.g., SELECT to UPDATE).
+8. **Preceding WHERE for Mutations**:
+   Query chains allow `.where()` conditions to precede `.update()` and `.delete()` calls while rejecting `.field()` on mutation queries.
+9. **BaseRepository Delegates Execution to DbDriver**:
+   Repositories never execute queries directly; they delegate to `this.runQuery()`, `this.runQueryFirst()`, or `this.execute()`.
+10. **DbDriver Owns Database Execution & Transactions**:
+    Strict result contracts:
+    - `runQuery(query, params, trx)` -> `Promise<Array>`
+    - `runQueryFirst(query, params, trx)` -> `Promise<Object|null>`
+    - `execute(query, params, trx)` -> `Promise<{ affectedRows: number, rows: Array }>`
+    Transactions throw immediately if a query cannot be bound (`transacting`).
+11. **Shared Pool Ownership**:
+    Only the initial application-level creator of the shared Knex pool owns it and can destroy it. Secondary `DbDriver` instances cannot destroy the shared pool.
+12. **ApiContext Carries Request-Scoped Dependencies**:
+    `req`, `res`, `user`, `requestId`, `logger`, `connection`, `transaction`.
+13. **One Canonical Response Contract**:
+    `this.respondOk(data, message)`
+    `this.respondError(message, statusCode, code, details)`
+    `this.respondPaginated(data, pagination, message)`
+    No explicit `res` parameters; no legacy migration aliases.
+14. **One Canonical Pagination Contract**:
+    Strictly enforces `{ pageNumber, pageSize, totalRecords, totalPages }` with safe integer validation.
+15. **Centralized Error Handling**:
+    All unhandled errors routed through `errorHandler.js`. HTTP 500 errors never leak raw PostgreSQL errors, SQL queries, or stack traces.
+16. **SQL Parameterization & Security**:
+    All runtime values bound through parameterization (`?`). Raw SQL must use `.whereRaw(sql, [bindings])` with explicit allowlists for dynamic identifiers.
 
-## 9. QueryHelper Standards — Simple Condition → Simple Syntax
+---
 
-**The primary rule:** Use the simplest valid queryHelper syntax that correctly represents the condition. Do not route simple conditions through unnecessary intermediate abstractions.
+## 3. QueryHelper Specifications (`backend/database/queryHelper.js`)
 
-### Core requirements
-- **Always** use `queryHelper` for database queries. Repositories must not access `queryHelper.db` directly unless building correlated subqueries (JSON aggregation, outer-alias references, compound JOIN ON clauses) that genuinely cannot be expressed as a top-level `queryHelper` chain. Document each such exception with a comment.
-- **Always** use `.field()` for field selection. Never manually construct SELECT column lists.
-- **Never** create specialised helper functions for conditions that `.where()`, `.and()`, or `.or()` can already express. This explicitly prohibits: `whereLike()`, `whereOr()`, `whereAnd()`, `whereRaw()`, `rawWhere()`, `rawCondition()`, `rawJoin()`, `leftJoinOn()`, etc.
+### Sofy-Style SELECT Convention
+```javascript
+// Selecting specific fields
+const query = this.sql
+  .select()
+  .field('u.uuid')
+  .field('u.email')
+  .field('u.status')
+  .field('r.name as role_name')
+  .leftJoin('user_roles as ur', 'u.uuid', 'ur.user_uuid')
+  .leftJoin('roles as r', 'ur.role_uuid', 'r.uuid')
+  .where('u.email', '=', email);
 
-### WHERE / AND / OR conditions
-- **Preferred form** — plain condition string with direct interpolation for simple queries:
-  ```js
-  .where(`cr.sender_uuid = '${userUuid}' OR cr.receiver_uuid = '${userUuid}'`)
+// Selecting all fields explicitly
+const queryAll = this.sql
+  .select()
+  .field('*')
+  .where('status', '=', 'active');
+```
+
+### Explicit Query Type Tracking
+- `_queryType` tracks `'SELECT'`, `'INSERT'`, `'UPDATE'`, `'DELETE'`.
+- Attempting to call `.update()`, `.delete()`, or `.insert()` on an active SELECT chain throws:
+  `QueryHelper Error: Cannot change query type from SELECT to UPDATE.`
+- Calling `.field()` or `.fields()` on an UPDATE, DELETE, or INSERT chain throws:
+  `QueryHelper Error: Cannot select fields on a UPDATE query.`
+- Preceding WHERE conditions are supported:
+  ```javascript
+  const updateQuery = this.sql
+    .where('uuid', '=', userUuid)
+    .update({ status: 'archived' });
   ```
-- **Do not** chain `.or()` or `.and()`, as they are not supported by the queryHelper.
-- **Do not** use `.whereOr([...])` condition-object arrays, `db.ref()`, or `db.val()`.
-- **Do not** use `?` placeholder arrays when direct interpolation is safe (see security rule below).
 
-### LIKE / ILIKE searches
-- Use `.where()` with standard SQL `OR` clauses and direct interpolation. Do **not** create a `whereLike()` helper:
-  ```js
-  const safe = query.replace(/'/g, "''"); // SQL-escape before interpolating
-  qh.where(`u.email ILIKE '%${safe}%' OR ud.display_name ILIKE '%${safe}%'`)
+### Strict WHERE, Identifiers & Operators
+- Allowed operators: `=`, `!=`, `<>`, `>`, `>=`, `<`, `<=`, `LIKE`, `ILIKE`, `IN`, `NOT IN`, `IS`, `IS NOT`.
+- Explicit null checks: Use `.whereNull(column)` and `.whereNotNull(column)` instead of `.where(col, '=', null)`.
+- Undefined binding rejection: Passing `undefined` as a value or binding throws immediately.
+- Arrays enforced: `.whereIn(col, array)` and `.whereNotIn(col, array)` strictly validate non-empty arrays.
+- Forwarding fix: `.and(...args)` and `.orWhere(...args)` cleanly forward exact arguments without appending `undefined`.
+- ORDER BY validation: Accepts only `'asc'` or `'desc'` (case-insensitive).
+- LIMIT & OFFSET: Strictly validated using `Number.isSafeInteger()` (must be >= 0).
+- Identifiers: Validates that tables, aliases, and column names do not contain illegal characters (`;`, `--`, `/*`).
+
+---
+
+## 4. DbDriver Specifications (`backend/database/dbDriver.js`)
+
+### Strict Result Contracts
+- `runQuery`: Throws `DbDriver Contract Violation` if the result is not an array.
+- `runQueryFirst`: Returns the first object of the array or `null`.
+- `execute`: Validates that mutation results return an array of rows or numeric rowCount; rejects arbitrary single-object or null responses.
+
+### Transaction Safety
+If a transaction is supplied to `runQuery`, `runQueryFirst`, or `execute`, DbDriver verifies that the query supports `.transacting()`. If not, it throws an error immediately to prevent queries from silently executing outside the active transaction.
+
+### Shared Pool Ownership & Strict Config Parsing
+- Environment variables `DB_POOL_MIN`, `DB_POOL_MAX`, and `DB_CONNECTION_TIMEOUT` are strictly parsed as integers (rejecting strings with trailing characters, floats, or NaNs).
+- Only the driver instance that created the shared Knex pool can close it. Secondary instances cannot destroy the shared pool.
+- PostgreSQL error codes (`23505`, etc.) and constraint metadata are preserved.
+
+---
+
+## 5. BaseController & Centralized Error Handling
+
+### Canonical Controller Methods
+```javascript
+// Success
+this.respondOk(data, 'Optional success message');
+
+// Error
+this.respondError('Validation failed', 400, 'VALIDATION_ERROR', errors);
+
+// Paginated
+this.respondPaginated(data, {
+  pageNumber: 1,
+  pageSize: 20,
+  totalRecords: 100,
+  totalPages: 5
+}, 'Optional message');
+```
+
+### Centralized Errors
+- HTTP 500 errors never leak raw PostgreSQL error messages, SQL strings, or stack traces to clients.
+- Centralized error handler `errorHandler.js` formats all unhandled errors using the canonical error envelope:
+  ```json
+  {
+    "success": false,
+    "data": null,
+    "error": {
+      "code": "SERVER_ERROR",
+      "message": "Internal Server Error",
+      "details": []
+    }
+  }
   ```
 
-### JOIN conditions
-- Use `.leftJoin(table, alias, 'col = col')` for single-column ON clauses.
-- For compound ON clauses access `queryHelper.db` and pass a `db.raw(...)` string as the join argument. Document with a comment. Do **not** use callback-based `this.on()` / `this.andOn()`.
+---
 
-### Security — interpolation safety rules
+## 6. Complete Feature Implementation Example
 
-| Value source | Rule |
-|---|---|
-| JWT session UUID (`req.user.uuid`) | Safe to interpolate directly — UUIDs contain only `[0-9a-f-]` |
-| Joi-validated UUID (request body/param) | Safe to interpolate directly |
-| Free-text user input (`req.query.*`, `req.body` string fields) | **Must SQL-escape** (`'` → `''`) before interpolating — never interpolate raw |
+### 6.1 API Definition (`backend/features/example/exampleApi.js`)
+```javascript
+const Joi = require('joi');
+const ApiSchema = require('../../base/apiSchema');
+const ExampleController = require('./exampleController');
 
-**Never interpolate free-text user input without SQL-escaping first.** Column names and table aliases are developer-written and always safe.
+const getItems = {
+  path: '/',
+  verb: 'GET',
+  auditMessage: 'fetching items',
+  handler: {
+    controller: ExampleController,
+    method: 'listItems'
+  },
+  middleware: {
+    requireAuth: true
+  }
+};
 
+const createItem = {
+  path: '/',
+  verb: 'POST',
+  auditMessage: 'creating item',
+  handler: {
+    controller: ExampleController,
+    method: 'createItem'
+  },
+  validation: {
+    body: Joi.object({
+      name: Joi.string().required().trim(),
+      description: Joi.string().optional().allow('', null)
+    })
+  },
+  middleware: {
+    requireAuth: true
+  }
+};
 
-## 10. Reusable Frontend Components
-- **ALWAYS** use `SButton` instead of a native `<button>` element whenever the `SButton` component supports the required behavior.
-- **Icon Support in Buttons**: Do NOT render separate icon components (like `<ArrowLeft />` or `<Copy />`) alongside text inside buttons. `SButton` has extended support for icons natively. Always pass icons via the `icon` or `leftIcon`/`rightIcon` props of `SButton`.
-- **ALWAYS** use `STextField` instead of a native `<input type="text">` or `<input type="search">` when an equivalent reusable component exists.
-- Before creating any new UI component, search the existing `/src/components/common/` directory for an equivalent.
-- Do not create duplicate versions of any reusable component.
-- `<input type="file">` hidden elements used purely as file-picker triggers are exempt from the `STextField` rule — these must remain native `<input>` elements.
+module.exports = new ApiSchema({
+  name: 'Example',
+  url: '/api/example',
+  endpoints: [getItems, createItem]
+});
+```
 
-## 11. Static Configuration vs. Component Logic
-- Static configuration data (theme lists, attachment categories, MIME type mappings, option lists, static labels) must live in dedicated files under `/src/features/<feature>/` or `/src/constants/`, NOT inside component files.
-- Components must import and consume configuration data; they must not define it inline.
-- Theme definitions for the chat background system must live in `/src/features/chat/chatThemes.js`.
-- Attachment category definitions must live in `/src/features/chat/attachmentTypes.js`.
-- Attachment type detection and routing logic must be centralized (e.g., `attachmentUtils.js`) rather than duplicated across components.
-- Missing or deleted attachments MUST trigger a standardized fallback UI (e.g., `MissingAttachment`) rather than rendering raw metadata or filenames. Always hook native media elements with `onError` handlers to detect storage failures gracefully.
+### 6.2 Controller (`backend/features/example/exampleController.js`)
+```javascript
+const BaseController = require('../../base/baseController');
+const ExampleService = require('./exampleService');
 
-## 12. Inline CSS
-- Avoid `style={{ ... }}` for static presentational styling. Move all static styles to the feature's `.css` file and apply via `className`.
-- Dynamic inline styles are acceptable **only** when the value is genuinely computed at runtime (e.g. wallpaper `transform`, dynamic dimensions, user-controlled colors). Even then, minimize the number of inline properties.
-- Never use inline `style` to work around a missing CSS class. Add the class instead.
+class ExampleController extends BaseController {
+  constructor(context = null) {
+    super(context);
+    this.exampleService = new ExampleService(context);
+  }
 
-## 13. User-Facing Text (i18n)
-- **NEVER** use static hardcoded user-facing text strings in frontend UI components (already defined in Rule 7 — reiterated here for enforcement).
-- All user-facing strings must use `react-i18next` (`useTranslation` hook and `t()` function).
-- New translation keys must be added to both `backend/language/en.json` and `backend/language/hi.json`.
+  async listItems(req, res) {
+    const userUuid = this.context.user?.uuid;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 20;
 
-## 14. Reusability First
-Before creating any new helper, component, utility, or service:
-1. Search existing codebase for an equivalent.
-2. Prefer extending an existing abstraction over creating a new one.
-3. Only create something new when no suitable abstraction exists.
-   Order of preference: Existing component → Existing utility → Existing queryHelper method → Extend existing abstraction → Create new.
+    const result = await this.exampleService.listItems(userUuid, page, limit);
+    return this.respondPaginated(result.items, result.pagination);
+  }
+
+  async createItem(req, res) {
+    const userUuid = this.context.user?.uuid;
+    const item = await this.exampleService.createItem(userUuid, req.body);
+    return this.respondOk(item, 'Item created successfully');
+  }
+}
+
+module.exports = ExampleController;
+```
+
+### 6.3 Service (`backend/features/example/exampleService.js`)
+```javascript
+const BaseService = require('../../base/baseService');
+const ExampleRepository = require('./exampleRepository');
+
+class ExampleService extends BaseService {
+  constructor(context = null) {
+    super(context);
+    this.exampleRepository = new ExampleRepository(context);
+  }
+
+  async listItems(userUuid, pageNumber, pageSize) {
+    const totalRecords = await this.exampleRepository.countItems(userUuid);
+    const rows = await this.exampleRepository.findItems(userUuid, pageNumber, pageSize);
+
+    const items = rows.map(r => ({
+      uuid: r.uuid,
+      name: r.name,
+      description: r.description,
+      createdAt: r.created_at
+    }));
+
+    const totalPages = Math.ceil(totalRecords / pageSize) || 1;
+
+    return {
+      items,
+      pagination: {
+        pageNumber,
+        pageSize,
+        totalRecords,
+        totalPages
+      }
+    };
+  }
+
+  async createItem(userUuid, payload) {
+    const row = await this.exampleRepository.createItem({
+      user_uuid: userUuid,
+      name: payload.name,
+      description: payload.description || null
+    });
+
+    return {
+      uuid: row.uuid,
+      name: row.name,
+      description: row.description,
+      createdAt: row.created_at
+    };
+  }
+}
+
+module.exports = ExampleService;
+```
+
+### 6.4 Repository (`backend/features/example/exampleRepository.js`)
+```javascript
+const { v4: uuidv4 } = require('uuid');
+const BaseRepository = require('../../base/baseRepository');
+const QueryHelper = require('../../database/queryHelper');
+
+class ExampleRepository extends BaseRepository {
+  constructor(context = null) {
+    super(context);
+    this.sql = new QueryHelper('example_items', 'ei');
+  }
+
+  async countItems(userUuid) {
+    const query = this.sql
+      .select()
+      .field('count(*) as count')
+      .where('ei.user_uuid', '=', userUuid)
+      .whereNull('ei.archived_at');
+
+    const row = await this.runQueryFirst(query);
+    return parseInt(row?.count, 10) || 0;
+  }
+
+  async findItems(userUuid, pageNumber, pageSize) {
+    const offset = (pageNumber - 1) * pageSize;
+    const query = this.sql
+      .select()
+      .field('ei.uuid')
+      .field('ei.name')
+      .field('ei.description')
+      .field('ei.created_at')
+      .where('ei.user_uuid', '=', userUuid)
+      .whereNull('ei.archived_at')
+      .orderBy('ei.created_at', 'desc')
+      .limit(pageSize)
+      .offset(offset);
+
+    return this.runQuery(query);
+  }
+
+  async createItem(itemData) {
+    const uuid = uuidv4();
+    const query = this.sql.insert({
+      uuid,
+      ...itemData
+    });
+
+    const result = await this.execute(query);
+    return result.rows[0];
+  }
+}
+
+module.exports = ExampleRepository;
+```
+
+---
+
+## 7. Testing Requirements
+
+- Architecture tests verify layer isolation, controller instantiation, and absence of obsolete patterns (`base/architecture.test.js`).
+- Unit and contract tests for QueryHelper (`database/queryHelper.test.js`) and DbDriver (`database/dbDriver.test.js`).
+- Feature test suites verify services and repositories with explicit mocks or test context.
+- Full regression command: `npx jest --runInBand`.
+
+---
+
+## 8. Reference Login Implementation & Authentication Security
+
+The `features/login/` module serves as the canonical reference implementation for secure authentication, token rotation, and authorization in Saanvi.
+
+### 8.1 Atomic Refresh-Token Rotation & Concurrency Policy
+- **Atomic Token Consumption (`consumeRefreshToken`)**: To prevent token replay vulnerabilities and concurrent race conditions, refresh tokens are consumed in a single atomic PostgreSQL `UPDATE ... RETURNING *` query:
+  ```javascript
+  const query = this.sqlRefresh
+    .where('token_hash', '=', tokenHash)
+    .whereNull('revoked_at')
+    .whereRaw('expires_at > NOW()')
+    .update({ revoked_at: new Date() });
+  ```
+  - Exactly 1 affected row: the token is revoked and returned for replacement.
+  - 0 affected rows: the token has already been consumed, expired, or does not exist; returns `null` and throws `'Invalid or expired refresh token'`.
+  - Database-level row locking ensures that if two concurrent requests attempt to consume the same token, exactly one succeeds and the other receives 0 affected rows.
+  - The 30-second grace window has been completely eliminated in favor of strict atomic consumption.
+- **Transactional Rotation (`processRefreshToken`)**: The entire rotation sequence runs inside a single PostgreSQL transaction (`this.repository.transaction(async (trx) => { ... })`):
+  1. Atomically consume the existing token.
+  2. Retrieve the user's latest account status, roles, and permissions within the transaction.
+  3. Generate and persist the replacement refresh token within the transaction.
+  4. If any step fails (e.g. database error, inactive user), the entire transaction rolls back, preventing the old token from being consumed without a committed replacement.
+- **Frontend Single-Flight Mechanism (`axios.client.js`)**:
+  - When multiple API calls encounter HTTP 401 simultaneously, they share a single `refreshAuthToken()` promise (`if (refreshPromise) return refreshPromise;`).
+  - Exactly one `/api/login/refresh-token` HTTP request is dispatched.
+  - All pending requests await the same refresh resolution, eliminating client-side concurrency races.
+- **Token Leak Prevention & Cookie Security**:
+  - Refresh tokens are transmitted strictly via `httpOnly` cookies and destructured out so they never appear in JSON response payloads (`const { refreshToken: newRefreshToken, ...responseData } = result;`).
+  ```javascript
+  {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    path: '/',
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  }
+  ```
+
+### 8.2 Deterministic Roles & Permissions
+- To prevent row-multiplication from database joins affecting `runQueryFirst()`, user authentication records are retrieved cleanly, followed by dedicated, sorted queries for roles and permissions:
+  ```javascript
+  // Deterministic roles ordered alphabetically
+  const query = this.sqlUserRoles
+    .select()
+    .field('r.name')
+    .innerJoin('roles as r', 'ur.role_uuid', 'r.uuid')
+    .where('ur.user_uuid', '=', userUuid)
+    .where('r.is_active', '=', true)
+    .whereNull('r.archived_at')
+    .orderBy('r.name', 'asc');
+  ```
+- Fails closed: archived (`archived_at IS NOT NULL`), suspended (`status = 'archived'`), locked (`status = 'locked'`), and unverified (`is_email_verified = false`) accounts are rejected with explicit, mapped authentication error codes.
 

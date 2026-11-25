@@ -81,12 +81,27 @@ const CATEGORY_FOLDER = {
 
 class ChatService extends BaseService {
   async searchUsers(query, limit) {
-    return await this.chatRepository.searchUsers(query, limit);
+    const users = await this.chatRepository.searchUsers(query, limit);
+    return (users || []).map(u => ({
+      uuid: u.uuid,
+      email: u.email,
+      firstName: u.first_name,
+      lastName: u.last_name,
+      displayName: u.display_name,
+      profileImageUrl: u.profile_image_url
+    }));
   }
 
-  constructor(chatRepository) {
-    super();
-    this.chatRepository = chatRepository;
+  constructor(context = null) {
+    const ChatRepository = require('./chatRepository');
+    if (context instanceof ChatRepository) {
+      super(null);
+      this.chatRepository = context;
+    } else {
+      super(context);
+      this.chatRepository = new ChatRepository(context);
+    }
+    this.repository = this.chatRepository;
   }
 
   // ---- Blocks ----
@@ -233,15 +248,11 @@ class ChatService extends BaseService {
     if (!['delivered', 'seen'].includes(status)) throw new Error("Invalid status");
     
     // Authorization: Verify user is a member of the conversation this message belongs to
-    const msg = await this.chatRepository.queryHelper
-       .from('messages')
-       .where('uuid', 'eq', messageUuid)
-       .execute();
-       
-    if (!msg || msg.length === 0) throw new Error("Message not found");
+    const msg = await this.chatRepository.getMessage(messageUuid);
+    if (!msg) throw new Error("Message not found");
     
     const convs = await this.chatRepository.getUserConversations(userUuid);
-    const isMember = convs.find(c => c.uuid === msg[0].conversation_uuid);
+    const isMember = convs.find(c => c.uuid === msg.conversation_uuid);
     if (!isMember) throw new Error("User is not a member of this conversation");
 
     return await this.chatRepository.upsertMessageReceipt(messageUuid, userUuid, status);
@@ -395,11 +406,11 @@ class ChatService extends BaseService {
     const attachment = await this.chatRepository.getAttachment(attachmentUuid);
     if (!attachment || attachment.message_uuid !== messageUuid) throw new Error("Attachment not found");
 
-    const message = await this.chatRepository.queryHelper.from('messages').where('uuid', 'eq', messageUuid).execute();
-    if (!message || message.length === 0) throw new Error("Message not found");
+    const message = await this.chatRepository.getMessage(messageUuid);
+    if (!message) throw new Error("Message not found");
 
     const convs = await this.chatRepository.getUserConversations(userUuid);
-    const isMember = convs.find(c => c.uuid === message[0].conversation_uuid);
+    const isMember = convs.find(c => c.uuid === message.conversation_uuid);
     if (!isMember) throw new Error("Unauthorized to access this attachment");
 
     const r2StorageService = require('../../infrastructure/storage/r2StorageService');

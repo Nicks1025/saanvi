@@ -21,11 +21,11 @@ export const CardsLobbyView = ({ onNavigate, openRules }) => {
         <div className="lobby-hero-left">
           <div className="brand-pill">
             <Sparkles size={14} className="text-purple-400" />
-            <span>{t('games.uno.multiplayer_tabletop', 'MULTIPLAYER TABLETOP')}</span>
+            <span>{t('games.uno.multiplayer_tabletop')}</span>
           </div>
-          <h1 className="lobby-hero-title">{t('games.uno.title', 'UNO')}</h1>
+          <h1 className="lobby-hero-title">{t('games.uno.title')}</h1>
           <p className="lobby-hero-tagline">
-            {t('games.uno.tagline', 'Play together. Think fast. Own the table.')}
+            {t('games.uno.tagline')}
           </p>
 
           {/* Primary Action Buttons */}
@@ -35,7 +35,7 @@ export const CardsLobbyView = ({ onNavigate, openRules }) => {
               onClick={handleCreateClick}
             >
               <PlusCircle size={18} />
-              <span>{t('games.uno.create_game', 'Create Game')}</span>
+              <span>{t('games.uno.create_game')}</span>
             </button>
 
             <button
@@ -43,7 +43,7 @@ export const CardsLobbyView = ({ onNavigate, openRules }) => {
               onClick={() => onNavigate(GAME_SCREENS.JOIN)}
             >
               <LogIn size={18} />
-              <span>{t('games.uno.join_game', 'Join Game')}</span>
+              <span>{t('games.uno.join_game')}</span>
             </button>
 
           </div>
@@ -78,32 +78,32 @@ export const CardsLobbyView = ({ onNavigate, openRules }) => {
           <div className="highlight-icon-wrap bg-purple-500/10 text-purple-400">
             <Users size={22} />
           </div>
-          <h3>{t('games.uno.features.players_title', '2 to 8 Players')}</h3>
-          <p>{t('games.uno.features.players_desc', 'Adaptive circular tabletop dynamically scaling from 1v1 duels to 8-player arena matches.')}</p>
+          <h3>{t('games.uno.features.players_title')}</h3>
+          <p>{t('games.uno.features.players_desc')}</p>
         </div>
 
         <div className="highlight-box">
           <div className="highlight-icon-wrap bg-amber-500/10 text-amber-400">
             <Flame size={22} />
           </div>
-          <h3>{t('games.uno.features.stacking_title', 'Draw Card Stacking')}</h3>
-          <p>{t('games.uno.features.stacking_desc', 'Chain +2 on +2, +4 on +2, and +4 on +4 to redirect draw penalties across the circle.')}</p>
+          <h3>{t('games.uno.features.stacking_title')}</h3>
+          <p>{t('games.uno.features.stacking_desc')}</p>
         </div>
 
         <div className="highlight-box">
           <div className="highlight-icon-wrap bg-emerald-500/10 text-emerald-400">
             <Radio size={22} />
           </div>
-          <h3>{t('games.uno.features.voice_title', 'Integrated Voice Chat')}</h3>
-          <p>{t('games.uno.features.voice_desc', 'Crystal-clear live audio indicator with individual mute, speaker controls, and speaking ring visualizer.')}</p>
+          <h3>{t('games.uno.features.voice_title')}</h3>
+          <p>{t('games.uno.features.voice_desc')}</p>
         </div>
 
         <div className="highlight-box cursor-pointer" onClick={() => openRules('basics')}>
           <div className="highlight-icon-wrap bg-blue-500/10 text-blue-400">
             <BookOpen size={22} />
           </div>
-          <h3>{t('games.uno.rules_guide', 'Rules & Card Guide')}</h3>
-          <p>{t('games.uno.features.rules_desc', 'Learn matching mechanics, Wild selections, and the crucial UNO call & catch penalties.')}</p>
+          <h3>{t('games.uno.rules_guide')}</h3>
+          <p>{t('games.uno.features.rules_desc')}</p>
         </div>
       </div>
 

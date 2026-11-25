@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import { useForm, Controller } from 'react-hook-form';
 import SDataTable from '@/components/common/SDataTable';
 import SModal from '@/components/common/SModal';
+import SDeleteConfirmation from '@/components/common/SDeleteConfirmation';
 import SButton from '@/components/common/SButton';
 import STextField from '@/components/common/STextField';
 import * as objectsService from './objectsService';
@@ -24,9 +25,8 @@ const ObjectsFeature = () => {
   const fetchObjects = async () => {
     setLoading(true);
     try {
-      const response = await objectsService.getObjects();
-      const objectsData = Array.isArray(response) ? response : (response?.data || []);
-      setObjects(objectsData);
+      const objects = await objectsService.getObjects();
+      setObjects(objects);
     } catch (err) {
       console.error('Failed to fetch objects', err);
       toast.error('Failed to fetch objects');
@@ -40,7 +40,7 @@ const ObjectsFeature = () => {
   }, []);
 
   const handleView = (object) => {
-    navigate.push(`/objects/${object.uuid}`);
+    navigate.push(`/objects/${object.uuid}?tab=records`);
   };
 
   const onFormSubmit = async (data) => {
@@ -81,7 +81,7 @@ const ObjectsFeature = () => {
   const columns = [
     {
       key: 'name',
-      label: 'Object Name',
+      label: t('admin.objects.objectName'),
       sortable: true,
       render: (row) => (
         <span
@@ -95,16 +95,19 @@ const ObjectsFeature = () => {
       )
     },
     {
-      key: 'created_at',
-      label: 'Created At',
-      render: (row) => new Date(row.created_at).toLocaleString()
+      key: 'createdAt',
+      label: t('admin.objects.createdAt'),
+      render: (row) => {
+        const val = row.createdAt;
+        return val ? new Date(val).toLocaleString() : '';
+      }
     },
   ];
 
   return (
     <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
       <SDataTable
-        title="Objects"
+        title={t('admin.objects.title')}
         data={objects}
         columns={columns}
         loading={loading}
@@ -122,7 +125,7 @@ const ObjectsFeature = () => {
         canExecuteAction={() => true}
         headerActions={
           <SButton
-            text="Create Object"
+            text={t('admin.objects.addObject')}
             onClick={() => {
               reset({ name: '' });
               setModalState({ isOpen: true, type: 'create', object: null });
@@ -133,39 +136,42 @@ const ObjectsFeature = () => {
       />
 
       <SModal
-        isOpen={modalState.isOpen}
-        title={modalState.type === 'create' ? 'Create Object' : modalState.type === 'edit' ? 'Edit Object' : 'Delete Object'}
+        isOpen={modalState.isOpen && (modalState.type === 'create' || modalState.type === 'edit')}
+        title={modalState.type === 'create' ? t('admin.objects.addObject') : t('admin.objects.editObject')}
         onConfirm={confirmAction}
         onCancel={() => setModalState({ isOpen: false, type: null, object: null })}
         isProcessing={isSubmitting}
-        confirmDisabled={(modalState.type === 'create' || modalState.type === 'edit') && !isValid}
-        confirmText={modalState.type === 'create' ? 'Create' : modalState.type === 'edit' ? 'Save Changes' : 'Delete'}
-        confirmColor={modalState.type === 'delete' ? 'danger' : 'primary'}
+        confirmDisabled={!isValid}
+        confirmText={modalState.type === 'create' ? t('common.save') : t('common.save')}
+        confirmColor="primary"
       >
-        {(modalState.type === 'create' || modalState.type === 'edit') && (
-          <form style={{ display: 'flex', flexDirection: 'column', gap: '1rem', paddingTop: '1rem' }}>
-            <Controller
-              name="name"
-              control={control}
-              rules={{ required: 'Object name is required' }}
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
-                <STextField
-                  label="Object Name"
-                  text={value}
-                  onChange={(e) => onChange(e.target.value)}
-                  required
-                  error={error?.message}
-                />
-              )}
-            />
-          </form>
-        )}
-        {modalState.type === 'delete' && modalState.object && (
-          <div style={{ paddingTop: '1rem' }}>
-            Are you sure you want to delete object <strong>{modalState.object.name}</strong>? This action cannot be undone.
-          </div>
-        )}
+        <form style={{ display: 'flex', flexDirection: 'column', gap: '1rem', paddingTop: '1rem' }}>
+          <Controller
+            name="name"
+            control={control}
+            rules={{ required: 'Object name is required' }}
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+              <STextField
+                label={t('admin.objects.objectName')}
+                text={value}
+                onChange={(e) => onChange(e.target.value)}
+                required
+                error={error?.message}
+              />
+            )}
+          />
+        </form>
       </SModal>
+
+      <SDeleteConfirmation
+        isOpen={modalState.isOpen && modalState.type === 'delete'}
+        title={t('admin.objects.deleteObject')}
+        onConfirm={confirmAction}
+        onCancel={() => setModalState({ isOpen: false, type: null, object: null })}
+        isProcessing={isSubmitting}
+        itemName={modalState.object?.name}
+        itemType="object"
+      />
     </div>
   );
 };

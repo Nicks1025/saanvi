@@ -4,6 +4,7 @@ import { Mail, Plus, CheckCircle, XCircle, Clock, Send } from 'lucide-react';
 import SDataTable from '@/components/common/SDataTable';
 import SButton from '@/components/common/SButton';
 import SModal from '@/components/common/SModal';
+import SDeleteConfirmation from '@/components/common/SDeleteConfirmation';
 import { getCampaigns, sendCampaign, deleteCampaign } from '../emailService';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
@@ -25,7 +26,7 @@ const EmailCampaignsFeature = () => {
       const data = await getCampaigns();
       setCampaigns(data || []);
     } catch (err) {
-      toast.error(t('admin.email.fetch_error', 'Failed to fetch campaigns'));
+      toast.error(t('admin.email.fetch_error'));
     } finally {
       setLoading(false);
     }
@@ -42,11 +43,11 @@ const EmailCampaignsFeature = () => {
     setIsProcessing(true);
     try {
       await sendCampaign(sendCampaignUuid);
-      toast.success(t('admin.email.send_success', 'Campaign dispatched successfully!'));
+      toast.success(t('admin.email.send_success'));
       setSendCampaignUuid(null);
       fetchCampaigns();
     } catch (err) {
-      toast.error(err.response?.data?.error || err.message || t('admin.email.send_error', 'Failed to dispatch campaign'));
+      toast.error(err.response?.data?.error || err.message || t('admin.email.send_error'));
       setSendCampaignUuid(null);
     } finally {
       setIsProcessing(false);
@@ -72,23 +73,23 @@ const EmailCampaignsFeature = () => {
   const columns = [
     {
       key: 'name',
-      label: t('admin.email.column_name', 'Campaign Name'),
+      label: t('admin.email.column_name'),
       sortable: true,
       render: (item) => <strong style={{ color: 'var(--accent)' }}>{item.name}</strong>
     },
     {
       key: 'subject',
-      label: t('admin.email.column_subject', 'Subject')
+      label: t('admin.email.column_subject')
     },
     {
       key: 'scheduled_at',
-      label: t('admin.email.column_scheduled_at', 'Scheduled At'),
+      label: t('admin.email.column_scheduled_at'),
       sortable: true,
       render: (item) => item.scheduled_at ? new Date(item.scheduled_at).toLocaleString() : '-'
     },
     {
       key: 'created_at',
-      label: t('admin.email.column_created_at', 'Created At'),
+      label: t('admin.email.column_created_at'),
       sortable: true,
       render: (item) => item.created_at ? new Date(item.created_at).toLocaleDateString() : '-'
     }
@@ -100,7 +101,7 @@ const EmailCampaignsFeature = () => {
         title={
           <div style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600, color: 'var(--text-h)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Mail size={22} />
-            {t('admin.email.campaigns_title', 'Marketing Campaigns')}
+            {t('admin.email.campaigns_title')}
           </div>
         }
         headerActions={
@@ -109,7 +110,7 @@ const EmailCampaignsFeature = () => {
               type="button" 
               onClick={handleCreateNew} 
               icon="add" 
-              text={t('admin.email.create_campaign', 'Create Campaign')}
+              text={t('admin.email.create_campaign')}
               color="primary"
             />
           )
@@ -133,27 +134,25 @@ const EmailCampaignsFeature = () => {
             setDeleteCampaignUuid(row.uuid);
           }
         }}
-        emptyText={t('admin.email.no_campaigns', 'No campaigns found.')}
+        emptyText={t('admin.email.no_campaigns')}
       />
       
       <SModal
         isOpen={!!sendCampaignUuid}
-        title={t('admin.email.confirm_send_title', 'Send Campaign')}
+        title={t('admin.email.confirm_send_title')}
         onConfirm={confirmSend}
         onCancel={() => setSendCampaignUuid(null)}
-        confirmText={t('admin.email.action_send', 'Send')}
+        confirmText={t('admin.email.action_send')}
         confirmColor="primary"
         isProcessing={isProcessing}
-        text={t('admin.email.confirm_send_desc', 'Are you sure you want to dispatch this campaign to all subscribed users? This action cannot be undone.')}
+        text={t('admin.email.confirm_send_desc')}
       />
 
-      <SModal
+      <SDeleteConfirmation
         isOpen={!!deleteCampaignUuid}
         title="Delete Campaign"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteCampaignUuid(null)}
-        confirmText="Delete"
-        confirmColor="danger"
         isProcessing={isProcessing}
         text="Are you sure you want to delete this campaign? This action cannot be undone."
       />

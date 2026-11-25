@@ -248,7 +248,7 @@ const PermissionTree = ({ permissions, selectedPermissions, onChange }) => {
         <Search size={16} className="search-icon" />
         <input 
           type="text" 
-          placeholder={t('admin.searchPermissions', 'Search permissions...')}
+          placeholder={t('common.permissionTree.searchPermissions')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="search-input"
@@ -260,19 +260,19 @@ const PermissionTree = ({ permissions, selectedPermissions, onChange }) => {
           onClick={handleExpandAll}
           style={{ cursor: 'pointer', color: isAllExpanded ? 'var(--accent)' : 'var(--text)', transition: 'color 0.2s' }}
         >
-          {t('admin.expandAll', 'Expand All')}
+          {t('common.permissionTree.expandAll')}
         </span>
         <span 
           onClick={handleCollapseAll}
           style={{ cursor: 'pointer', color: isAllCollapsed ? 'var(--accent)' : 'var(--text)', transition: 'color 0.2s' }}
         >
-          {t('admin.collapseAll', 'Collapse All')}
+          {t('common.permissionTree.collapseAll')}
         </span>
       </div>
       
       <div className="permission-tree-content">
         {Object.values(tree.children).length === 0 ? (
-          <div className="no-permissions-found">No permissions found matching '{searchQuery}'</div>
+          <div className="no-permissions-found">{t('common.permissionTree.noPermissionsFound', { query: searchQuery })}</div>
         ) : (
           Object.values(tree.children).map(node => (
             <TreeNode 

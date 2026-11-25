@@ -402,7 +402,7 @@ const EmailTemplateEditor = ({ templateUuid, isViewing = false, onClose }) => {
             onClick={() => onClose()}
             style={{ background: 'none', border: 'none', color: 'var(--text)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: 0 }}
           >
-            <ArrowLeft size={18} /> {t('common.back', 'Back')}
+            <ArrowLeft size={18} /> {t('common.back')}
           </button>
           
           {templateUuid && !isViewing && (
@@ -529,7 +529,7 @@ const EmailTemplateEditor = ({ templateUuid, isViewing = false, onClose }) => {
             <div style={{ marginBottom: '2rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.75rem', justifyContent: 'space-between' }}>
                 <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-h)', margin: 0 }}>Linked Data Table</p>
-                <STooltip content={<span>{t('email_templates.linked_table_tooltip_1', 'Link a database table to expose its columns as')} <code>{`{{column_name}}`}</code> {t('email_templates.linked_table_tooltip_2', "variables. The row is resolved using the recipient's email.")}</span>} position="left" />
+                <STooltip content={<span>{t('admin.communication.linked_table_tooltip_1')} <code>{`{{column_name}}`}</code> {t('admin.communication.linked_table_tooltip_2')}</span>} position="left" />
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '0.25rem', color: 'var(--text-secondary)' }}>Table Name</label>
@@ -572,7 +572,7 @@ const EmailTemplateEditor = ({ templateUuid, isViewing = false, onClose }) => {
             <div style={{ marginBottom: '0' }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.75rem', justifyContent: 'space-between' }}>
                 <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-h)', margin: 0 }}>Dynamic Variables</p>
-                <STooltip content={<span>{t('email_templates.use', 'Use')} <code>{`{{$$variable name$$}}`}</code> — {t('email_templates.dynamic_vars_tooltip', 'resolved at send time from the Dynamic Variables system.')}</span>} position="left" />
+                <STooltip content={<span>{t('admin.communication.use')} <code>{`{{$$variable name$$}}`}</code> — {t('admin.communication.dynamic_vars_tooltip')}</span>} position="left" />
               </div>
               {dynamicVariables.length > 0 ? (
                 <SDropdown 

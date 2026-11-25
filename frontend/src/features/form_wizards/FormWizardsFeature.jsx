@@ -4,22 +4,31 @@ import { toast } from 'react-hot-toast';
 import { useForm, Controller } from 'react-hook-form';
 import SDataTable from '@/components/common/SDataTable';
 import SModal from '@/components/common/SModal';
+import SDeleteConfirmation from '@/components/common/SDeleteConfirmation';
 import SButton from '@/components/common/SButton';
 import STextField from '@/components/common/STextField';
 import SDropdown from '@/components/common/SDropdown';
 import * as formWizardsService from './formWizardsService';
 import * as objectsService from '../objects/objectsService';
+import STooltip from '@/components/common/STooltip';
+import './form-wizards.css';
+
+const sanitizeUrl = (text) => (text || '').trim().replace(/\s+/g, '-');
 
 const FormWizardsFeature = () => {
   const [wizards, setWizards] = useState([]);
   const [objects, setObjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalState, setModalState] = useState({ isOpen: false, type: null, wizard: null });
+  const [urlManuallyEdited, setUrlManuallyEdited] = useState(false);
   const navigate = useRouter();
 
-  const { control, handleSubmit, reset, formState: { isValid, isSubmitting } } = useForm({
+  const { control, handleSubmit, reset, watch, setValue, getValues, formState: { isValid, isSubmitting } } = useForm({
     mode: 'onChange'
   });
+
+  const watchedType = watch('type');
+  const watchedUrl = watch('url');
 
   const fetchWizards = async () => {
     setLoading(true);
@@ -27,9 +36,6 @@ const FormWizardsFeature = () => {
       const response = await formWizardsService.getWizards();
       const wizardsData = Array.isArray(response) ? response : (response?.data || []);
       setWizards(wizardsData);
-      
-      const objResponse = await objectsService.getObjects();
-      setObjects(Array.isArray(objResponse) ? objResponse : (objResponse?.data || []));
     } catch (err) {
       console.error('Failed to fetch wizards', err);
       toast.error('Failed to fetch wizards');
@@ -47,7 +53,9 @@ const FormWizardsFeature = () => {
   };
 
   const handleCopyUrl = (wizard) => {
-    const url = `${window.location.origin}/external-wizard/${wizard.name}`;
+    const slug = wizard.url || sanitizeUrl(wizard.name);
+    const route = wizard.type === 'INTERNAL' ? `/wizard/${slug}` : `/form/${slug}`;
+    const url = `${window.location.origin}${route}`;
     navigator.clipboard.writeText(url).then(() => {
       toast.success('Wizard URL copied to clipboard!');
     });
@@ -56,11 +64,21 @@ const FormWizardsFeature = () => {
   const onFormSubmit = async (data) => {
     const { type } = modalState;
     try {
+      const slug = (data.url || '').trim() || sanitizeUrl(data.name);
       if (type === 'create') {
-        await formWizardsService.createWizard(data);
+        await formWizardsService.createWizard({
+          name: data.name,
+          type: data.type || 'INTERNAL',
+          objectUuid: data.objectUuid,
+          url: slug
+        });
         toast.success('Wizard created successfully');
       } else if (type === 'edit') {
-        await formWizardsService.updateWizard(modalState.wizard.uuid, { name: data.name, type: data.type });
+        await formWizardsService.updateWizard(modalState.wizard.uuid, {
+          name: data.name,
+          type: data.type || 'INTERNAL',
+          url: slug
+        });
         toast.success('Wizard updated successfully');
       }
       setModalState({ isOpen: false, type: null, wizard: null });
@@ -95,10 +113,8 @@ const FormWizardsFeature = () => {
       sortable: true,
       render: (row) => (
         <span 
-          style={{ cursor: 'pointer', color: 'var(--accent)' }}
+          className="wizard-name-link"
           onClick={(e) => { e.stopPropagation(); handleView(row); }}
-          onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
-          onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
         >
           {row.name}
         </span>
@@ -107,29 +123,46 @@ const FormWizardsFeature = () => {
     { key: 'type', label: 'Type', sortable: true },
     { 
       key: 'url', 
-      label: 'URL',
+      label: 'Page URL',
       render: (row) => {
-        if (row.type !== 'EXTERNAL') return '-';
+        const slug = row.url || sanitizeUrl(row.name);
+        const isInternal = row.type === 'INTERNAL';
+        const routePath = isInternal ? `/wizard/${slug}` : `/form/${slug}`;
+        const fullUrl = typeof window !== 'undefined' ? `${window.location.origin}${routePath}` : routePath;
+
+        if (!isInternal) {
+          return (
+            <SButton
+              size="xs"
+              color="ghost"
+              icon="copy"
+              text="Copy URL"
+              className="wizard-copy-btn"
+              onClick={(e) => { e.stopPropagation(); handleCopyUrl(row); }}
+              title={`Copy ${fullUrl}`}
+            />
+          );
+        }
+
         return (
-          <span 
-            style={{ color: 'var(--primary)', cursor: 'pointer', textDecoration: 'underline' }} 
-            onClick={(e) => { e.stopPropagation(); handleCopyUrl(row); }}
+          <a 
+            href={routePath}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="wizard-url-link"
+            title={fullUrl}
           >
-            Copy URL
-          </span>
+            {routePath}
+          </a>
         );
       }
     },
     { 
-      key: 'created_at', 
+      key: 'createdAt', 
       label: 'Created At',
-      render: (row) => new Date(row.created_at).toLocaleString()
+      render: (row) => new Date(row.createdAt).toLocaleString()
     },
-  ];
-
-  const typeOptions = [
-    { label: 'Internal', value: 'INTERNAL' },
-    { label: 'External', value: 'EXTERNAL' }
   ];
 
   const objectOptions = objects.map(o => ({ label: o.name, value: o.uuid }));
@@ -145,7 +178,13 @@ const FormWizardsFeature = () => {
         onAction={(action, row) => {
           if (action === 'view') handleView(row);
           if (action === 'edit') {
-            reset({ name: row.name, type: row.type, object_uuid: row.object_uuid });
+            setUrlManuallyEdited(true);
+            reset({
+              name: row.name,
+              type: row.type || 'INTERNAL',
+              objectUuid: row.objectUuid,
+              url: row.url || sanitizeUrl(row.name)
+            });
             setModalState({ isOpen: true, type: 'edit', wizard: row });
           }
           if (action === 'delete') {
@@ -157,50 +196,148 @@ const FormWizardsFeature = () => {
           <SButton
             text="Create Wizard"
             color="primary"
-            onClick={() => {
-              reset({ name: '', type: '', object_uuid: '' });
+            onClick={async () => {
+              setUrlManuallyEdited(false);
+              reset({ name: '', type: 'INTERNAL', objectUuid: '', url: '' });
               setModalState({ isOpen: true, type: 'create', wizard: null });
+              if (objects.length === 0) {
+                try {
+                  const objResponse = await objectsService.getObjects();
+                  setObjects(Array.isArray(objResponse) ? objResponse : (objResponse?.data || []));
+                } catch (e) {
+                  console.error('Failed to load objects for create modal', e);
+                }
+              }
             }}
           />
         }
       />
 
       <SModal
-        isOpen={modalState.isOpen}
-        title={modalState.type === 'create' ? 'Create Wizard' : modalState.type === 'edit' ? 'Edit Wizard' : 'Delete Wizard'}
+        isOpen={modalState.isOpen && (modalState.type === 'create' || modalState.type === 'edit')}
+        title={modalState.type === 'create' ? 'Create Wizard' : 'Edit Wizard'}
         onConfirm={confirmAction}
         onCancel={() => setModalState({ isOpen: false, type: null, wizard: null })}
         isProcessing={isSubmitting}
-        confirmDisabled={(modalState.type === 'create' || modalState.type === 'edit') && !isValid}
-        confirmText={modalState.type === 'create' ? 'Create' : modalState.type === 'edit' ? 'Save Changes' : 'Delete'}
-        confirmColor={modalState.type === 'delete' ? 'danger' : 'primary'}
+        confirmDisabled={!isValid}
+        confirmText={modalState.type === 'create' ? 'Create' : 'Save Changes'}
+        confirmColor="primary"
       >
-        {(modalState.type === 'create' || modalState.type === 'edit') && (
-          <form style={{ display: 'flex', flexDirection: 'column', gap: '1rem', paddingTop: '1rem' }}>
-            <Controller
-              name="name"
-              control={control}
-              rules={{ required: 'Wizard Name is required' }}
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
+        <form className="wizard-modal-form">
+          <Controller
+            name="name"
+            control={control}
+            rules={{ required: 'Wizard Name is required' }}
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+              <STextField
+                label="Wizard Name (Must be unique)"
+                text={value || ''}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  onChange(val);
+                  if (modalState.type === 'create' && !urlManuallyEdited) {
+                    setValue('url', sanitizeUrl(val), { shouldValidate: true });
+                  }
+                }}
+                required
+                error={error?.message}
+              />
+            )}
+          />
+
+          <Controller
+            name="type"
+            control={control}
+            rules={{ required: 'Wizard Usage is required' }}
+            defaultValue="INTERNAL"
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+              <div className="wizard-usage-container">
+                <div className="wizard-usage-label-row">
+                  <label className="wizard-field-label">
+                    Wizard Usage
+                  </label>
+                  <STooltip 
+                    content="Internal wizards provide authenticated record management at /wizard/pageUrl. External wizards provide a standalone public form at /form/pageUrl."
+                    position="right"
+                  />
+                </div>
+                
+                <div className="wizard-usage-toggle-group">
+                  <SButton
+                    type="button"
+                    size="s"
+                    color={(value || 'INTERNAL') === 'INTERNAL' ? 'primary' : 'secondary'}
+                    text="Internal"
+                    onClick={() => onChange('INTERNAL')}
+                  />
+                  <SButton
+                    type="button"
+                    size="s"
+                    color={value === 'EXTERNAL' ? 'primary' : 'secondary'}
+                    text="External"
+                    onClick={() => onChange('EXTERNAL')}
+                  />
+                </div>
+                {error && <div className="wizard-field-error">{error.message}</div>}
+              </div>
+            )}
+          />
+
+          <Controller
+            name="url"
+            control={control}
+            rules={{
+              required: 'Page URL is required',
+              pattern: {
+                value: /^\S+$/,
+                message: 'Page URL should not include space'
+              }
+            }}
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <STextField
-                  label="Wizard Name (Must be unique)"
+                  label="Page URL"
                   text={value || ''}
-                  onChange={(e) => onChange(e.target.value)}
+                  placeholder="e.g. customer-survey"
+                  onChange={(e) => {
+                    setUrlManuallyEdited(true);
+                    onChange(e.target.value);
+                  }}
                   required
                   error={error?.message}
                 />
-              )}
-            />
+                <div className="wizard-target-url-preview">
+                  {watchedType === 'INTERNAL' || !watchedType ? (
+                    <div>
+                      Target URL:{' '}
+                      <span className="wizard-target-url-code">
+                        saanviworld.com/wizard/{value || 'pageUrl'}
+                      </span>
+                    </div>
+                  ) : (
+                    <div>
+                      Target URL:{' '}
+                      <span className="wizard-target-url-code">
+                        saanviworld.com/form/{value || 'pageUrl'}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          />
+
+          {modalState.type === 'create' && (
             <Controller
-              name="type"
+              name="objectUuid"
               control={control}
-              rules={{ required: 'Wizard Type is required' }}
+              rules={{ required: 'Target Object is required' }}
               render={({ field: { onChange, value }, fieldState: { error } }) => (
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <SDropdown
-                    label="Wizard Type"
+                    label="Target Object"
                     value={value || ''}
-                    options={[{ label: 'Select Type', value: '' }, ...typeOptions]}
+                    options={[{ label: 'Select Object', value: '' }, ...objectOptions]}
                     onChange={(val) => onChange(val)}
                     required
                   />
@@ -208,33 +345,19 @@ const FormWizardsFeature = () => {
                 </div>
               )}
             />
-            {modalState.type === 'create' && (
-              <Controller
-                name="object_uuid"
-                control={control}
-                rules={{ required: 'Target Object is required' }}
-                render={({ field: { onChange, value }, fieldState: { error } }) => (
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <SDropdown
-                      label="Target Object"
-                      value={value || ''}
-                      options={[{ label: 'Select Object', value: '' }, ...objectOptions]}
-                      onChange={(val) => onChange(val)}
-                      required
-                    />
-                    {error && <div style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '4px' }}>{error.message}</div>}
-                  </div>
-                )}
-              />
-            )}
-          </form>
-        )}
-        {modalState.type === 'delete' && modalState.wizard && (
-          <div style={{ paddingTop: '1rem' }}>
-            Are you sure you want to delete wizard <strong>{modalState.wizard.name}</strong>? This action cannot be undone.
-          </div>
-        )}
+          )}
+        </form>
       </SModal>
+
+      <SDeleteConfirmation
+        isOpen={modalState.isOpen && modalState.type === 'delete'}
+        title="Delete Wizard"
+        onConfirm={confirmAction}
+        onCancel={() => setModalState({ isOpen: false, type: null, wizard: null })}
+        isProcessing={isSubmitting}
+        itemName={modalState.wizard?.name}
+        itemType="wizard"
+      />
     </div>
   );
 };

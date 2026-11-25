@@ -1,84 +1,57 @@
 const BaseController = require('../../base/baseController');
+const UserService = require('./userService');
 
 class UserController extends BaseController {
-  constructor(userService) {
-    super();
-    this.userService = userService;
+  constructor(context = null) {
+    super(context);
+    this.userService = new UserService(context);
   }
 
-  async getMe(req, res) {
-    try {
-      const uuid = req.user.uuid;
-      if (!uuid) {
-        return this.sendError(res, 'User ID missing in token', 400);
-      }
-      
-      const result = await this.userService.getCurrentUser(uuid);
-      return this.sendSuccess(res, result.user, 'User retrieved successfully');
-    } catch (error) {
-      return this.sendError(res, error.message, 500);
+  _requireUserUuid() {
+    const uuid = this.context?.user?.uuid;
+    if (!uuid) {
+      const error = new Error('Unauthorized: User context required');
+      error.statusCode = 401;
+      throw error;
     }
+    return uuid;
   }
 
-  async updateProfile(req, res) {
-    try {
-      const uuid = req.user.uuid;
-      if (!uuid) {
-        return this.sendError(res, 'User ID missing in token', 400);
-      }
-
-      // Multer file is in req.file, other form fields in req.body
-      const file = req.file;
-      const profileData = req.body;
-
-      const result = await this.userService.updateUserProfile(uuid, profileData, file);
-      return this.sendSuccess(res, result.user, 'Profile updated successfully');
-    } catch (error) {
-      return this.sendError(res, error.message, 400);
-    }
+  async getMe() {
+    const uuid = this._requireUserUuid();
+    const result = await this.userService.getCurrentUser(uuid);
+    return this.respondOk(result.user, 'User retrieved successfully');
   }
 
-  async updateSettings(req, res) {
-    try {
-      const uuid = req.user.uuid;
-      if (!uuid) {
-        return this.sendError(res, 'User ID missing in token', 400);
-      }
-      
-      const { language, theme, font } = req.body;
-      await this.userService.updateUserSettings(uuid, { language, theme, font });
-      
-      return this.sendSuccess(res, null, 'Settings updated successfully');
-    } catch (error) {
-      return this.sendError(res, error.message, 500);
-    }
-  }
-  async changePassword(req, res) {
-    try {
-      const uuid = req.user.uuid;
-      if (!uuid) {
-        return this.sendError(res, 'User ID missing in token', 400);
-      }
-      
-      const { currentPassword, newPassword } = req.body;
-      await this.userService.changePassword(uuid, currentPassword, newPassword);
-      
-      return this.sendSuccess(res, null, 'Password updated successfully');
-    } catch (error) {
-      // If error message is 'Invalid current password.', return 400
-      const statusCode = error.message === 'Invalid current password.' ? 400 : 500;
-      return this.sendError(res, error.message, statusCode);
-    }
+  async updateProfile(req) {
+    const uuid = this._requireUserUuid();
+    const file = req.file;
+    const profileData = req.body;
+
+    const result = await this.userService.updateUserProfile(uuid, profileData, file);
+    return this.respondOk(result.user, 'Profile updated successfully');
   }
 
-  async deleteAccount(req, res, next) {
-    try {
-      const userUuid = req.user.uuid; // from requireAuth middleware
-      const result = await this.userService.deleteAccount(userUuid);
-      return this.sendSuccess(res, result, 'Account deleted successfully');
-    } catch (err) {
-      return this.sendError(res, err.message, 500);
-    }
+  async updateSettings(req) {
+    const uuid = this._requireUserUuid();
+    const { language, theme, font } = req.body;
+    await this.userService.updateUserSettings(uuid, { language, theme, font });
+
+    return this.respondOk(null, 'Settings updated successfully');
+  }
+
+  async changePassword(req) {
+    const uuid = this._requireUserUuid();
+    const { currentPassword, newPassword } = req.body;
+    await this.userService.changePassword(uuid, currentPassword, newPassword);
+
+    return this.respondOk(null, 'Password updated successfully');
+  }
+
+  async deleteAccount() {
+    const uuid = this._requireUserUuid();
+    const result = await this.userService.deleteAccount(uuid);
+    return this.respondOk(result, 'Account deleted successfully');
   }
 }
 

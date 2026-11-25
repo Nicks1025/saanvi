@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Upload, X, User, Camera } from 'lucide-react';
+import SIcon from './SIcon';
 import './s-image-upload.css';
 
 const SImageUpload = ({
@@ -81,12 +82,18 @@ const SImageUpload = ({
         <div className={`s-image-upload-filled ${disabled ? 'disabled' : ''}`} onClick={handleClick}>
           <img src={preview} alt="" className="s-image-upload-img" />
           <div className="s-image-upload-edit-badge">
-            <Camera size={16} color="white" />
+            <SIcon name="camera" size={16} color="white" />
           </div>
           {!disabled && (
-            <button type="button" className="s-image-upload-remove" onClick={handleRemove}>
-              <X size={14} color="white" />
-            </button>
+            <SIcon
+              name="x"
+              size={14}
+              color="white"
+              className="s-image-upload-remove"
+              onClick={handleRemove}
+              title="Remove image"
+              aria-label="Remove image"
+            />
           )}
         </div>
       ) : (

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SDataTable from '@/components/common/SDataTable';
 import SButton from '@/components/common/SButton';
 import DynamicVariableModal from './DynamicVariableModal';
-import SModal from '@/components/common/SModal';
+import SDeleteConfirmation from '@/components/common/SDeleteConfirmation';
 import axios from '@/services/axios.client';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -81,28 +81,28 @@ const DynamicVariablesList = () => {
       render: (row) => row.value || <span style={{ color: '#888' }}>None</span>
     },
     {
-      key: 'created_by',
+      key: 'createdBy',
       label: 'Created By',
-      render: (row) => row.creator_first_name 
-        ? `${row.creator_first_name} ${row.creator_last_name || ''}`.trim() 
+      render: (row) => (row.creatorFirstName || row.creator_first_name)
+        ? `${row.creatorFirstName || row.creator_first_name} ${row.creatorLastName || row.creator_last_name || ''}`.trim() 
         : <span style={{ color: '#888' }}>System</span>
     },
     {
-      key: 'updated_by',
+      key: 'updatedBy',
       label: 'Updated By',
-      render: (row) => row.updater_first_name 
-        ? `${row.updater_first_name} ${row.updater_last_name || ''}`.trim() 
+      render: (row) => (row.updaterFirstName || row.updater_first_name)
+        ? `${row.updaterFirstName || row.updater_first_name} ${row.updaterLastName || row.updater_last_name || ''}`.trim() 
         : <span style={{ color: '#888' }}>System</span>
     },
     {
-      key: 'created_at',
+      key: 'createdAt',
       label: 'Created At',
-      render: (row) => row.created_at ? new Date(row.created_at).toLocaleString() : ''
+      render: (row) => (row.createdAt || row.created_at) ? new Date(row.createdAt || row.created_at).toLocaleString() : ''
     },
     {
-      key: 'updated_at',
+      key: 'updatedAt',
       label: 'Updated At',
-      render: (row) => row.updated_at ? new Date(row.updated_at).toLocaleString() : ''
+      render: (row) => (row.updatedAt || row.updated_at) ? new Date(row.updatedAt || row.updated_at).toLocaleString() : ''
     }
   ];
 
@@ -145,15 +145,13 @@ const DynamicVariablesList = () => {
       )}
 
       {deleteConfirm.open && (
-        <SModal
+        <SDeleteConfirmation
           isOpen={deleteConfirm.open}
           onCancel={() => setDeleteConfirm({ open: false, uuid: null })}
           onConfirm={handleDeleteConfirm}
-          confirmText={t('common.delete', 'Delete')}
-          confirmColor="danger"
-          title={t('admin.confirmDeletionTitle', 'Confirm Deletion')}
+          title={t('common.confirmationModal.confirmDeletionTitle')}
           width="400px"
-          text={t('admin.deleteDynamicVariableConfirm', 'Are you sure you want to delete this dynamic variable? This action may fail if it is currently in use.')}
+          text={t('common.confirmationModal.deleteDynamicVariableConfirm')}
         />
       )}
     </div>

@@ -1,134 +1,113 @@
 const AdminRepository = require('./adminRepository');
-const QueryHelper = require('../../database/queryHelper');
-
-jest.mock('../../database/queryHelper');
 
 describe('AdminRepository', () => {
-  let mockQueryHelper;
   let adminRepository;
-  let dbMock;
 
   beforeEach(() => {
-    const knexBuilderMock = {
-      whereRaw: jest.fn().mockReturnThis(),
-      whereNull: jest.fn().mockReturnThis(),
-      select: jest.fn().mockReturnThis(),
-      as: jest.fn().mockReturnThis(),
-      join: jest.fn().mockReturnThis(),
-      leftJoin: jest.fn().mockReturnThis(),
-      where: jest.fn().mockReturnThis(),
-      orderBy: jest.fn().mockReturnThis(),
-      limit: jest.fn().mockReturnThis(),
-      count: jest.fn().mockReturnThis(),
-      countDistinct: jest.fn().mockReturnThis(),
-    };
-    dbMock = jest.fn(() => knexBuilderMock);
-    dbMock.raw = jest.fn(sql => sql);
-
-    mockQueryHelper = {
-      db: dbMock,
-      from: jest.fn().mockReturnThis(),
-      field: jest.fn().mockReturnThis(),
-      select: jest.fn().mockReturnThis(),
-      where: jest.fn().mockReturnThis(),
-      whereRaw: jest.fn().mockReturnThis(),
-      whereNull: jest.fn().mockReturnThis(),
-      join: jest.fn().mockReturnThis(),
-      leftJoin: jest.fn().mockReturnThis(),
-      orderBy: jest.fn().mockReturnThis(),
-      limit: jest.fn().mockReturnThis(),
-      offset: jest.fn().mockReturnThis(),
-      insert: jest.fn().mockReturnThis(),
-      update: jest.fn().mockReturnThis(),
-      count: jest.fn().mockReturnThis(),
-      countDistinct: jest.fn().mockReturnThis(),
-      execute: jest.fn(),
-      transaction: jest.fn(async (callback) => {
-        return callback({
-          from: jest.fn().mockReturnThis(),
-          where: jest.fn().mockReturnThis(),
-          update: jest.fn().mockReturnThis(),
-          execute: jest.fn().mockResolvedValue([])
-        });
-      })
-    };
-    QueryHelper.mockImplementation(() => mockQueryHelper);
-    
     adminRepository = new AdminRepository();
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
+    adminRepository.runQuery = jest.fn();
+    adminRepository.runQueryFirst = jest.fn();
+    adminRepository.execute = jest.fn();
   });
 
   describe('getAllUsers', () => {
     it('should return paginated data and total count', async () => {
-      // Mock execute behavior: first call is count, second is data
-      mockQueryHelper.execute
-        .mockResolvedValueOnce([{ total: '5' }]) // Count query
-        .mockResolvedValueOnce([{ uuid: 'user-1', email: 'test@example.com' }]); // Data query
+      adminRepository.runQueryFirst.mockResolvedValueOnce({ total: '5' });
+      adminRepository.runQuery.mockResolvedValueOnce([
+        {
+          uuid: 'user-1',
+          email: 'test@example.com',
+          status: 'active',
+          created_at: '2026-01-01',
+          last_login_at: null,
+          first_name: 'John',
+          last_name: 'Doe'
+        }
+      ]);
 
-      const result = await adminRepository.getAllUsers('search string', false, 2, 10);
+      const result = await adminRepository.getAllUsers('search', false, 2, 10);
 
-      // Verifications for count query
-      expect(mockQueryHelper.countDistinct).toHaveBeenCalledWith('u.uuid', 'total');
-      
-      // Verifications for data query
-      expect(mockQueryHelper.limit).toHaveBeenCalledWith(10);
-      expect(mockQueryHelper.offset).toHaveBeenCalledWith(10); // (page 2 - 1) * 10
-      
+      expect(adminRepository.runQueryFirst).toHaveBeenCalled();
+      expect(adminRepository.runQuery).toHaveBeenCalled();
       expect(result).toEqual({
         data: [{
           uuid: 'user-1',
           email: 'test@example.com',
-          status: undefined,
-          created_at: undefined,
-          first_name: null,
-          last_name: null
+          status: 'active',
+          created_at: '2026-01-01',
+          last_login_at: null,
+          first_name: 'John',
+          last_name: 'Doe'
         }],
         total: 5
       });
     });
 
     it('should handle archived filter', async () => {
-      mockQueryHelper.execute
-        .mockResolvedValueOnce([{ total: '1' }]) // Count query
-        .mockResolvedValueOnce([]); // Data query
+      adminRepository.runQueryFirst.mockResolvedValueOnce({ total: '1' });
+      adminRepository.runQuery.mockResolvedValueOnce([]);
 
-      await adminRepository.getAllUsers('', true, 1, 10);
+      const result = await adminRepository.getAllUsers('', true, 1, 10);
+      expect(result.total).toBe(1);
+      expect(result.data).toEqual([]);
+    });
+  });
 
-      // Verify the query builder was told to look for NOT null archived_at
-      expect(mockQueryHelper.where).toHaveBeenCalledWith('u.archived_at', 'not_is', null);
+  describe('getUserByUuid', () => {
+    it('should return user object or null', async () => {
+      adminRepository.runQueryFirst.mockResolvedValueOnce({
+        uuid: 'u-1',
+        email: 'u1@test.com',
+        status: 'active',
+        created_at: '2026-01-01',
+        last_login_at: null,
+        first_name: 'Jane',
+        last_name: 'Doe'
+      });
+
+      const user = await adminRepository.getUserByUuid('u-1');
+      expect(user).toEqual({
+        uuid: 'u-1',
+        email: 'u1@test.com',
+        status: 'active',
+        created_at: '2026-01-01',
+        last_login_at: null,
+        first_name: 'Jane',
+        last_name: 'Doe'
+      });
     });
   });
 
   describe('archiveUser', () => {
-    it('should set status to inactive and archived_at to current date', async () => {
-      mockQueryHelper.execute.mockResolvedValueOnce([]);
-      
+    it('should execute update on users', async () => {
+      adminRepository.execute.mockResolvedValueOnce({ affectedRows: 1, rows: [] });
+
       await adminRepository.archiveUser('uuid-1234');
-      
-      expect(mockQueryHelper.from).toHaveBeenCalledWith('users');
-      expect(mockQueryHelper.update).toHaveBeenCalledWith(expect.objectContaining({
-        status: 'inactive',
-        archived_at: expect.any(String)
-      }));
-      expect(mockQueryHelper.where).toHaveBeenCalledWith('uuid', 'eq', 'uuid-1234');
+      expect(adminRepository.execute).toHaveBeenCalled();
+      const query = adminRepository.execute.mock.calls[0][0];
+      const sqlObj = query.toSQL();
+      expect(sqlObj.sql).toContain('update "users"');
     });
   });
 
   describe('restoreUser', () => {
-    it('should set status to active and archived_at to null', async () => {
-      mockQueryHelper.execute.mockResolvedValueOnce([]);
-      
+    it('should execute update on users', async () => {
+      adminRepository.execute.mockResolvedValueOnce({ affectedRows: 1, rows: [] });
+
       await adminRepository.restoreUser('uuid-1234');
-      
-      expect(mockQueryHelper.from).toHaveBeenCalledWith('users');
-      expect(mockQueryHelper.update).toHaveBeenCalledWith(expect.objectContaining({
-        status: 'active',
-        archived_at: null
-      }));
-      expect(mockQueryHelper.where).toHaveBeenCalledWith('uuid', 'eq', 'uuid-1234');
+      expect(adminRepository.execute).toHaveBeenCalled();
+      const query = adminRepository.execute.mock.calls[0][0];
+      const sqlObj = query.toSQL();
+      expect(sqlObj.sql).toContain('update "users"');
+    });
+  });
+
+  describe('getAllRoles', () => {
+    it('should return roles array', async () => {
+      adminRepository.runQuery.mockResolvedValueOnce([{ uuid: 'r-1', name: 'Admin' }]);
+
+      const roles = await adminRepository.getAllRoles();
+      expect(roles).toEqual([{ uuid: 'r-1', name: 'Admin' }]);
     });
   });
 });

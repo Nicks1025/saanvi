@@ -14,3 +14,8 @@ export const loginWithGoogle = async (accessToken) => {
   const data = await axios.post('/api/login/google', { accessToken });
   return data.data;
 };
+
+export const verifyMfa = async (email, code, mfaTicket) => {
+  const data = await axios.post('/api/login/mfa-verify', { email, code, mfaTicket });
+  return data.data;
+};

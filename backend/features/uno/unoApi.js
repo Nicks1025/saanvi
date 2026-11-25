@@ -1,6 +1,6 @@
 const Joi = require('joi');
 const ApiSchema = require('../../base/apiSchema');
-const unoController = require('./unoController');
+const UnoController = require('./unoController');
 
 const unoApi = new ApiSchema({
   name: 'Uno',
@@ -12,8 +12,19 @@ const unoApi = new ApiSchema({
       middleware: {
         requireAuth: true
       },
+      request: {
+        body: Joi.object({
+          name: Joi.string().allow('', null).optional(),
+          playerLimit: Joi.number().integer().min(2).max(10).optional(),
+          rules: Joi.object().optional(),
+          userData: Joi.object({
+            name: Joi.string().required(),
+            avatar: Joi.string().allow('', null).optional()
+          }).required()
+        }).unknown(true)
+      },
       handler: {
-        controller: unoController,
+        controller: UnoController,
         method: 'createRoom'
       }
     },
@@ -27,13 +38,13 @@ const unoApi = new ApiSchema({
         body: Joi.object({
           roomCode: Joi.string().required().uppercase().min(3).max(10),
           userData: Joi.object({
-            name: Joi.string().allow('', null),
-            avatar: Joi.string().allow('', null)
-          }).optional()
+            name: Joi.string().required(),
+            avatar: Joi.string().allow('', null).optional()
+          }).required()
         }).unknown(true)
       },
       handler: {
-        controller: unoController,
+        controller: UnoController,
         method: 'joinRoom'
       }
     },
@@ -44,24 +55,24 @@ const unoApi = new ApiSchema({
         requireAuth: true
       },
       handler: {
-        controller: unoController,
+        controller: UnoController,
         method: 'getUserRooms'
       }
     },
     {
-      path: '/rooms/:roomId',
-      verb: 'DELETE',
+      path: '/rooms/:roomCode/close',
+      verb: 'POST',
       middleware: {
         requireAuth: true
       },
       request: {
         params: Joi.object({
-          roomId: Joi.string().required().uppercase()
+          roomCode: Joi.string().required().uppercase().min(3).max(10)
         })
       },
       handler: {
-        controller: unoController,
-        method: 'deleteRoom'
+        controller: UnoController,
+        method: 'closeRoom'
       }
     }
   ]

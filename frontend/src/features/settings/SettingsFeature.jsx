@@ -7,6 +7,7 @@ import { validatePassword, validateConfirmPassword, validateRequired, validatePh
 import SDropdown from '@/components/common/SDropdown';
 import SButton from '@/components/common/SButton';
 import STextField from '@/components/common/STextField';
+import SPhoneNumber from '@/components/common/SPhoneNumber';
 import { settingsService } from './services/settingsService';
 import { themeOptions, fontOptions } from '../../constants/themeConstants';
 import { useTranslation } from 'react-i18next';
@@ -44,9 +45,6 @@ const SettingsFeature = () => {
   const [isChangingPassword, setIsChangingPassword] = React.useState(false);
 
   const handleProfileChange = (field, value) => {
-    if (field === 'phoneNumber') {
-      value = value.replace(/\D/g, '').slice(0, 10);
-    }
     setProfileForm(prev => ({ ...prev, [field]: value }));
   };
 
@@ -68,7 +66,7 @@ const SettingsFeature = () => {
         newPassword: passwordForm.newPassword
       });
       if (res.success) {
-        toast.success(t('settings.passwordSuccess', 'Password updated successfully'));
+        toast.success(t('settings.passwordSuccess'));
         setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
         setIsChangingPassword(false);
       } else {
@@ -181,7 +179,7 @@ const SettingsFeature = () => {
       }
 
       if (settingsResponse.success && profileResponse.success) {
-        toast.success(t('settings.saveSuccess', 'Settings & Profile saved successfully'));
+        toast.success(t('settings.saveSuccess'));
         const updatedUser = { 
           ...user, 
           ...(hasProfileChanges ? profileResponse.data : {}), 
@@ -289,14 +287,14 @@ const SettingsFeature = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div className="settings-form-grid">
                 <STextField 
-                  label={t('settings.firstName', 'First Name')} 
+                  label={t('settings.firstName')} 
                   text={profileForm.firstName} 
                   onChange={(e) => handleProfileChange('firstName', e.target.value)} 
                   required
                   validate={(v) => validateRequired(v, 'First name')}
                 />
                 <STextField 
-                  label={t('settings.lastName', 'Last Name')} 
+                  label={t('settings.lastName')} 
                   text={profileForm.lastName} 
                   onChange={(e) => handleProfileChange('lastName', e.target.value)} 
                   required
@@ -305,23 +303,23 @@ const SettingsFeature = () => {
               </div>
               <div className="settings-form-grid">
                 <STextField 
-                  label={t('settings.displayName', 'Display Name')} 
+                  label={t('settings.displayName')} 
                   text={profileForm.displayName} 
                   onChange={(e) => handleProfileChange('displayName', e.target.value)} 
                   required
                   validate={(v) => validateRequired(v, 'Display name')}
                 />
-                <STextField 
-                  label={t('settings.phoneNumber', 'Phone Number')} 
-                  text={profileForm.phoneNumber} 
-                  onChange={(e) => handleProfileChange('phoneNumber', e.target.value)} 
+                <SPhoneNumber 
+                  label={t('settings.phoneNumber')} 
+                  value={profileForm.phoneNumber} 
+                  onChange={(e) => handleProfileChange('phoneNumber', e?.target ? e.target.value : e)} 
                   required
-                  validate={validatePhone}
+                  marginBottom="0"
                 />
               </div>
               <div className="settings-form-grid">
                 <STextField 
-                  label={t('settings.dateOfBirth', 'Date of Birth')} 
+                  label={t('settings.dateOfBirth')} 
                   type="date"
                   text={profileForm.dateOfBirth} 
                   onChange={(e) => handleProfileChange('dateOfBirth', e.target.value)} 
@@ -332,7 +330,7 @@ const SettingsFeature = () => {
                   <SDropdown 
                     label={
                       <span>
-                        {t('settings.gender', 'Gender')}
+                        {t('settings.gender')}
                         <span style={{ color: '#ef4444', marginLeft: '4px' }}>*</span>
                       </span>
                     } 

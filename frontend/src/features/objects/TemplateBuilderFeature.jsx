@@ -19,15 +19,14 @@ const TemplateBuilderFeature = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const templatesRes = await objectsService.getTemplates(uuid);
-      const allTemplates = Array.isArray(templatesRes) ? templatesRes : (templatesRes.data || []);
+      const allTemplates = await objectsService.getTemplates(uuid);
       const currentTemplate = allTemplates.find(t => t.uuid === template_uuid);
       
       if (!currentTemplate) throw new Error('Template not found');
       setTemplate(currentTemplate);
 
-      const fieldsRes = await objectsService.getFields(uuid);
-      setFields(Array.isArray(fieldsRes) ? fieldsRes : (fieldsRes.data || []));
+      const fields = await objectsService.getFields(uuid);
+      setFields(fields);
     } catch (err) {
       toast.error(err.message || 'Failed to load template data');
       navigate.push(`/objects/${uuid}?tab=templates`);
@@ -43,7 +42,7 @@ const TemplateBuilderFeature = () => {
   if (!template) return null;
 
   return (
-    <div className="page-container" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div className="page-container" style={{ minHeight: '100%', display: 'flex', flexDirection: 'column', paddingBottom: '2.5rem' }}>
       <TemplateBuilder
         template={template}
         formFields={fields}

@@ -6,9 +6,10 @@ import SModal from '@/components/common/SModal';
 import SButton from '@/components/common/SButton';
 import STextField from '@/components/common/STextField';
 import SDropdown from '@/components/common/SDropdown';
+import SIcon from '@/components/common/SIcon';
 import { Plus, Pencil, Trash2, ChevronDown, ChevronRight, GripVertical, ArrowRight } from 'lucide-react';
 import * as formWizardsService from './formWizardsService';
-import * as objectsService from '../objects/objectsService';
+import * as objectsService from '@/features/objects/objectsService';
 
 const FormWizardDetailFeature = () => {
   const { uuid } = useParams();
@@ -17,6 +18,7 @@ const FormWizardDetailFeature = () => {
   const [wizard, setWizard] = useState(null);
   const [phases, setPhases] = useState([]);
   const [steps, setSteps] = useState({}); // phaseUuid -> steps array
+  const [loadingSteps, setLoadingSteps] = useState({}); // phaseUuid -> boolean
   const [templates, setTemplates] = useState([]); // from the target object
   const [loading, setLoading] = useState(true);
   const [expandedPhases, setExpandedPhases] = useState({});
@@ -31,15 +33,12 @@ const FormWizardDetailFeature = () => {
   const fetchWizardData = async () => {
     setLoading(true);
     try {
-      const res = await formWizardsService.getWizard(uuid);
-      const wizardData = res.uuid ? res : (res.data || res);
-      setWizard(wizardData);
-
-      // Fetch templates for the target object
-      const tplRes = await objectsService.getTemplates(wizardData.object_uuid);
-      setTemplates(Array.isArray(tplRes) ? tplRes : (tplRes?.data || []));
-
-      await fetchPhases(wizardData.uuid);
+      const [wizardData, phasesData] = await Promise.all([
+        formWizardsService.getWizard(uuid),
+        formWizardsService.getPhases(uuid)
+      ]);
+      setWizard(wizardData.data || wizardData || null);
+      setPhases(Array.isArray(phasesData) ? phasesData : (phasesData.data || []));
     } catch (err) {
       toast.error('Failed to load wizard details');
     } finally {
@@ -47,20 +46,50 @@ const FormWizardDetailFeature = () => {
     }
   };
 
-  const fetchPhases = async (wizardUuid) => {
-    try {
-      const res = await formWizardsService.getPhases(wizardUuid);
-      const phasesData = Array.isArray(res) ? res : (res.data || []);
-      setPhases(phasesData);
-
-      const stepsData = {};
-      for (const phase of phasesData) {
-        const sRes = await formWizardsService.getSteps(wizardUuid, phase.uuid);
-        stepsData[phase.uuid] = Array.isArray(sRes) ? sRes : (sRes.data || []);
+  const openStepModal = async (type, phaseUuid, stepData = null) => {
+    if (wizard?.objectUuid && templates.length === 0) {
+      try {
+        const tRes = await objectsService.getTemplates(wizard.objectUuid);
+        setTemplates(Array.isArray(tRes) ? tRes : (tRes.data || []));
+      } catch (e) {
+        console.error('Failed to load templates', e);
       }
-      setSteps(stepsData);
+    }
+    setModalState({
+      isOpen: true,
+      type,
+      phaseUuid,
+      data: stepData
+        ? {
+            uuid: stepData.uuid,
+            name: stepData.name,
+            description: stepData.description || '',
+            templateUuid: stepData.templateUuid,
+            displayOrder: stepData.displayOrder || 0
+          }
+        : { name: '', description: '', displayOrder: 0, templateUuid: '' }
+    });
+  };
+
+  const fetchStepsForPhase = async (phaseUuid) => {
+    if (!uuid) return;
+    setLoadingSteps(prev => ({ ...prev, [phaseUuid]: true }));
+    try {
+      const res = await formWizardsService.getSteps(uuid, phaseUuid);
+      const stepList = Array.isArray(res) ? res : (res.data || []);
+      setSteps(prev => ({ ...prev, [phaseUuid]: stepList }));
     } catch (err) {
-      toast.error('Failed to load phases');
+      toast.error('Failed to load steps');
+    } finally {
+      setLoadingSteps(prev => ({ ...prev, [phaseUuid]: false }));
+    }
+  };
+
+  const togglePhase = async (phaseUuid) => {
+    const isExpanding = !expandedPhases[phaseUuid];
+    setExpandedPhases(prev => ({ ...prev, [phaseUuid]: isExpanding }));
+    if (isExpanding && steps[phaseUuid] === undefined) {
+      await fetchStepsForPhase(phaseUuid);
     }
   };
 
@@ -70,30 +99,54 @@ const FormWizardDetailFeature = () => {
       const { type, data, phaseUuid } = modalState;
       if (type === 'createPhase') {
         if (!data.name) return toast.error('Name is required');
-        await formWizardsService.createPhase(wizard.uuid, data);
+        await formWizardsService.createPhase(wizard.uuid, {
+          name: data.name,
+          description: data.description,
+          displayOrder: data.displayOrder || 0
+        });
         toast.success('Phase created');
+        fetchWizardData();
       } else if (type === 'editPhase') {
         if (!data.name) return toast.error('Name is required');
-        await formWizardsService.updatePhase(wizard.uuid, data.uuid, data);
+        await formWizardsService.updatePhase(wizard.uuid, data.uuid, {
+          name: data.name,
+          description: data.description,
+          displayOrder: data.displayOrder
+        });
         toast.success('Phase updated');
+        fetchWizardData();
       } else if (type === 'deletePhase') {
         await formWizardsService.deletePhase(wizard.uuid, data.uuid);
         toast.success('Phase deleted');
+        fetchWizardData();
       } else if (type === 'createStep') {
-        if (!data.name || !data.template_uuid) return toast.error('Name and Template are required');
-        await formWizardsService.createStep(wizard.uuid, phaseUuid, data);
+        if (!data.name || !data.templateUuid) return toast.error('Name and Template are required');
+        await formWizardsService.createStep(wizard.uuid, phaseUuid, {
+          name: data.name,
+          description: data.description,
+          templateUuid: data.templateUuid,
+          displayOrder: data.displayOrder || 0
+        });
         toast.success('Step created');
+        setExpandedPhases(prev => ({ ...prev, [phaseUuid]: true }));
+        fetchStepsForPhase(phaseUuid);
       } else if (type === 'editStep') {
-        if (!data.name || !data.template_uuid) return toast.error('Name and Template are required');
-        await formWizardsService.updateStep(wizard.uuid, phaseUuid, data.uuid, data);
+        if (!data.name || !data.templateUuid) return toast.error('Name and Template are required');
+        await formWizardsService.updateStep(wizard.uuid, phaseUuid, data.uuid, {
+          name: data.name,
+          description: data.description,
+          templateUuid: data.templateUuid,
+          displayOrder: data.displayOrder
+        });
         toast.success('Step updated');
+        fetchStepsForPhase(phaseUuid);
       } else if (type === 'deleteStep') {
         await formWizardsService.deleteStep(wizard.uuid, phaseUuid, data.uuid);
         toast.success('Step deleted');
+        fetchStepsForPhase(phaseUuid);
       }
 
       setModalState({ isOpen: false, type: null, data: null, phaseUuid: null });
-      fetchPhases(wizard.uuid);
     } catch (err) {
       toast.error(err.response?.data?.error || err.response?.data?.message || 'Failed to save');
     }
@@ -149,56 +202,101 @@ const FormWizardDetailFeature = () => {
 
                     {/* Col 3: Actions */}
                     <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
-                      <button className="manage-btn" style={{ padding: '0.25rem', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--accent)' }} onClick={(e) => { e.stopPropagation(); setModalState({ isOpen: true, type: 'createStep', phaseUuid: phase.uuid, data: { name: '', description: '', display_order: 0, template_uuid: '' } }) }} title="Add Step">
-                        <Plus size={16} strokeWidth={2.5} />
-                      </button>
-                      <button className="manage-btn" style={{ padding: '0.25rem', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--accent)' }} onClick={(e) => { e.stopPropagation(); setModalState({ isOpen: true, type: 'editPhase', data: phase }) }} title="Edit Phase">
-                        <Pencil size={16} />
-                      </button>
-                      <button className="manage-btn" style={{ padding: '0.25rem', background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444' }} onClick={(e) => { e.stopPropagation(); setModalState({ isOpen: true, type: 'deletePhase', data: phase }) }} title="Delete Phase">
-                        <Trash2 size={16} />
-                      </button>
+                      <SIcon
+                        name="plus"
+                        size={16}
+                        color="primary"
+                        subtle
+                        onClick={(e) => { e.stopPropagation(); openStepModal('createStep', phase.uuid); }}
+                        title="Add Step"
+                        aria-label="Add Step"
+                      />
+                      <SIcon
+                        name="pencil"
+                        size={16}
+                        color="primary"
+                        subtle
+                        onClick={(e) => { e.stopPropagation(); setModalState({ isOpen: true, type: 'editPhase', data: phase }); }}
+                        title="Edit Phase"
+                        aria-label="Edit Phase"
+                      />
+                      <SIcon
+                        name="trash"
+                        size={16}
+                        color="danger"
+                        subtle
+                        onClick={(e) => { e.stopPropagation(); setModalState({ isOpen: true, type: 'deletePhase', data: phase }); }}
+                        title="Delete Phase"
+                        aria-label="Delete Phase"
+                      />
                     </div>
                   </div>
 
                   {/* Step Rows */}
-                  {isExpanded && steps[phase.uuid] && (
+                  {isExpanded && (
                     <div style={{ borderTop: '1px solid var(--border)' }}>
-                      {steps[phase.uuid].map((step, stepIdx) => {
-                        const stepOrder = `${phaseOrder}.${stepIdx + 1}`;
-                        const stepPath = `/wizard/${wizard.uuid}/[[UUID]]/${phase.uuid}/${step.name}`;
+                      {loadingSteps[phase.uuid] ? (
+                        <div style={{ padding: '0.75rem 1rem 0.75rem 3rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                          Loading steps...
+                        </div>
+                      ) : (!steps[phase.uuid] || steps[phase.uuid].length === 0) ? (
+                        <div style={{ padding: '0.75rem 1rem 0.75rem 3rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                          No steps added in this phase. Click '+' to add one.
+                        </div>
+                      ) : (
+                        steps[phase.uuid].map((step, stepIdx) => {
+                          const stepOrder = `${phaseOrder}.${stepIdx + 1}`;
 
-                        return (
-                          <div key={step.uuid} style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            padding: '0.75rem 1rem 0.75rem 3rem',
-                            borderBottom: stepIdx < steps[phase.uuid].length - 1 ? '1px solid var(--border)' : 'none',
-                            background: 'var(--surface)'
-                          }}>
-                            {/* Col 1: Drag + Number + Name */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                              <GripVertical size={16} color="var(--text-secondary)" style={{ cursor: 'grab' }} />
-                              <span style={{ fontSize: '0.875rem' }}>{stepOrder}</span>
-                              <span style={{ fontSize: '0.875rem', marginLeft: '1rem' }}>{step.name}</span>
-                            </div>
+                          return (
+                            <div key={step.uuid} style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '0.75rem 1rem 0.75rem 3rem',
+                              borderBottom: stepIdx < steps[phase.uuid].length - 1 ? '1px solid var(--border)' : 'none',
+                              background: 'var(--surface)'
+                            }}>
+                              {/* Col 1: Drag + Number + Name */}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <GripVertical size={16} color="var(--text-secondary)" style={{ cursor: 'grab' }} />
+                                <span style={{ fontSize: '0.875rem' }}>{stepOrder}</span>
+                                <span style={{ fontSize: '0.875rem', marginLeft: '1rem' }}>{step.name}</span>
+                              </div>
 
-                            {/* Col 3: Actions */}
-                            <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
-                              <button className="manage-btn" style={{ padding: '0.25rem', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--accent)' }} onClick={() => setModalState({ isOpen: true, type: 'editStep', phaseUuid: phase.uuid, data: step })} title="Edit Step">
-                                <Pencil size={16} />
-                              </button>
-                              <button className="manage-btn" style={{ padding: '0.25rem', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--accent)' }} onClick={() => navigate.push(`/objects/${wizard.object_uuid}/template/${step.template_uuid}`)} title="Go to Template">
-                                <ArrowRight size={16} />
-                              </button>
-                              <button className="manage-btn" style={{ padding: '0.25rem', background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444' }} onClick={() => setModalState({ isOpen: true, type: 'deleteStep', phaseUuid: phase.uuid, data: step })} title="Delete Step">
-                                <Trash2 size={16} />
-                              </button>
+                              {/* Col 3: Actions */}
+                              <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+                                <SIcon
+                                  name="pencil"
+                                  size={16}
+                                  color="primary"
+                                  subtle
+                                  onClick={() => openStepModal('editStep', phase.uuid, step)}
+                                  title="Edit Step"
+                                  aria-label="Edit Step"
+                                />
+                                <SIcon
+                                  name="arrow-right"
+                                  size={16}
+                                  color="primary"
+                                  subtle
+                                  onClick={() => navigate.push(`/objects/${wizard.objectUuid}/template/${step.templateUuid}`)}
+                                  title="Go to Template"
+                                  aria-label="Go to Template"
+                                />
+                                <SIcon
+                                  name="trash"
+                                  size={16}
+                                  color="danger"
+                                  subtle
+                                  onClick={() => setModalState({ isOpen: true, type: 'deleteStep', phaseUuid: phase.uuid, data: step })}
+                                  title="Delete Step"
+                                  aria-label="Delete Step"
+                                />
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })
+                      )}
                     </div>
                   )}
                 </div>
@@ -211,10 +309,6 @@ const FormWizardDetailFeature = () => {
   };
 
   const templateOptions = templates.map(t => ({ label: t.name, value: t.uuid }));
-
-  const togglePhase = (phaseUuid) => {
-    setExpandedPhases(prev => ({ ...prev, [phaseUuid]: !prev[phaseUuid] }));
-  };
 
   return (
     <div className="admin-users-container page-container">
@@ -270,9 +364,9 @@ const FormWizardDetailFeature = () => {
             />
             <SDropdown
               label="Template"
-              value={modalState.data.template_uuid || ''}
+              value={modalState.data.templateUuid || ''}
               options={templateOptions}
-              onChange={(val) => setModalState({ ...modalState, data: { ...modalState.data, template_uuid: val } })}
+              onChange={(val) => setModalState({ ...modalState, data: { ...modalState.data, templateUuid: val } })}
             />
           </div>
         )}

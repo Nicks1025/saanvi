@@ -1,66 +1,71 @@
 const BaseRepository = require('../../base/baseRepository');
+const QueryHelper = require('../../database/queryHelper');
+const { v4: uuidv4 } = require('uuid');
 
 class AdminRepository extends BaseRepository {
+  constructor(context = null) {
+    super(context);
+    this.sqlUsers = new QueryHelper('users');
+    this.sqlUserDetails = new QueryHelper('user_details');
+    this.sqlPermissions = new QueryHelper('permissions');
+    this.sqlRoles = new QueryHelper('roles');
+    this.sqlRolePermissions = new QueryHelper('role_permissions');
+    this.sqlUserRoles = new QueryHelper('user_roles');
+  }
+
   async getAllUsers(searchQuery, showArchived = false, page = 1, limit = 10) {
-    const buildBaseQuery = (isCount = false) => {
-      const builder = this.queryHelper.from('users', 'u');
-      
-      if (isCount) {
-        builder.countDistinct('u.uuid', 'total');
-      } else {
-        builder
-          .field('u.uuid')
-          .field('u.email')
-          .field('u.status')
-          .field('u.created_at')
-          .field('ud.first_name')
-          .field('ud.last_name');
-      }
+    const countQuery = this.sqlUsers
+      .countDistinct('users.uuid', 'total')
+      .leftJoin('user_details', 'users.uuid', 'user_details.user_uuid');
 
-      builder.leftJoin('user_details', 'ud', 'u.uuid = ud.user_uuid');
+    const dataQuery = this.sqlUsers
+      .select()
+      .field('users.uuid')
+      .field('users.email')
+      .field('users.status')
+      .field('users.created_at')
+      .field('users.last_login_at')
+      .field('user_details.first_name')
+      .field('user_details.last_name')
+      .leftJoin('user_details', 'users.uuid', 'user_details.user_uuid');
 
-      if (showArchived === 'true' || showArchived === true) {
-        builder.where('u.archived_at', 'not_is', null);
-      } else if (showArchived === 'all') {
-        // show both active and archived
-      } else {
-        builder.where('u.archived_at', 'is', null);
-      }
+    if (showArchived === 'true' || showArchived === true) {
+      countQuery.whereNotNull('users.archived_at');
+      dataQuery.whereNotNull('users.archived_at');
+    } else if (showArchived === 'all') {
+      // show both active and archived
+    } else {
+      countQuery.whereNull('users.archived_at');
+      dataQuery.whereNull('users.archived_at');
+    }
 
-      if (searchQuery) {
-        builder.where(
-          `(u.email ILIKE ? OR ud.first_name ILIKE ? OR ud.last_name ILIKE ?)`,
-          [`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`]
-        );
-      }
-      return builder;
-    };
+    if (searchQuery) {
+      const searchPattern = `%${searchQuery}%`;
+      countQuery.whereRaw('(users.email ILIKE ? OR user_details.first_name ILIKE ? OR user_details.last_name ILIKE ?)', [searchPattern, searchPattern, searchPattern]);
+      dataQuery.whereRaw('(users.email ILIKE ? OR user_details.first_name ILIKE ? OR user_details.last_name ILIKE ?)', [searchPattern, searchPattern, searchPattern]);
+    }
 
-    const countResult = await buildBaseQuery(true).execute();
-    const total = countResult && countResult.length > 0 ? parseInt(countResult[0].total || 0, 10) : 0;
+    const countRow = await this.runQueryFirst(countQuery);
+    const total = countRow ? parseInt(countRow.total || 0, 10) : 0;
 
-    const dataBuilder = buildBaseQuery(false);
-    dataBuilder.limit(limit);
-    dataBuilder.offset((page - 1) * limit);
+    dataQuery.limit(limit).offset((page - 1) * limit);
+    const users = await this.runQuery(dataQuery);
 
-    const users = await dataBuilder.execute();
-      
-    // Because we could potentially have multiple rows if there were multiple joined records,
-    // we want to ensure uniqueness by UUID.
     const uniqueUsersMap = {};
-    for (const row of (users || [])) {
+    for (const row of users) {
       if (!uniqueUsersMap[row.uuid]) {
         uniqueUsersMap[row.uuid] = {
           uuid: row.uuid,
           email: row.email,
           status: row.status,
           created_at: row.created_at,
+          last_login_at: row.last_login_at || null,
           first_name: row.first_name || null,
           last_name: row.last_name || null
         };
       }
     }
-    
+
     return {
       data: Object.values(uniqueUsersMap),
       total
@@ -68,165 +73,164 @@ class AdminRepository extends BaseRepository {
   }
 
   async getAllPermissions() {
-    return await this.queryHelper
-      .from('permissions')
-      .select('uuid, permission, name, description')
-      .where('is_active', 'eq', true)
-      .where('archived_at', 'is', null)
-      .execute();
+    const query = this.sqlPermissions
+      .select()
+      .field('uuid')
+      .field('permission')
+      .field('name')
+      .field('description')
+      .where('is_active', '=', true)
+      .whereNull('archived_at');
+
+    return this.runQuery(query);
   }
 
   async getUserByUuid(userUuid, includeArchived = false) {
-    const builder = this.queryHelper
-      .from('users', 'u')
-      .field('u.uuid')
-      .field('u.email')
-      .field('u.status')
-      .field('u.created_at')
-      .leftJoin('user_details', 'ud', 'u.uuid = ud.user_uuid')
-      .field('ud.first_name')
-      .field('ud.last_name')
-      .where('u.uuid', 'eq', userUuid);
-      
+    const query = this.sqlUsers
+      .select()
+      .field('users.uuid')
+      .field('users.email')
+      .field('users.status')
+      .field('users.created_at')
+      .field('users.last_login_at')
+      .field('user_details.first_name')
+      .field('user_details.last_name')
+      .leftJoin('user_details', 'users.uuid', 'user_details.user_uuid')
+      .where('users.uuid', '=', userUuid);
+
     if (!includeArchived) {
-      builder.where('u.archived_at', 'is', null);
+      query.whereNull('users.archived_at');
     }
-    
-    const data = await builder.execute();
-      
-    if (data && data.length > 0) {
-      const row = data[0];
-      return {
-        uuid: row.uuid,
-        email: row.email,
-        status: row.status,
-        created_at: row.created_at,
-        first_name: row.first_name || null,
-        last_name: row.last_name || null
-      };
-    }
-    return null;
+
+    const row = await this.runQueryFirst(query);
+    if (!row) return null;
+
+    return {
+      uuid: row.uuid,
+      email: row.email,
+      status: row.status,
+      created_at: row.created_at,
+      last_login_at: row.last_login_at || null,
+      first_name: row.first_name || null,
+      last_name: row.last_name || null
+    };
   }
 
   async updateUser(uuid, payload) {
-    return await this.queryHelper
-      .from('users')
+    const query = this.sqlUsers
       .update(payload)
-      .where('uuid', 'eq', uuid)
-      .execute();
+      .where('uuid', '=', uuid);
+
+    return this.execute(query);
   }
 
   async updateUserDetails(uuid, payload) {
-    // Upsert equivalent: check if exists, then update, else insert.
-    const existing = await this.queryHelper
-      .from('user_details')
-      .select('uuid')
-      .where('user_uuid', 'eq', uuid)
-      .execute();
+    const existing = await this.runQueryFirst(
+      this.sqlUserDetails.select().field('uuid').where('user_uuid', '=', uuid)
+    );
 
-    if (existing && existing.length > 0) {
-      return await this.queryHelper
-        .from('user_details')
+    if (existing) {
+      const query = this.sqlUserDetails
         .update(payload)
-        .where('user_uuid', 'eq', uuid)
-        .execute();
+        .where('user_uuid', '=', uuid);
+      return this.execute(query);
     } else {
-      const { v4: uuidv4 } = require('uuid');
-      return await this.queryHelper
-        .from('user_details')
-        .insert([{
-          uuid: uuidv4(),
-          user_uuid: uuid,
-          ...payload
-        }])
-        .execute();
+      const query = this.sqlUserDetails.insert({
+        uuid: uuidv4(),
+        user_uuid: uuid,
+        ...payload
+      });
+      return this.execute(query);
     }
   }
 
   async archiveUser(uuid) {
-    return await this.queryHelper
-      .from('users')
+    const query = this.sqlUsers
       .update({
         status: 'archived',
         archived_at: new Date().toISOString()
       })
-      .where('uuid', 'eq', uuid)
-      .execute();
+      .where('uuid', '=', uuid);
+
+    return this.execute(query);
   }
 
   async restoreUser(uuid) {
-    return await this.queryHelper
-      .from('users')
+    const query = this.sqlUsers
       .update({
         status: 'active',
         archived_at: null
       })
-      .where('uuid', 'eq', uuid)
-      .execute();
+      .where('uuid', '=', uuid);
+
+    return this.execute(query);
   }
+
   async getAllRoles(searchQuery) {
-    const builder = this.queryHelper
-      .from('roles')
-      .select('uuid, name, description, is_active, created_at, archived_at')
-      .where('archived_at', 'is', null);
+    const query = this.sqlRoles
+      .select()
+      .field('uuid')
+      .field('name')
+      .field('description')
+      .field('is_active')
+      .field('created_at')
+      .field('archived_at')
+      .whereNull('archived_at');
 
     if (searchQuery) {
-      builder.where(
-        `(name ILIKE ? OR description ILIKE ?)`,
-        [`%${searchQuery}%`, `%${searchQuery}%`]
-      );
+      query.whereRaw('(name ILIKE ? OR description ILIKE ?)', [`%${searchQuery}%`, `%${searchQuery}%`]);
     }
-    
-    return await builder.execute();
+
+    return this.runQuery(query);
   }
 
   async getRoleByUuid(uuid) {
-    const data = await this.queryHelper
-      .from('roles')
-      .select('uuid, name, description, is_active, created_at, archived_at')
-      .where('uuid', 'eq', uuid)
-      .where('archived_at', 'is', null)
-      .execute();
-      
-    return data && data.length > 0 ? data[0] : null;
+    const query = this.sqlRoles
+      .select()
+      .field('uuid')
+      .field('name')
+      .field('description')
+      .field('is_active')
+      .field('created_at')
+      .field('archived_at')
+      .where('uuid', '=', uuid)
+      .whereNull('archived_at');
+
+    return this.runQueryFirst(query);
   }
-  
+
   async getRoleByName(name) {
-    const data = await this.queryHelper
-      .from('roles')
-      .select('uuid, name')
-      .where('name', 'eq', name)
-      .where('archived_at', 'is', null)
-      .execute();
-    return data && data.length > 0 ? data[0] : null;
+    const query = this.sqlRoles
+      .select()
+      .field('uuid')
+      .field('name')
+      .where('name', '=', name)
+      .whereNull('archived_at');
+
+    return this.runQueryFirst(query);
   }
 
   async createRole(payload) {
-    return await this.queryHelper
-      .from('roles')
-      .insert(payload)
-      .execute();
+    const query = this.sqlRoles.insert(payload);
+    return this.execute(query);
   }
 
   async updateRole(uuid, payload) {
-    return await this.queryHelper
-      .from('roles')
+    const query = this.sqlRoles
       .update(payload)
-      .where('uuid', 'eq', uuid)
-      .execute();
+      .where('uuid', '=', uuid);
+
+    return this.execute(query);
   }
 
   async deleteRole(uuid) {
     try {
-      return await this.queryHelper.transaction(async (trx) => {
-        // 1. Delete from role_permissions
-        await trx('role_permissions').where('role_uuid', uuid).del();
-        
-        // 2. Delete from user_roles
-        await trx('user_roles').where('role_uuid', uuid).del();
-        
-        // 3. Delete from roles
-        await trx('roles').where('uuid', uuid).del();
+      return await this.dbDriver.transaction(async (trx) => {
+        const trxContext = this.context?.withTransaction ? this.context.withTransaction(trx) : { transaction: trx, connection: this.dbDriver };
+        const trxRepo = new AdminRepository(trxContext);
+        await trxRepo.execute(trxRepo.sqlRolePermissions.delete().where('role_uuid', '=', uuid));
+        await trxRepo.execute(trxRepo.sqlUserRoles.delete().where('role_uuid', '=', uuid));
+        await trxRepo.execute(trxRepo.sqlRoles.delete().where('uuid', '=', uuid));
       });
     } catch (err) {
       if (err.message && err.message.includes('violates foreign key constraint')) {
@@ -239,53 +243,40 @@ class AdminRepository extends BaseRepository {
   }
 
   async getRolePermissions(roleUuid) {
-    return await this.queryHelper
-      .from('role_permissions')
-      .select('permission_uuid')
-      .where('role_uuid', 'eq', roleUuid)
-      .execute();
+    const query = this.sqlRolePermissions
+      .select()
+      .field('permission_uuid')
+      .where('role_uuid', '=', roleUuid);
+
+    return this.runQuery(query);
   }
 
   async updateRolePermissions(roleUuid, payload) {
-    await this.queryHelper
-      .from('role_permissions')
-      .delete()
-      .where('role_uuid', 'eq', roleUuid)
-      .execute();
-      
-    if (payload.length > 0) {
-      await this.queryHelper
-        .from('role_permissions')
-        .insert(payload)
-        .execute();
+    await this.execute(this.sqlRolePermissions.delete().where('role_uuid', '=', roleUuid));
+
+    if (payload && payload.length > 0) {
+      await this.execute(this.sqlRolePermissions.insert(payload));
     }
   }
 
   async getUserRoles(userUuid) {
-    const data = await this.queryHelper
-      .from('user_roles', 'ur')
-      .join('roles', 'r', 'ur.role_uuid = r.uuid')
-      .field('ur.role_uuid')
-      .field('r.name')
-      .field('r.is_active')
-      .where('ur.user_uuid', 'eq', userUuid)
-      .where('r.archived_at', 'is', null)
-      .execute();
-    return data || [];
+    const query = this.sqlUserRoles
+      .select()
+      .field('user_roles.role_uuid')
+      .field('roles.name')
+      .field('roles.is_active')
+      .join('roles', 'user_roles.role_uuid', 'roles.uuid')
+      .where('user_roles.user_uuid', '=', userUuid)
+      .whereNull('roles.archived_at');
+
+    return this.runQuery(query);
   }
 
   async updateUserRoles(userUuid, payload) {
-    await this.queryHelper
-      .from('user_roles')
-      .delete()
-      .where('user_uuid', 'eq', userUuid)
-      .execute();
-      
-    if (payload.length > 0) {
-      await this.queryHelper
-        .from('user_roles')
-        .insert(payload)
-        .execute();
+    await this.execute(this.sqlUserRoles.delete().where('user_uuid', '=', userUuid));
+
+    if (payload && payload.length > 0) {
+      await this.execute(this.sqlUserRoles.insert(payload));
     }
   }
 }

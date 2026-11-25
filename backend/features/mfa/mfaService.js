@@ -1,37 +1,33 @@
 const BaseService = require('../../base/baseService');
-const { createClient } = require('@supabase/supabase-js');
-const { supabaseAdmin } = require('../../services/supabaseAdmin');
+const MfaRepository = require('./mfaRepository');
+const { supabaseAdmin, getUserSupabaseClient, syncSupabaseAuth } = require('../../services/supabaseAdmin');
 
 class MfaService extends BaseService {
-  constructor(mfaRepository) {
-    super(mfaRepository);
+  constructor(context = null) {
+    super(context);
+    this.repository = new MfaRepository(context);
   }
 
-  // Helper to initialize a user-scoped client
-  _getUserClient(supabaseToken) {
-    if (!supabaseToken) throw new Error('Unauthorized');
-    return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
-      global: { headers: { Authorization: `Bearer ${supabaseToken}` } }
-    });
+  // Server-side only: acquires valid user client for the authenticated user
+  async _getServerUserClient(email) {
+    const token = await syncSupabaseAuth(email);
+    if (!token) {
+      throw new Error('Failed to synchronize MFA session');
+    }
+    const userClient = getUserSupabaseClient(token);
+    const { data: { user } } = await userClient.auth.getUser();
+    return { userClient, user };
   }
 
   async getStatus(userUuid) {
-    const data = await this.repository.queryHelper
-      .from('users')
-      .select('is_mfa_enabled')
-      .where('uuid', 'eq', userUuid)
-      .execute();
-      
-    if (!data || data.length === 0) return { is_mfa_enabled: false };
-    return { is_mfa_enabled: data[0].is_mfa_enabled };
+    const status = await this.repository.getUserMfaStatus(userUuid);
+    return { isMfaEnabled: Boolean(status?.isMfaEnabled) };
   }
 
-  async enroll(supabaseToken, email) {
-    const userClient = this._getUserClient(supabaseToken);
-    
+  async enroll(email) {
+    const { userClient, user } = await this._getServerUserClient(email);
+
     // First, find and delete any existing unverified TOTP factors for this user
-    // because Supabase will return a 400 if you try to enroll when an unverified factor already exists.
-    const { data: { user } } = await userClient.auth.getUser();
     if (user) {
       const { data: factorsData } = await supabaseAdmin.auth.admin.mfa.listFactors({ userId: user.id });
       if (factorsData && factorsData.factors) {
@@ -43,20 +39,20 @@ class MfaService extends BaseService {
       }
     }
 
-    const { data, error } = await userClient.auth.mfa.enroll({ 
+    const { data, error } = await userClient.auth.mfa.enroll({
       factorType: 'totp',
       issuer: 'Saanvi',
       friendlyName: email
     });
     if (error) {
       console.error('[Supabase MFA Enroll Error]:', error);
-      throw new Error(`Enrollment failed: ${error.message} - ${JSON.stringify(error)}`);
+      throw new Error(`Enrollment failed: ${error.message}`);
     }
     return data;
   }
 
-  async challenge(supabaseToken, factorId) {
-    const userClient = this._getUserClient(supabaseToken);
+  async challenge(factorId, email) {
+    const { userClient } = await this._getServerUserClient(email);
     const { data, error } = await userClient.auth.mfa.challenge({ factorId });
     if (error) {
       throw new Error(`Challenge failed: ${error.message}`);
@@ -64,33 +60,50 @@ class MfaService extends BaseService {
     return data;
   }
 
-  async verify(userUuid, supabaseToken, factorId, challengeId, code) {
-    const userClient = this._getUserClient(supabaseToken);
-    const { data, error } = await userClient.auth.mfa.verify({
+  async verify(userUuid, factorId, challengeId, code, email) {
+    const { userClient } = await this._getServerUserClient(email);
+
+    let activeChallengeId = challengeId;
+    if (!activeChallengeId) {
+      const { data: challengeData, error: challengeError } = await userClient.auth.mfa.challenge({ factorId });
+      if (challengeError) {
+        throw new Error(`Challenge failed: ${challengeError.message}`);
+      }
+      activeChallengeId = challengeData.id;
+    }
+
+    let { data, error } = await userClient.auth.mfa.verify({
       factorId,
-      challengeId,
+      challengeId: activeChallengeId,
       code
     });
-    
+
+    if (error && (error.message.includes('expired') || error.message.includes('challenge'))) {
+      const { data: retryChallenge, error: retryError } = await userClient.auth.mfa.challenge({ factorId });
+      if (!retryError && retryChallenge?.id) {
+        const retryResult = await userClient.auth.mfa.verify({
+          factorId,
+          challengeId: retryChallenge.id,
+          code
+        });
+        data = retryResult.data;
+        error = retryResult.error;
+      }
+    }
+
     if (error) {
       throw new Error(`Verification failed: ${error.message}`);
     }
 
     // Update database to enable MFA for user
-    await this.repository.queryHelper
-      .from('users')
-      .where('uuid', 'eq', userUuid)
-      .update({ is_mfa_enabled: true })
-      .execute();
+    await this.repository.setUserMfaEnabled(userUuid, true);
 
     return { success: true };
   }
 
-  async unenroll(userUuid, supabaseToken, factorId) {
-    // Unenroll using admin client since normal user client cannot delete their own factors if they aren't AAL2 yet
-    const userClient = this._getUserClient(supabaseToken);
-    const { data: { user } } = await userClient.auth.getUser();
-    
+  async unenroll(userUuid, factorId, email) {
+    const { user } = await this._getServerUserClient(email);
+
     if (!user) throw new Error('Unenrollment failed: user not found');
 
     let targetFactorId = factorId;
@@ -98,28 +111,24 @@ class MfaService extends BaseService {
     if (factorId === 'totp') {
       const { data: factors, error: factorsError } = await supabaseAdmin.auth.admin.mfa.listFactors({ userId: user.id });
       if (factorsError) throw new Error('Could not fetch user factors');
-      
+
       const totpFactor = factors.factors.find(f => f.factor_type === 'totp');
       if (!totpFactor) throw new Error('No TOTP factor found to unenroll');
-      
+
       targetFactorId = totpFactor.id;
     }
-    
+
     const { error } = await supabaseAdmin.auth.admin.mfa.deleteFactor({
       id: targetFactorId,
       userId: user.id
     });
-    
+
     if (error) {
       throw new Error(`Unenrollment failed: ${error.message}`);
     }
 
     // Update database to disable MFA
-    await this.repository.queryHelper
-      .from('users')
-      .where('uuid', 'eq', userUuid)
-      .update({ is_mfa_enabled: false })
-      .execute();
+    await this.repository.setUserMfaEnabled(userUuid, false);
 
     return { success: true };
   }

@@ -1,75 +1,90 @@
 const BaseController = require('../../base/baseController');
+const CampaignService = require('./campaignService');
 
 class CampaignController extends BaseController {
-  constructor(campaignService) {
-    super();
-    this.service = campaignService;
+  constructor(context = null) {
+    super(context);
+    this.service = new CampaignService(context);
   }
 
   async getAllCampaigns(req, res, next) {
     try {
-      const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 20;
+      const query = (req && req.query) || (this.context && this.context.request && this.context.request.query) || {};
+      const page = parseInt(query.page, 10) || 1;
+      const limit = parseInt(query.limit, 10) || 20;
       const campaigns = await this.service.getAllCampaigns(page, limit);
-      res.status(200).json({ success: true, data: campaigns });
+      return this.respondOk(campaigns);
     } catch (err) {
-      this.sendError(res, err);
+      return this.respondError(err);
     }
   }
 
   async getCampaign(req, res, next) {
     try {
-      const campaign = await this.service.getCampaign(req.params.uuid);
-      res.status(200).json({ success: true, data: campaign });
+      const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+      const campaign = await this.service.getCampaign(params.uuid);
+      return this.respondOk(campaign);
     } catch (err) {
-      this.sendError(res, err);
+      return this.respondError(err);
     }
   }
 
   async createCampaign(req, res, next) {
     try {
-      const result = await this.service.createCampaign(req.body, req.user.uuid);
-      res.status(201).json({ success: true, data: result });
+      const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+      const user = (req && req.user) || (this.context && this.context.user) || {};
+      const result = await this.service.createCampaign(body, user.uuid);
+      return this.respondOk(result, 'Campaign created successfully', 201);
     } catch (err) {
-      this.sendError(res, err, 400);
+      return this.respondError(err, 400);
     }
   }
 
   async updateCampaign(req, res, next) {
     try {
-      const result = await this.service.updateCampaign(req.params.uuid, req.body, req.user.uuid);
-      res.status(200).json({ success: true, data: result });
+      const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+      const body = (req && req.body) || (this.context && this.context.request && this.context.request.body) || {};
+      const user = (req && req.user) || (this.context && this.context.user) || {};
+      const result = await this.service.updateCampaign(params.uuid, body, user.uuid);
+      return this.respondOk(result, 'Campaign updated successfully');
     } catch (err) {
-      this.sendError(res, err, 400);
+      return this.respondError(err, 400);
     }
   }
 
   async deleteCampaign(req, res, next) {
     try {
-      const result = await this.service.deleteCampaign(req.params.uuid);
-      res.status(200).json({ success: true, message: result.message });
+      const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+      const result = await this.service.deleteCampaign(params.uuid);
+      return this.respondOk(null, result.message);
     } catch (err) {
-      this.sendError(res, err, 400);
+      return this.respondError(err, 400);
     }
   }
 
   async sendCampaign(req, res, next) {
     try {
-      const result = await this.service.sendCampaign(req.params.uuid);
-      res.status(200).json({ success: true, message: result.message });
+      const params = (req && req.params) || (this.context && this.context.request && this.context.request.params) || {};
+      const result = await this.service.sendCampaign(params.uuid);
+      return this.respondOk(null, result.message);
     } catch (err) {
-      this.sendError(res, err, 400);
+      return this.respondError(err, 400);
+    }
+  }
+
+  async handleUnsubscribe(req, res, next) {
+    try {
+      const query = (req && req.query) || (this.context && this.context.request && this.context.request.query) || {};
+      const { email, token } = query;
+      const result = await this.service.handleUnsubscribe(email, token);
+      return this.respondOk(null, result.message);
+    } catch (err) {
+      return this.respondError(err, 400);
     }
   }
 
   async unsubscribe(req, res, next) {
-    try {
-      const { email, token } = req.query;
-      const result = await this.service.unsubscribe(email, token);
-      res.status(200).json({ success: true, message: result.message });
-    } catch (err) {
-      this.sendError(res, err, 400);
-    }
+    return this.handleUnsubscribe(req, res, next);
   }
 }
 

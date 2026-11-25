@@ -1,22 +1,13 @@
 const Joi = require('joi');
 const ApiSchema = require('../../base/apiSchema');
-const QueryHelper = require('../../database/queryHelper');
-
-const ObjectsRepository = require('./objectsRepository');
-const ObjectsService = require('./objectsService');
 const ObjectsController = require('./objectsController');
-
-const queryHelper = new QueryHelper();
-const objectsRepository = new ObjectsRepository(queryHelper);
-const objectsService = new ObjectsService(objectsRepository);
-const objectsController = new ObjectsController(objectsService);
 
 // ─── Objects ────────────────────────────────────────────────────────────────────
 const listObjects = {
   path: '/',
   verb: 'GET',
   auditMessage: 'list objects',
-  handler: { controller: objectsController, method: 'listObjects' },
+  handler: { controller: ObjectsController, method: 'listObjects' },
   middleware: { requireAuth: true, requirePermission: ['objects.view'] }
 };
 
@@ -24,7 +15,7 @@ const getObject = {
   path: '/:uuid',
   verb: 'GET',
   auditMessage: 'get object',
-  handler: { controller: objectsController, method: 'getObject' },
+  handler: { controller: ObjectsController, method: 'getObject' },
   middleware: { requireAuth: true, requirePermission: ['objects.view'] },
   request: { params: Joi.object({ uuid: Joi.string().uuid().required() }) }
 };
@@ -33,7 +24,7 @@ const createObject = {
   path: '/',
   verb: 'POST',
   auditMessage: 'create object',
-  handler: { controller: objectsController, method: 'createObject' },
+  handler: { controller: ObjectsController, method: 'createObject' },
   middleware: { requireAuth: true, requirePermission: ['objects.create'] },
   request: {
     body: Joi.object({
@@ -46,7 +37,7 @@ const updateObject = {
   path: '/:uuid',
   verb: 'PUT',
   auditMessage: 'update object',
-  handler: { controller: objectsController, method: 'updateObject' },
+  handler: { controller: ObjectsController, method: 'updateObject' },
   middleware: { requireAuth: true, requirePermission: ['objects.edit'] },
   request: {
     params: Joi.object({ uuid: Joi.string().uuid().required() }),
@@ -60,7 +51,7 @@ const deleteObject = {
   path: '/:uuid',
   verb: 'DELETE',
   auditMessage: 'delete object',
-  handler: { controller: objectsController, method: 'deleteObject' },
+  handler: { controller: ObjectsController, method: 'deleteObject' },
   middleware: { requireAuth: true, requirePermission: ['objects.delete'] },
   request: {
     params: Joi.object({ uuid: Joi.string().uuid().required() })
@@ -71,7 +62,7 @@ const listFields = {
   path: '/:objectUuid/fields',
   verb: 'GET',
   auditMessage: 'list fields',
-  handler: { controller: objectsController, method: 'listFields' },
+  handler: { controller: ObjectsController, method: 'listFields' },
   middleware: { requireAuth: true, requirePermission: ['objects.fields.view'] },
   request: { params: Joi.object({ objectUuid: Joi.string().uuid().required() }) }
 };
@@ -80,7 +71,7 @@ const createField = {
   path: '/:objectUuid/fields',
   verb: 'POST',
   auditMessage: 'create field',
-  handler: { controller: objectsController, method: 'createField' },
+  handler: { controller: ObjectsController, method: 'createField' },
   middleware: { requireAuth: true, requirePermission: ['objects.fields.create'] },
   request: {
     params: Joi.object({ objectUuid: Joi.string().uuid().required() }),
@@ -102,10 +93,10 @@ const updateField = {
   path: '/:objectUuid/fields/:fieldUuid',
   verb: 'PUT',
   auditMessage: 'update field',
-  handler: { controller: objectsController, method: 'updateField' },
+  handler: { controller: ObjectsController, method: 'updateField' },
   middleware: { requireAuth: true, requirePermission: ['objects.fields.edit'] },
   request: {
-    params: Joi.object({ 
+    params: Joi.object({
       objectUuid: Joi.string().uuid().required(),
       fieldUuid: Joi.string().uuid().required()
     }),
@@ -126,7 +117,7 @@ const archiveField = {
   path: '/:objectUuid/fields/:fieldUuid',
   verb: 'DELETE',
   auditMessage: 'archive field',
-  handler: { controller: objectsController, method: 'archiveField' },
+  handler: { controller: ObjectsController, method: 'archiveField' },
   middleware: { requireAuth: true, requirePermission: ['objects.fields.delete'] },
   request: {
     params: Joi.object({
@@ -140,7 +131,7 @@ const bulkSaveFields = {
   path: '/:objectUuid/fields/bulk',
   verb: 'POST',
   auditMessage: 'bulk save object fields',
-  handler: { controller: objectsController, method: 'bulkSaveFields' },
+  handler: { controller: ObjectsController, method: 'bulkSaveFields' },
   middleware: { requireAuth: true, requirePermission: ['objects.fields.edit'] },
   request: {
     params: Joi.object({ objectUuid: Joi.string().uuid().required() }),
@@ -156,7 +147,7 @@ const listTemplates = {
   path: '/:objectUuid/templates',
   verb: 'GET',
   auditMessage: 'list templates',
-  handler: { controller: objectsController, method: 'listTemplates' },
+  handler: { controller: ObjectsController, method: 'listTemplates' },
   middleware: { requireAuth: true, requirePermission: ['objects.templates.view'] },
   request: { params: Joi.object({ objectUuid: Joi.string().uuid().required() }) }
 };
@@ -165,7 +156,7 @@ const createTemplate = {
   path: '/:objectUuid/templates',
   verb: 'POST',
   auditMessage: 'create template',
-  handler: { controller: objectsController, method: 'createTemplate' },
+  handler: { controller: ObjectsController, method: 'createTemplate' },
   middleware: { requireAuth: true, requirePermission: ['objects.templates.create'] },
   request: {
     params: Joi.object({ objectUuid: Joi.string().uuid().required() }),
@@ -180,10 +171,10 @@ const updateTemplate = {
   path: '/:objectUuid/templates/:templateUuid',
   verb: 'PUT',
   auditMessage: 'update template',
-  handler: { controller: objectsController, method: 'updateTemplate' },
+  handler: { controller: ObjectsController, method: 'updateTemplate' },
   middleware: { requireAuth: true, requirePermission: ['objects.templates.edit'] },
   request: {
-    params: Joi.object({ 
+    params: Joi.object({
       objectUuid: Joi.string().uuid().required(),
       templateUuid: Joi.string().uuid().required()
     }),
@@ -192,11 +183,17 @@ const updateTemplate = {
       description: Joi.string().optional().allow(null, ''),
       is_active: Joi.boolean().optional(),
       fields: Joi.array().items(Joi.object({
-        field_uuid: Joi.string().uuid().required(),
-        row_number: Joi.number().required(),
-        column_number: Joi.number().required(),
-        width: Joi.number().required(),
-        display_order: Joi.number().required()
+        field_uuid: Joi.string().uuid().optional(),
+        fieldUuid: Joi.string().uuid().optional(),
+        placement_uuid: Joi.string().optional().allow(null, ''),
+        placementUuid: Joi.string().optional().allow(null, ''),
+        row_number: Joi.number().optional(),
+        rowNumber: Joi.number().optional(),
+        column_number: Joi.number().optional(),
+        columnNumber: Joi.number().optional(),
+        width: Joi.number().optional(),
+        display_order: Joi.number().optional(),
+        displayOrder: Joi.number().optional()
       })).optional()
     })
   }
@@ -206,10 +203,10 @@ const deleteTemplate = {
   path: '/:objectUuid/templates/:templateUuid',
   verb: 'DELETE',
   auditMessage: 'delete template',
-  handler: { controller: objectsController, method: 'deleteTemplate' },
+  handler: { controller: ObjectsController, method: 'deleteTemplate' },
   middleware: { requireAuth: true, requirePermission: ['objects.templates.delete'] },
   request: {
-    params: Joi.object({ 
+    params: Joi.object({
       objectUuid: Joi.string().uuid().required(),
       templateUuid: Joi.string().uuid().required()
     })
@@ -217,20 +214,43 @@ const deleteTemplate = {
 };
 
 // ─── Records ──────────────────────────────────────────────────────────────────
+const getRecordCount = {
+  path: '/:objectUuid/record-count',
+  verb: 'GET',
+  auditMessage: 'get object record count',
+  handler: { controller: ObjectsController, method: 'getRecordCount' },
+  middleware: { requireAuth: true, requirePermission: ['objects.view'] },
+  request: { params: Joi.object({ objectUuid: Joi.string().uuid().required() }) }
+};
+
 const listRecords = {
   path: '/:objectUuid/records',
   verb: 'GET',
   auditMessage: 'list object records',
-  handler: { controller: objectsController, method: 'listRecords' },
+  handler: { controller: ObjectsController, method: 'listRecords' },
   middleware: { requireAuth: true, requirePermission: ['objects.records.view'] },
   request: { params: Joi.object({ objectUuid: Joi.string().uuid().required() }) }
+};
+
+const getRecord = {
+  path: '/:objectUuid/records/:recordUuid',
+  verb: 'GET',
+  auditMessage: 'get object record',
+  handler: { controller: ObjectsController, method: 'getRecord' },
+  middleware: { requireAuth: true, requirePermission: ['objects.records.view'] },
+  request: {
+    params: Joi.object({
+      objectUuid: Joi.string().uuid().required(),
+      recordUuid: Joi.string().uuid().required()
+    })
+  }
 };
 
 const createRecord = {
   path: '/:objectUuid/records',
   verb: 'POST',
   auditMessage: 'create object record',
-  handler: { controller: objectsController, method: 'createRecord' },
+  handler: { controller: ObjectsController, method: 'createRecord' },
   middleware: { requireAuth: true, requirePermission: ['objects.records.create'] },
   request: {
     params: Joi.object({ objectUuid: Joi.string().uuid().required() }),
@@ -243,7 +263,7 @@ const deleteRecord = {
   path: '/:objectUuid/records/:recordUuid',
   verb: 'DELETE',
   auditMessage: 'delete object record',
-  handler: { controller: objectsController, method: 'deleteRecord' },
+  handler: { controller: ObjectsController, method: 'deleteRecord' },
   middleware: { requireAuth: true, requirePermission: ['objects.records.delete'] },
   request: {
     params: Joi.object({
@@ -257,7 +277,7 @@ const updateRecord = {
   path: '/:objectUuid/records/:recordUuid',
   verb: 'PUT',
   auditMessage: 'update object record',
-  handler: { controller: objectsController, method: 'updateRecord' },
+  handler: { controller: ObjectsController, method: 'updateRecord' },
   middleware: { requireAuth: true, requirePermission: ['objects.records.update'] },
   request: {
     params: Joi.object({
@@ -276,12 +296,16 @@ const ObjectsApi = {
     listObjects, getObject, createObject, updateObject, deleteObject,
     listFields, createField, updateField, archiveField, bulkSaveFields,
     listTemplates, createTemplate, updateTemplate, deleteTemplate,
-    listRecords, createRecord, updateRecord, deleteRecord
+    listRecords, getRecord, getRecordCount, createRecord, updateRecord, deleteRecord
   ]
 };
 
 module.exports = {
   register: (app) => {
     new ApiSchema(ObjectsApi).register(app);
+    app.get('/api/object/:objectUuid/record-count', (req, res, next) => {
+      req.url = req.url.replace('/api/object/', '/api/objects/');
+      app.handle(req, res, next);
+    });
   }
 };

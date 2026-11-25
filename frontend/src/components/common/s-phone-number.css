@@ -1,0 +1,110 @@
+.s-phone-field {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  font-family: inherit;
+}
+
+.s-phone-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+  color: var(--text-h, #333);
+  display: flex;
+  align-items: center;
+}
+
+.s-phone-required {
+  color: var(--error, #ef4444);
+  margin-left: 4px;
+}
+
+.s-phone-input-wrapper {
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--border, #e5e4e7);
+  border-radius: 8px;
+  background-color: var(--bg, #ffffff);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  padding: 2px 6px;
+}
+
+.s-phone-input-wrapper:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-bg, rgba(170, 59, 255, 0.15));
+}
+
+.s-phone-input-wrapper.has-error {
+  border-color: var(--error, #ef4444) !important;
+}
+
+/* react-phone-number-input customization */
+.s-phone-input-container.PhoneInput {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.s-phone-input-container .PhoneInputCountry {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.4rem 0.6rem;
+  margin-right: 6px;
+  background: var(--code-bg, rgba(0, 0, 0, 0.03));
+  border-radius: 6px;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+}
+
+.s-phone-input-container .PhoneInputCountrySelect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.s-phone-input-container .PhoneInputCountrySelect option {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.s-phone-input-container .PhoneInputCountrySelectArrow {
+  border-color: var(--text-secondary, #9ca3af);
+  opacity: 0.7;
+}
+
+.s-phone-input-container .PhoneInputInput {
+  flex: 1;
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text-h, var(--text));
+  font-size: 0.9rem;
+  letter-spacing: 0.3px;
+}
+
+.s-phone-input-container .PhoneInputInput::placeholder {
+  color: var(--text-secondary, #9ca3af);
+  opacity: 0.7;
+}
+
+.s-phone-input-container .PhoneInputCountryIcon--border {
+  box-shadow: 0 0 0 1px var(--border);
+}
+
+.s-phone-error-msg {
+  color: var(--error, #ef4444);
+  font-size: 0.85rem;
+  margin-top: 4px;
+}

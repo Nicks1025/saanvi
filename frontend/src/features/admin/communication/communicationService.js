@@ -40,7 +40,11 @@ export const deleteEmailTemplate = async (uuid) => {
   return response.data;
 };
 
-export const getEmailLogs = async () => {
-  const response = await axios.get('/api/admin/email-logs');
-  return response.data;
+export const getEmailLogs = async (pageNumber = 1, pageSize = 10, searchQuery = '') => {
+  const params = new URLSearchParams();
+  if (pageNumber) params.append('page', pageNumber);
+  if (pageSize) params.append('limit', pageSize);
+  if (searchQuery) params.append('search', searchQuery);
+  const response = await axios.get(`/api/admin/email-logs?${params.toString()}`);
+  return response;
 };

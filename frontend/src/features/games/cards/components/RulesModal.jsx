@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, BookOpen, Layers, Flame, ShieldAlert, Sparkles, CheckCircle2, RefreshCw, Trophy } from 'lucide-react';
+import SIcon from '@/components/common/SIcon';
 import { GameCard } from './GameCard';
 import { CARD_COLORS, CARD_TYPES, STACKING_RULES, WILD_FOUR_RULES } from '../types';
 
@@ -34,9 +35,14 @@ export const RulesModal = ({ isOpen, onClose, initialTab = 'basics', roomRules }
               </p>
             </div>
           </div>
-          <button className="rules-panel-close-btn" onClick={onClose} aria-label="Close rules">
-            <X size={18} />
-          </button>
+          <SIcon
+            name="x"
+            size={18}
+            className="rules-panel-close-btn"
+            onClick={onClose}
+            title="Close rules"
+            aria-label="Close rules"
+          />
         </div>
 
         {/* Tab Bar */}
